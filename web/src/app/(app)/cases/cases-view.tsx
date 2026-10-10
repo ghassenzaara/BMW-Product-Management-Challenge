@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQueries } from "@tanstack/react-query";
 import { DndContext, PointerSensor, useDraggable, useDroppable, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
-import { ArrowDown, ArrowUp, Columns3, Eye, EyeOff, ListOrdered, Minus, ShieldCheck } from "lucide-react";
+import { ArrowDown, ArrowUp, Columns3, Eye, EyeOff, ListOrdered, Minus, ShieldCheck, SlidersHorizontal } from "lucide-react";
 import {
   CarArea,
   CaseState as CaseStates,
@@ -24,8 +24,8 @@ import { api } from "@/lib/api/client";
 import { useApi } from "@/lib/api/hooks";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/common/page";
-import { CaseStateBadge, EvidenceBadge, MarketChip, OutcomeBadge, Pill, ScoreBar, caseStateTone } from "@/components/common/badges";
-import { UserAvatar, useUsers } from "@/components/common/people";
+import { CaseStateBadge, Pill, ScoreBar, caseStateTone } from "@/components/common/badges";
+import { useUsers } from "@/components/common/people";
 import { CaseCard } from "@/components/cases/case-card";
 import { CaseActionDialog, type UiCaseAction } from "@/components/cases/case-action-dialog";
 import { useScores } from "@/components/cases/use-scores";
@@ -34,6 +34,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 type Scope = "mine" | "series" | "all";
 
@@ -72,6 +73,7 @@ export function CasesView() {
     });
   }, [cases, user, scope, series, market, area, owner]);
 
+  const activeFilters = [series, market, area, owner].filter((v) => v !== ALL).length;
   const setViewUrl = (v: "board" | "ranked") => {
     setView(v);
     router.replace(`/cases?view=${v}`, { scroll: false });
@@ -81,7 +83,6 @@ export function CasesView() {
     <div className="flex min-h-full flex-col">
       <PageHeader
         title="Cases"
-        description="A case is a customer problem, built from signals. Work it here, then decide: confirm into requirements, refer to another PM, park, merge, move to the innovation pool or reject."
         actions={
           <ToggleGroup type="single" variant="outline" size="sm" value={view} onValueChange={(v) => v && setViewUrl(v as "board")}>
             <ToggleGroupItem value="board" className="gap-1.5 px-2.5">
@@ -105,14 +106,22 @@ export function CasesView() {
               All PMs
             </ToggleGroupItem>
           </ToggleGroup>
-          <FilterSelect value={series} onChange={setSeries} label="Series" options={(["G60", "F70", "G70"] as Series[]).map((s) => [s, seriesShort[s]])} />
-          <FilterSelect value={market} onChange={setMarket} label="Market" options={(["EU", "US", "CN", "RoW"] as Market[]).map((m) => [m, marketLabel[m]])} />
-          <FilterSelect value={area} onChange={setArea} label="Car area" options={CarArea.options.map((a) => [a, carAreaLabel[a]])} />
-          {scope === "all" && <FilterSelect value={owner} onChange={setOwner} label="Owner" options={users.map((u) => [u.id, u.name])} />}
-          <span className="text-xs text-muted-foreground">{filtered.length} cases</span>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className={cn(activeFilters > 0 && "border-primary/60 text-primary")}>
+                <SlidersHorizontal className="size-3.5" /> Filters{activeFilters > 0 && ` · ${activeFilters}`}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="grid w-64 gap-2">
+              <FilterSelect value={series} onChange={setSeries} label="Series" options={(["G60", "F70", "G70"] as Series[]).map((s) => [s, seriesShort[s]])} />
+              <FilterSelect value={market} onChange={setMarket} label="Market" options={(["EU", "US", "CN", "RoW"] as Market[]).map((m) => [m, marketLabel[m]])} />
+              <FilterSelect value={area} onChange={setArea} label="Car area" options={CarArea.options.map((a) => [a, carAreaLabel[a]])} />
+              <FilterSelect value={owner} onChange={setOwner} label="Owner" options={users.map((u) => [u.id, u.name])} />
+            </PopoverContent>
+          </Popover>
           {view === "board" && (
-            <Button variant="ghost" size="sm" className="ml-auto" onClick={() => setShowObserved((s) => !s)}>
-              {showObserved ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />} Observed ({filtered.filter((c) => c.state === "observed").length})
+            <Button variant="ghost" size="sm" className="ml-auto text-muted-foreground" onClick={() => setShowObserved((s) => !s)}>
+              {showObserved ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />} Observed {filtered.filter((c) => c.state === "observed").length}
             </Button>
           )}
         </div>
@@ -129,7 +138,7 @@ export function CasesView() {
 function FilterSelect({ value, onChange, label, options }: { value: string; onChange: (v: string) => void; label: string; options: [string, string][] }) {
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger size="sm" className={cn("min-w-28", value !== ALL && "border-primary/60 text-primary")}>
+      <SelectTrigger size="sm" className={cn("w-full", value !== ALL && "border-primary/60 text-primary")}>
         <SelectValue placeholder={label} />
       </SelectTrigger>
       <SelectContent>
@@ -269,13 +278,25 @@ function Ranked({
     }).length;
 
   return (
-    <div className="grid flex-1 gap-4 p-4 lg:grid-cols-[1fr_300px]">
-      <div className="overflow-hidden rounded-lg border bg-card">
-        <div className="grid grid-cols-[48px_1fr_150px_110px_96px] gap-3 border-b bg-muted/40 px-4 py-2 text-[11px] font-medium text-muted-foreground uppercase">
+    <div className="flex-1 space-y-3 p-4">
+      <div className="flex items-center gap-2">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn(whatIf && "border-primary/60 text-primary")}>
+              <SlidersHorizontal className="size-3.5" /> Weights{whatIf && " · what-if"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-80">
+            {baseWeights && <WeightPanel weights={whatIf ?? baseWeights} onChange={setWhatIf} dirty={!!whatIf} onReset={() => setWhatIf(null)} />}
+          </PopoverContent>
+        </Popover>
+        {whatIf && <span className="text-xs text-muted-foreground">Arrows show how each case moved</span>}
+      </div>
+      <div className="overflow-hidden rounded-xl border bg-card shadow-xs">
+        <div className="grid grid-cols-[56px_1fr_160px_110px] gap-3 border-b bg-muted/40 px-4 py-2 text-[11px] font-medium text-muted-foreground uppercase">
           <span>Rank</span>
           <span>Case</span>
           <span>Score</span>
-          <span>Top factors</span>
           <span title="In the top 5 under how many default weight profiles">Robust</span>
         </div>
         {ranked.map((s) => {
@@ -287,7 +308,7 @@ function Ranked({
           const why = whatIf && baseWeights && delta !== 0 ? movedBecause(c, baseWeights, whatIf, delta > 0) : null;
           const robust = topIn(c.id);
           return (
-            <Link key={c.id} href={`/cases/${c.id}`} className="grid grid-cols-[48px_1fr_150px_110px_96px] items-center gap-3 border-b px-4 py-2.5 last:border-0 hover:bg-muted/40">
+            <Link key={c.id} href={`/cases/${c.id}`} className="grid grid-cols-[56px_1fr_160px_110px] items-center gap-3 border-b px-4 py-2.5 last:border-0 hover:bg-muted/40">
               <span className="flex items-center gap-1 font-mono text-sm font-semibold">
                 {r}
                 {delta > 0 && (
@@ -305,26 +326,16 @@ function Ranked({
                 {whatIf && delta === 0 && <Minus className="size-3 text-muted-foreground" />}
               </span>
               <span className="min-w-0">
+                <span className="block truncate text-sm font-medium">{c.title}</span>
                 <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                   <span className="font-mono">{c.id}</span>
                   <CaseStateBadge state={c.state} />
-                  {c.outcome && <OutcomeBadge outcome={c.outcome} />}
-                  {c.markets.filter((m) => m !== "unknown").map((m) => (
-                    <MarketChip key={m} market={m} muted />
-                  ))}
-                  <EvidenceBadge level={c.evidenceLevel} />
                   {c.manualRank != null && <Pill t="violet">Manual rank</Pill>}
                 </span>
-                <span className="block truncate text-sm font-medium">{c.title}</span>
                 {why && <span className="block text-[11px] text-primary">{why}</span>}
               </span>
-              <ScoreBar value={s.score} />
-              <span className="space-y-0.5 text-[11px] text-muted-foreground">
-                {top.map(([f, v]) => (
-                  <span key={f} className="block truncate">
-                    {factorLabel[f]} +{v.toFixed(2)}
-                  </span>
-                ))}
+              <span title={top.map(([f, v]) => `${factorLabel[f]} +${v.toFixed(2)}`).join(" · ")}>
+                <ScoreBar value={s.score} />
               </span>
               <span className="flex items-center gap-1 text-xs">
                 {robust === defaults.length && defaults.length > 0 ? (
@@ -340,18 +351,8 @@ function Ranked({
             </Link>
           );
         })}
-        {ranked.length === 0 && <p className="p-6 text-sm text-muted-foreground">No ranked cases for this filter. Observed and rejected cases are not ranked.</p>}
-        <div className="flex items-center gap-2 border-t bg-muted/30 px-4 py-2 text-[11px] text-muted-foreground">
-          <UserAvatar id="agent:scorer" size="xs" /> Scores computed by the scoring service; formula and weights are visible. Drag on the board or set a manual rank on the case page to override (reason required).
-        </div>
+        {ranked.length === 0 && <p className="p-6 text-sm text-muted-foreground">No ranked cases for this filter.</p>}
       </div>
-      <aside className="h-fit rounded-lg border bg-card p-4 lg:sticky lg:top-4">
-        <div className="mb-3">
-          <div className="text-sm font-semibold">What-if weights</div>
-          <p className="text-xs text-muted-foreground">Move a slider: the list re-ranks live and explains what moved.</p>
-        </div>
-        {baseWeights && <WeightPanel weights={whatIf ?? baseWeights} onChange={setWhatIf} dirty={!!whatIf} onReset={() => setWhatIf(null)} />}
-      </aside>
     </div>
   );
 }

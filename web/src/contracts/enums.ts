@@ -78,6 +78,22 @@ export const CarArea = z.enum([
 ]);
 export type CarArea = z.infer<typeof CarArea>;
 
+/** Aspect groups (taxonomy/aspects.csv): what a statement is about. */
+export const AspectGroup = z.enum([
+  "function",
+  "usability",
+  "reliability",
+  "performance",
+  "efficiency_range",
+  "design",
+  "comfort",
+  "space",
+  "quality",
+  "sound",
+  "price",
+]);
+export type AspectGroup = z.infer<typeof AspectGroup>;
+
 export const CaseType = z.enum([
   "new_feature",
   "fix_improve",
@@ -158,6 +174,12 @@ export const ReleaseTarget = z.enum(["next_gen", "lci", "ota"]);
 export type ReleaseTarget = z.infer<typeof ReleaseTarget>;
 
 export const CostSize = z.enum(["S", "M", "L"]);
+export const CostSensitivity = z.enum(["low", "medium", "high"]);
+export type CostSensitivity = z.infer<typeof CostSensitivity>;
+export const MarketFocus = z.enum(["global", "US", "EU", "CN"]);
+export type MarketFocus = z.infer<typeof MarketFocus>;
+export const Positioning = z.enum(["base", "premium", "luxury"]);
+export type Positioning = z.infer<typeof Positioning>;
 export type CostSize = z.infer<typeof CostSize>;
 
 export const CostSource = z.enum(["option_price", "ai_estimate", "pm", "finance"]);

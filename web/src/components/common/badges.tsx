@@ -91,6 +91,27 @@ export function EvidenceBadge({ level }: { level: EvidenceLevel }) {
   );
 }
 
+/** Evidence strength as signal bars (friend's design): 3 = strong, 0 = assumption only. */
+export function EvidenceBars({ level, showLabel = true }: { level: EvidenceLevel; showLabel?: boolean }) {
+  const n = { high: 3, medium: 2, low: 1, assumption: 0 }[level];
+  const label = { high: "Strong evidence", medium: "Medium evidence", low: "Weak evidence", assumption: "Assumption" }[level];
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+          <span className="flex gap-0.5" aria-hidden>
+            {[0, 1, 2].map((i) => (
+              <span key={i} className={cn("h-3 w-1.5 rounded-[1px]", i < n ? (n === 3 ? "bg-positive" : n === 2 ? "bg-sky-500" : "bg-warning") : "bg-muted-foreground/25")} />
+            ))}
+          </span>
+          {showLabel ? label : <span className="sr-only">{label}</span>}
+        </span>
+      </TooltipTrigger>
+      <TooltipContent className="max-w-xs">How sure we are, not how important. Strong = at least two independent source types and enough customers in the target market.</TooltipContent>
+    </Tooltip>
+  );
+}
+
 export const MarketChip = ({ market, muted }: { market: Market; muted?: boolean }) => (
   <Pill t={muted ? "outline" : market === "CN" ? "red" : market === "US" ? "blue" : market === "EU" ? "sky" : "slate"}>{market === "unknown" ? "?" : market}</Pill>
 );

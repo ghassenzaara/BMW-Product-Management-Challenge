@@ -4,7 +4,7 @@ import type { WebSignalSpec } from "./authored/types";
 /** Shared by scripts/seed.ts and the mock refresh run. */
 export function webSpecToSignal(
   spec: WebSignalSpec,
-  opts: { id: string; series: Series; carArea: CarArea; featureHint: string; caseId: string | null; fetchedAt: string },
+  opts: { id: string; series: Series; carArea: CarArea; featureHint: string; caseId: string | null; fetchedAt: string; topicId?: string | null },
 ): Signal {
   return {
     id: opts.id,
@@ -24,6 +24,8 @@ export function webSpecToSignal(
     market: spec.market,
     marketBasis: spec.marketBasis ?? "inferred",
     carArea: opts.carArea,
+    topicId: spec.topicId ?? opts.topicId ?? null,
+    aspectGroup: spec.aspectGroup ?? null,
     featureHint: opts.featureHint,
     summary: spec.summary,
     quote: spec.quote,

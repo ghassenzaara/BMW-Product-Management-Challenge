@@ -6,6 +6,19 @@ The clickable demo of our BMW hackathon tool: **Signals → Cases → Requiremen
 - **Case:** a customer problem built from signals. It has an importance score but no cost. The PM works it with open questions, meeting notes and an AI assistant, then decides one of: confirm, refer, innovation pool, park, merge or reject.
 - **Requirement:** what BMW builds, created from a confirmed case. It carries a SMART text, measurable targets, a release (next generation, mid-life update or OTA) and a rough cost. It moves from draft through discussion and PM approval to head sign-off, then the vehicle plan, then Codebeamer export.
 
+## Screens (six, after Thomas's "less is more" feedback)
+
+| Nav | What the PM does there |
+|---|---|
+| **My desk** | Four cards sorted by kind of work: *Agent flags* (competitor alerts, @mentions) · *My cases* · *Review* (requirements sent back or in progress; for the head: sign-off and escalations inline) · *Follow up* (answers that came back, questions due) |
+| **Inbox** | Referrals to accept or decline, agent flags, all notifications |
+| **Cases** | Kanban (drag = state change with a reason). A *Ranked* toggle shows the score order; weights sit behind one button |
+| **Vehicle plan** | All requirements of a series as a list grouped by car area, with status filter chips, plan action and release; today's equipment folds per area; Codebeamer export |
+| **Signals** | One Sankey: sources → car areas → cases. Click a node to see its signals and start a case from loose ones |
+| **Innovation pool** | Ideas parked for a future series; vote or pull into your series |
+
+A **case** opens with a Sankey of its evidence (*sources → what they say → case*, where "what they say" is a taxonomy topic × type, e.g. *Public charging · hard to use*). Every node is clickable and shows its quotes. Then three steps: **① Evidence** (Sankey + three bullets, full analysis on demand) → **② Your knowledge** (four one-click questions + a note; the AI colleague answers with follow-up questions; open questions to engineering and finance) → **③ Requirements** (create, then open each in a side panel and harden it with the AI). Settings and the audit trail live in the persona menu.
+
 ## Run it
 
 ```bash
@@ -57,7 +70,7 @@ web/scripts/               seed, contract export, contract test
 - Case score = weighted mean of 8 factors (0..1), with no cost. Requirement rank = case score × cost multiplier (S/M/L). Evidence level is separate from the score.
 
 ### Contract additions vs. `data-model.mmd` (to sync with Ghassen)
-`User` · `Workspace.projectType` · case `outcome` (confirmed / referred / innovation pool / parked / merged / rejected) plus the states `investigating`, `awaiting_answers`, `ready` · case taxonomy `carArea` / `type` / `changeDepth` and `relatedSeries` · `context` (preset context + PM inputs) · `OpenQuestion` · `MeetingNote` · `Proposal` · `Referral` (referral or escalation) · `InnovationMeta` · `VehiclePlan` / `PlannedFeature` · `Comment` · `Notification` · `Alert` · requirement statuses `pm_approved`, `signed_off`, `planned`.
+`User` · `Workspace.projectType` · signal `topicId` + `aspectGroup` (fixed taxonomy, see `../taxonomy/`) and `GET /taxonomy` · case `highlights`, `topicId`, `pmContext` (`PUT /cases/:id/pm-context`) · case `outcome` (confirmed / referred / innovation pool / parked / merged / rejected) plus the states `investigating`, `awaiting_answers`, `ready` · case taxonomy `carArea` / `type` / `changeDepth` and `relatedSeries` · `context` (preset context + PM inputs) · `OpenQuestion` · `MeetingNote` · `Proposal` · `Referral` (referral or escalation) · `InnovationMeta` · `VehiclePlan` / `PlannedFeature` · `Comment` · `Notification` · `Alert` · requirement statuses `pm_approved`, `signed_off`, `planned`.
 
 ## Synthetic data, honestly labelled
 
@@ -72,20 +85,17 @@ web/scripts/               seed, contract export, contract test
 | Lena Hofmann | PM 5 Series · Rest of World | Refer the buttons case, paste a meeting note, what-if weights |
 | Wei Zhang | PM 5 Series · China | Escalate the equipment conflict, react to the CLTC alert |
 | Jonas Berger | PM Operating concept & HMI (cross-series) | Accept referrals into one Baukasten case |
-| Katrin Maier | Head of product line | Portfolio, sign-off, resolve escalations, brand profile |
+| Katrin Maier | Head of product line | Sign-off and escalations from her desk, brand profile |
 | Sofia Rossi / Daniel Okafor | PM 1 Series / PM 7 Series | Light series for referrals and the portfolio |
 
 ## Demo script (about 6 minutes)
 
-1. **Lena, My desk:** alerts, mentions and questions due; the coverage meter shows the data gaps honestly.
-2. **Signal radar:** the theme map and the agent feed. Press **Refresh now**: new signals arrive, a competitor fact raises an alert, and a second run finds nothing new (dedupe).
-3. **Cases → Ranked:** move *Brand fit* up; the list re-ranks with "moved because…", and the robustness column shows what stays in the top 5 under every profile.
-4. **CASE-G60-0001** (buttons): the case page, signals with real verbatims, the score breakdown, the context pack. Ask the AI *"Why is this ranked so high?"*: the answer has clickable citations. **Decide → Refer** to Jonas (Baukasten).
-5. **Switch to Jonas → Inbox → Accept:** a linked case is created in his workspace.
-6. **Lena, CASE-G60-0005 → Open questions → Paste meeting notes → Use demo note:** the AI proposes the three answers and a decision-log entry. Accept them; the audit trail shows each one.
-7. **Lena → Decide → Confirm:** the requirement agent drafts the SMART requirement. Open it: trace chain, argument sheet for engineering, edit a target (the reason is logged).
-8. **Wei, CASE-G60-CN-0001 → Escalate.** **Katrin → Approvals:** resolve it as a *market variant*, then sign off REQ-G60-0004.
-9. **Lena → REQ-G60-0004 → Add to vehicle plan → Vehicle plan:** the protect list plus kept, new and improved features. **Export to Codebeamer** (CSV).
-10. **Audit trail:** filter by *AI agents* vs *People*.
-
-Reset with the persona menu before each run.
+1. **Lena, My desk:** four cards, one per kind of work. A competitor flag sits on top.
+2. **CASE-G60-0003** (i5 range and charging): the Sankey shows 36 customers, where they spoke and what they say. Click *Public charging · hard to use* to read the six quotes; the competitor facts are the grey nodes.
+3. **② Your knowledge:** choose *Europe · Premium · Mid-life update* and save. The AI colleague opens with two questions the data can't answer (Europe vs. US evidence, platform change vs. LCI).
+4. **CASE-G60-0001 → Decide → Refer** to Jonas (Baukasten). **Switch to Jonas → Inbox → Accept:** a linked case appears in his workspace.
+5. **Lena, CASE-G60-0005 → ② → Paste meeting notes → Use demo note:** the AI proposes the answers; accept them, the audit trail logs each one.
+6. **Cases → Ranked → Weights:** move *Brand fit*; the list re-ranks with arrows and "moved because…".
+7. **Katrin, My desk → Review:** sign off REQ-G60-0004 inline and resolve the 7 Series escalation as a market variant.
+8. **Vehicle plan:** requirements by car area, open one in the side panel (trace chain, argument sheet, *Harden with AI*), then **Export to Codebeamer**.
+9. **Signals:** the whole evidence base as one Sankey; *Refresh* fetches new signals and raises a competitor flag.

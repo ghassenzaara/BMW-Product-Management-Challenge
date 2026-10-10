@@ -76,7 +76,7 @@ export function CaseActionDialog({ c, action, onOpenChange }: { c: Case; action:
             : { action, rationale, toUserId: toUserId || undefined, mergeIntoId: mergeIntoId || undefined, horizon: action === "innovation" ? horizon : undefined };
         const res = await mutation.mutateAsync({ params: { id: c.id }, body });
         onOpenChange(false);
-        if (action === "confirm" && res.requirementIds.length) router.push(`/cases/${c.id}?tab=requirements`);
+        if (action === "confirm" && res.requirementIds.length) router.push(`/cases/${c.id}?step=requirements`);
       }}
     >
       {action === "refer" && (

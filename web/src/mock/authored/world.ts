@@ -393,9 +393,9 @@ export const notifications: Notification[] = [
   { id: "N-0006", userId: "u-wei", kind: "referral", title: "Daniel accepted your referral", body: "Rear-console cooler → CASE-G70-0004", link: "/cases/CASE-G70-0004", actorId: "u-daniel", read: true, createdAt: "2026-09-24T08:00:00Z" },
   { id: "N-0007", userId: "u-wei", kind: "mention", title: "Lena mentioned you", body: "For Europe this would push the price up…", link: "/cases/CASE-G60-CN-0001", actorId: "u-lena", read: true, createdAt: "2026-10-06T11:40:00Z" },
   { id: "N-0008", userId: "u-jonas", kind: "referral", title: "Sofia referred a case to you", body: "Touch screen operation on the 1 Series", link: "/inbox", actorId: "u-sofia", read: false, createdAt: "2026-10-08T09:00:00Z" },
-  { id: "N-0009", userId: "u-katrin", kind: "sign_off_request", title: "Sign-off requested", body: "REQ-G60-0004 · Hands-free tailgate", link: "/approvals", actorId: "u-lena", read: false, createdAt: "2026-10-09T15:00:00Z" },
-  { id: "N-0010", userId: "u-katrin", kind: "sign_off_request", title: "Sign-off requested", body: "REQ-F70-0001 · Printed owner's manual", link: "/approvals", actorId: "u-sofia", read: false, createdAt: "2026-10-09T10:00:00Z" },
-  { id: "N-0011", userId: "u-katrin", kind: "escalation", title: "Escalation from Daniel", body: "7 Series rear space: China vs Europe", link: "/approvals", actorId: "u-daniel", read: false, createdAt: "2026-10-09T16:00:00Z" },
+  { id: "N-0009", userId: "u-katrin", kind: "sign_off_request", title: "Sign-off requested", body: "REQ-G60-0004 · Hands-free tailgate", link: "/requirements/REQ-G60-0004", actorId: "u-lena", read: false, createdAt: "2026-10-09T15:00:00Z" },
+  { id: "N-0010", userId: "u-katrin", kind: "sign_off_request", title: "Sign-off requested", body: "REQ-F70-0001 · Printed owner's manual", link: "/requirements/REQ-F70-0001", actorId: "u-sofia", read: false, createdAt: "2026-10-09T10:00:00Z" },
+  { id: "N-0011", userId: "u-katrin", kind: "escalation", title: "Escalation from Daniel", body: "7 Series rear space: China vs Europe", link: "/cases/CASE-G70-0003", actorId: "u-daniel", read: false, createdAt: "2026-10-09T16:00:00Z" },
   { id: "N-0012", userId: "u-daniel", kind: "referral", title: "Referral accepted", body: "You accepted the cooler referral from Wei", link: "/cases/CASE-G70-0004", actorId: "u-daniel", read: true, createdAt: "2026-09-24T08:00:00Z" },
 ];
 

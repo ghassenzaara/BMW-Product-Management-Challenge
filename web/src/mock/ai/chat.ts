@@ -255,3 +255,33 @@ export function scriptedReply(
   ].join("\n\n");
   return out;
 }
+
+/**
+ * After the PM saves step 2 ("Your knowledge"), the assistant asks 1-2 questions that
+ * the data cannot answer, so the requirement draft starts from the PM's judgement.
+ */
+export function followUpQuestions(_d: Dataset, c: Case): string {
+  const ctx = c.pmContext;
+  const qs: string[] = [];
+  const markets = c.figures.perMarket.filter((m) => m.market !== "unknown");
+  const dataMarket = [...markets].sort((a, b) => b.customers - a.customers)[0];
+  if (c.marketConflict) {
+    qs.push(`${c.marketConflict.note} Should the requirement be **split per market** (${c.marketConflict.markets.map((m) => marketLabel[m]).join(" / ")}) or stay global?`);
+  } else if (ctx?.marketFocus && ctx.marketFocus !== "global" && dataMarket && dataMarket.market !== ctx.marketFocus) {
+    qs.push(`You focus on **${marketLabel[ctx.marketFocus]}**, but most of the evidence comes from **${marketLabel[dataMarket.market]}** (${dataMarket.customers} customers). Do you expect the same problem in ${marketLabel[ctx.marketFocus]}, or should we look for local evidence first?`);
+  }
+  if (ctx?.timing && ctx.timing !== "next_gen" && c.changeDepth === "platform_powertrain") {
+    qs.push(`This looks like a **platform change**, which usually needs the next generation. Is a partial fix via ${ctx.timing === "ota" ? "OTA" : "the LCI"} acceptable, or should the requirement target the next generation only?`);
+  } else if (ctx?.costSensitivity === "high" && c.changeDepth !== "software_ota") {
+    qs.push(`You marked cost as **sensitive**. Would you accept this as a **paid option** (like ${c.figures.equipmentToday}) instead of standard equipment?`);
+  }
+  if (qs.length < 2) {
+    const offer = c.figures.competitorOffer[0];
+    const target = offer
+      ? `Competitors: ${offer}. Should our target **match, beat or deliberately differ** from that?`
+      : `What would a customer notice first if we solved this? I will turn it into a measurable target.`;
+    qs.push(ctx?.positioning === "luxury" ? `For a **luxury** positioning: ${target}` : target);
+  }
+  const intro = ctx ? "Thanks, I added your input to the case context. Two things the data can't tell me:" : "Two things the data can't tell me:";
+  return [intro, "", ...qs.slice(0, 2).map((q, i) => `${i + 1}. ${q}`), "", "_Answer here and I will use it in the requirement draft._"].join("\n");
+}

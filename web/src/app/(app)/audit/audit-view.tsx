@@ -18,7 +18,6 @@ export function AuditView() {
     <div>
       <PageHeader
         title="Audit trail"
-        description="Append-only: who or what changed what, when, and why. AI agents (fetcher, clusterer, scorer, monitor, requirement writer) and people appear side by side. Deletes are tombstones, never silent."
         actions={
           <Button size="sm" variant="outline" onClick={() => download("audit.json", JSON.stringify(events, null, 2), "application/json")}>
             <Download className="size-3.5" /> Export JSON

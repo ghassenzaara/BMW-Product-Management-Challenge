@@ -20,10 +20,7 @@ export function InnovationView() {
   const me = useApi("me");
   return (
     <div>
-      <PageHeader
-        title="Innovation pool"
-        description="Good ideas that don't fit the current programme: from the innovation scout (competitors, other industries, suppliers, trade fairs) or moved here by a PM. Innovation stays a human decision: vote, discuss, and pull an item into your series when it fits."
-      />
+      <PageHeader title="Innovation pool" />
       <div className="grid gap-4 p-6 md:grid-cols-2 xl:grid-cols-3">
         {data.map((e) => (
           <InnovationCard key={e.case.id} e={e} userId={me.data?.user.id} mySeries={me.data?.user.series ?? []} />

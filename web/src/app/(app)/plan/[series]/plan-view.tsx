@@ -1,26 +1,47 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { Download, FileJson, Lock, ShieldCheck } from "lucide-react";
-import { PlanAction as PlanActions, carAreaLabel, planActionLabel, seriesShort, type PlanAction, type PlannedFeature, type Series } from "@/contracts";
+import { ChevronRight, Download, Lock } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import {
+  PlanAction as PlanActions,
+  carAreaLabel,
+  planActionLabel,
+  seriesShort,
+  type CarArea,
+  type PlanAction,
+  type PlannedFeature,
+  type Requirement,
+  type RequirementStatus,
+  type Series,
+} from "@/contracts";
 import { api } from "@/lib/api/client";
 import { useApi, useApiMutation } from "@/lib/api/hooks";
 import { download } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { PageHeader, PageSkeleton, Stat } from "@/components/common/page";
+import { PageHeader, PageSkeleton } from "@/components/common/page";
 import { Pill, ReleaseChip, ReqStatusBadge, type Tone } from "@/components/common/badges";
-import { AvatarStack } from "@/components/common/people";
+import { UserAvatar } from "@/components/common/people";
 import { RationaleDialog } from "@/components/common/rationale-dialog";
+import { RequirementSheet } from "@/components/requirements/requirement-sheet";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 
 const actionTone: Record<PlanAction, Tone> = { keep: "slate", new: "emerald", improve: "sky", remove: "red" };
 
+type Filter = "active" | "progress" | "signed_off" | "planned" | "rejected";
+const filters: [Filter, string, (s: RequirementStatus) => boolean][] = [
+  ["active", "All", (s) => s !== "rejected"],
+  ["progress", "In progress", (s) => s === "draft" || s === "in_discussion" || s === "pm_approved"],
+  ["signed_off", "Signed off", (s) => s === "signed_off"],
+  ["planned", "Planned", (s) => s === "planned" || s === "exported"],
+  ["rejected", "Rejected", (s) => s === "rejected"],
+];
+
+/** Vehicle plan = the requirement list of a series, grouped by car area, next to today's equipment. */
 export function PlanView() {
   const { series } = useParams<{ series: Series }>();
   const router = useRouter();
@@ -28,29 +49,28 @@ export function PlanView() {
   const plan = useApi("plan", { params: { series } });
   const { data: reqs = [] } = useApi("requirements", { query: { series } });
   const qc = useQueryClient();
-  const [edit, setEdit] = useState<{ f: PlannedFeature; action: PlanAction } | null>(null);
-  const patch = useApiMutation("patchPlanFeature", { success: "Plan updated" });
+  const [filter, setFilter] = useState<Filter>("active");
+  const [reqId, setReqId] = useState<string | null>(null);
 
   if (!plan.data || !me.data) return <PageSkeleton />;
   const p = plan.data;
   const canEdit = p.ownerIds.includes(me.data.user.id) || me.data.user.role === "head";
-  const reqById = new Map(reqs.map((r) => [r.id, r]));
-  const areas = [...new Set(p.features.map((f) => f.carArea))];
-  const count = (a: PlanAction) => p.features.filter((f) => f.action === a).length;
-  const signedOff = reqs.filter((r) => r.status === "signed_off");
+  const test = filters.find((f) => f[0] === filter)![2];
+  const shown = reqs.filter((r) => test(r.status));
+  const featureOf = new Map(p.features.flatMap((f) => f.requirementIds.map((id) => [id, f] as const)));
+  const areas = [...new Set<CarArea>([...shown.map((r) => r.carArea), ...p.features.map((f) => f.carArea)])];
 
-  const exportAs = async (format: "codebeamer_csv" | "json") => {
-    const res = await api("exportRequirements", { body: { series, format } });
+  const exportCsv = async () => {
+    const res = await api("exportRequirements", { body: { series, format: "codebeamer_csv" } });
     download(res.filename, res.content, res.mime);
     await qc.invalidateQueries();
-    toast.success(`${res.count} requirements exported (${res.filename}); planned ones are now marked exported`);
+    toast.success(`${res.count} requirements exported to ${res.filename}`);
   };
 
   return (
     <div>
       <PageHeader
-        title={`${p.successorName}`}
-        description={`The car taking shape: today's equipment (German option list) next to what the successor keeps, adds, improves or removes. Each change traces to a signed-off requirement. SOP ${p.sop}.`}
+        title="Vehicle plan"
         actions={
           <>
             <ToggleGroup type="single" size="sm" variant="outline" value={series} onValueChange={(v) => v && router.push(`/plan/${v}`)}>
@@ -60,116 +80,141 @@ export function PlanView() {
                 </ToggleGroupItem>
               ))}
             </ToggleGroup>
-            <Button size="sm" variant="outline" onClick={() => exportAs("json")}>
-              <FileJson className="size-3.5" /> JSON
-            </Button>
-            <Button size="sm" onClick={() => exportAs("codebeamer_csv")}>
+            <Button size="sm" onClick={exportCsv}>
               <Download className="size-3.5" /> Export to Codebeamer
             </Button>
           </>
         }
       >
-        <div className="flex flex-wrap items-center gap-3 text-sm">
-          <Pill t="outline">{p.projectType === "lci" ? "Mid-life update" : "New generation"}</Pill>
-          <span className="flex items-center gap-1.5 text-muted-foreground">
-            Owners <AvatarStack ids={p.ownerIds} />
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="mr-2 text-sm text-muted-foreground">
+            {p.successorName} · SOP {p.sop}
           </span>
+          {filters.map(([id, label, t]) => (
+            <button
+              key={id}
+              onClick={() => setFilter(id)}
+              className={cn("rounded-full border px-3 py-1 text-sm transition", filter === id ? "border-primary bg-primary text-primary-foreground" : "bg-card hover:border-primary/60")}
+            >
+              {label} <span className="tabular-nums opacity-70">{reqs.filter((r) => t(r.status)).length}</span>
+            </button>
+          ))}
         </div>
       </PageHeader>
       <div className="space-y-4 p-6">
-        <div className="grid gap-3 sm:grid-cols-5">
-          <Stat label="New" value={count("new")} />
-          <Stat label="Improve" value={count("improve")} />
-          <Stat label="Keep" value={count("keep")} hint={`${p.features.filter((f) => f.protected).length} protected strengths`} />
-          <Stat label="Remove" value={count("remove")} />
-          <Stat label="Signed off, not planned" value={signedOff.length} hint={signedOff.map((r) => r.id).join(", ") || "—"} />
-        </div>
-
-        <div className="rounded-lg border border-emerald-300 bg-emerald-50/60 p-3 text-sm dark:border-emerald-800 dark:bg-emerald-950/30">
-          <div className="flex items-center gap-2 font-medium">
-            <ShieldCheck className="size-4 text-emerald-600" /> Protect list: strengths the successor must not lose
-          </div>
-          <div className="mt-1 flex flex-wrap gap-2">
-            {p.features
-              .filter((f) => f.protected)
-              .map((f) => (
-                <span key={f.id} className="text-xs">
-                  <b>{f.name}</b> ({f.todayDetail})
-                </span>
-              ))}
-          </div>
-        </div>
-
         {areas.map((area) => (
-          <div key={area} className="overflow-hidden rounded-lg border bg-card">
-            <div className="border-b bg-muted/40 px-4 py-2 text-sm font-semibold">{carAreaLabel[area]}</div>
-            <div className="grid grid-cols-[1.4fr_1.2fr_130px_140px_1.4fr] gap-3 border-b px-4 py-1.5 text-[11px] text-muted-foreground uppercase">
-              <span>Feature</span>
-              <span>Today</span>
-              <span>Successor</span>
-              <span>Release</span>
-              <span>Requirements · note</span>
-            </div>
-            {p.features
-              .filter((f) => f.carArea === area)
-              .map((f) => (
-                <div key={f.id} className={cn("grid grid-cols-[1.4fr_1.2fr_130px_140px_1.4fr] items-center gap-3 border-b px-4 py-2.5 text-sm last:border-0", f.protected && "bg-emerald-50/40 dark:bg-emerald-950/20")}>
-                  <span className="flex items-center gap-1.5 font-medium">
-                    {f.protected && <Lock className="size-3.5 text-emerald-600" />}
-                    {f.name}
-                  </span>
-                  <span className="text-xs">
-                    <Pill t={f.today === "standard" ? "emerald" : f.today === "optional" ? "sky" : "slate"}>{f.today}</Pill> <span className="text-muted-foreground">{f.todayDetail}</span>
-                  </span>
-                  <span>
-                    {canEdit ? (
-                      <Select value={f.action} onValueChange={(v) => setEdit({ f, action: v as PlanAction })}>
-                        <SelectTrigger size="sm" className="w-28">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {PlanActions.options.map((a) => (
-                            <SelectItem key={a} value={a}>
-                              {planActionLabel[a]}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <Pill t={actionTone[f.action]}>{planActionLabel[f.action]}</Pill>
-                    )}
-                  </span>
-                  <span>
-                    <ReleaseChip release={f.release} />
-                  </span>
-                  <span className="space-y-1 text-xs">
-                    {f.requirementIds.map((id) => {
-                      const r = reqById.get(id);
-                      return (
-                        <Link key={id} href={`/requirements/${id}`} className="flex items-center gap-1.5 text-primary hover:underline">
-                          <span className="font-mono">{id}</span>
-                          {r && <ReqStatusBadge status={r.status} />}
-                        </Link>
-                      );
-                    })}
-                    {f.note && <span className="block text-muted-foreground">{f.note}</span>}
-                  </span>
-                </div>
-              ))}
-          </div>
+          <AreaBlock
+            key={area}
+            area={area}
+            reqs={shown.filter((r) => r.carArea === area)}
+            unchanged={p.features.filter((f) => f.carArea === area && f.requirementIds.length === 0)}
+            featureOf={featureOf}
+            canEdit={canEdit}
+            series={series}
+            onOpen={setReqId}
+          />
         ))}
       </div>
+      <RequirementSheet id={reqId} onOpenChange={(o) => !o && setReqId(null)} />
+    </div>
+  );
+}
+
+function AreaBlock({
+  area,
+  reqs,
+  unchanged,
+  featureOf,
+  canEdit,
+  series,
+  onOpen,
+}: {
+  area: CarArea;
+  reqs: Requirement[];
+  unchanged: PlannedFeature[];
+  featureOf: Map<string, PlannedFeature>;
+  canEdit: boolean;
+  series: Series;
+  onOpen: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  if (!reqs.length && !unchanged.length) return null;
+  return (
+    <section className="overflow-hidden rounded-xl border bg-card shadow-xs">
+      <h2 className="border-b px-4 py-2.5 text-sm font-semibold">{carAreaLabel[area]}</h2>
+      <ul className="divide-y">
+        {reqs.map((r) => {
+          const f = featureOf.get(r.id);
+          return (
+            <li key={r.id}>
+              <button onClick={() => onOpen(r.id)} className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-muted/50">
+                <UserAvatar id={r.ownerId} size="xs" />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium">{r.title}</span>
+                  <span className="font-mono text-xs text-muted-foreground">{r.id}</span>
+                </span>
+                {f && <Pill t={actionTone[f.action]}>{planActionLabel[f.action]}</Pill>}
+                <ReleaseChip release={r.releaseTarget} />
+                <Pill>Cost {r.cost.size}</Pill>
+                <ReqStatusBadge status={r.status} />
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+      {unchanged.length > 0 && (
+        <div className={cn(reqs.length > 0 && "border-t")}>
+          <button onClick={() => setOpen(!open)} className="flex w-full items-center gap-1.5 px-4 py-2 text-xs text-muted-foreground hover:text-foreground">
+            <ChevronRight className={cn("size-3.5 transition", open && "rotate-90")} /> Today&apos;s equipment · {unchanged.length}
+          </button>
+          {open && (
+            <ul className="divide-y border-t bg-muted/20">
+              {unchanged.map((f) => (
+                <FeatureRow key={f.id} f={f} canEdit={canEdit} series={series} />
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function FeatureRow({ f, canEdit, series }: { f: PlannedFeature; canEdit: boolean; series: Series }) {
+  const [action, setAction] = useState<PlanAction | null>(null);
+  const patch = useApiMutation("patchPlanFeature", { success: "Plan updated" });
+  return (
+    <li className="flex items-center gap-3 px-4 py-2 text-sm">
+      {f.protected ? <Lock className="size-3.5 text-positive" aria-label="Protected strength" /> : <span className="size-3.5" />}
+      <span className="min-w-0 flex-1 truncate">{f.name}</span>
+      <span className="hidden truncate text-xs text-muted-foreground md:block">{f.todayDetail}</span>
+      {canEdit ? (
+        <Select value={f.action} onValueChange={(v) => setAction(v as PlanAction)}>
+          <SelectTrigger size="sm" className="w-28">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {PlanActions.options.map((a) => (
+              <SelectItem key={a} value={a}>
+                {planActionLabel[a]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      ) : (
+        <Pill t={actionTone[f.action]}>{planActionLabel[f.action]}</Pill>
+      )}
       <RationaleDialog
-        open={!!edit}
-        onOpenChange={(o) => !o && setEdit(null)}
-        title={`${edit?.f.name}: ${edit ? planActionLabel[edit.action] : ""}`}
-        description="Plan changes are logged. Normally a planned change comes from a signed-off requirement."
+        open={!!action}
+        onOpenChange={(o) => !o && setAction(null)}
+        title={`${f.name}: ${action ? planActionLabel[action] : ""}`}
+        description="Plan changes are logged."
         pending={patch.isPending}
         onSubmit={async (rationale) => {
-          await patch.mutateAsync({ params: { series, featureId: edit!.f.id }, body: { patch: { action: edit!.action }, rationale } });
-          setEdit(null);
+          await patch.mutateAsync({ params: { series, featureId: f.id }, body: { patch: { action: action! }, rationale } });
+          setAction(null);
         }}
       />
-    </div>
+    </li>
   );
 }

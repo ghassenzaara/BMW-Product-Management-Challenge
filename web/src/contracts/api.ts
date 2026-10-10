@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   Agent,
   Addressee,
+  AspectGroup,
   CarArea,
   CaseAction,
   CaseState,
@@ -30,6 +31,7 @@ import {
   Notification,
   OpenQuestion,
   PlannedFeature,
+  PmContext,
   Proposal,
   QuarantineItem,
   Referral,
@@ -164,6 +166,8 @@ export const EditableCaseFields = Case.pick({
 
 export const PatchCaseBody = z.object({ patch: EditableCaseFields, rationale: z.string().optional() });
 
+export const PmContextBody = PmContext.omit({ updatedAt: true, updatedBy: true });
+
 export const CaseTransitionBody = z.object({
   action: CaseAction,
   rationale: Rationale,
@@ -246,6 +250,14 @@ export const PlanFeaturePatch = z.object({
   rationale: Rationale,
 });
 
+export const TaxonomyResponse = z.object({
+  version: z.string(),
+  carAreas: z.array(z.object({ id: CarArea, label: z.string(), description: z.string() })),
+  topics: z.array(z.object({ id: z.string(), label: z.string(), shortLabel: z.string(), carArea: CarArea, hint: z.string().nullable() })),
+  aspectGroups: z.array(z.object({ id: AspectGroup, description: z.string() })),
+});
+export type TaxonomyResponse = z.infer<typeof TaxonomyResponse>;
+
 export const PortfolioResponse = z.object({
   series: z.array(
     z.object({
@@ -325,6 +337,14 @@ export const endpoints = {
     body: MeetingNoteBody,
     response: z.object({ note: MeetingNote, proposals: z.array(Proposal) }),
   }),
+  savePmContext: ep({
+    method: "PUT",
+    path: "/cases/:id/pm-context",
+    tag: "cases",
+    summary: "Save what the PM knows (step 2); the AI answers with follow-up questions in the case chat",
+    body: PmContextBody,
+    response: z.object({ case: Case, message: ChatMessage }),
+  }),
   generateRequirements: ep({ method: "POST", path: "/cases/:id/requirements/generate", tag: "cases", summary: "Draft requirement(s) from a confirmed case", body: z.object({}), response: z.array(Requirement) }),
   exportCaseMd: ep({ method: "GET", path: "/cases/:id/export.md", tag: "cases", summary: "Case as markdown with YAML front matter", response: z.object({ filename: z.string(), content: z.string() }) }),
 
@@ -388,6 +408,7 @@ export const endpoints = {
     query: z.object({ objectId: z.string().optional(), actorType: z.enum(["human", "ai"]).optional(), limit: z.coerce.number().int().optional() }),
     response: z.array(AuditEvent),
   }),
+  taxonomy: ep({ method: "GET", path: "/taxonomy", tag: "signals", summary: "Fixed taxonomy: car areas, topics, aspect groups", response: TaxonomyResponse }),
   portfolio: ep({ method: "GET", path: "/portfolio", tag: "oversight", summary: "Portfolio overview for the head of product line", response: PortfolioResponse }),
   reset: ep({ method: "POST", path: "/admin/reset", tag: "oversight", summary: "Reset the mock store to the seed", body: z.object({}), response: Ok }),
 } as const;

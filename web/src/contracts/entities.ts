@@ -6,6 +6,7 @@ import {
   AlertVerdict,
   Agent,
   AnswerSource,
+  AspectGroup,
   Audience,
   Availability,
   CarArea,
@@ -13,16 +14,19 @@ import {
   CaseState,
   CaseType,
   ChangeDepth,
+  CostSensitivity,
   CostSize,
   CostSource,
   EvidenceLevel,
   FactorKey,
   InnovationHorizon,
   Market,
+  MarketFocus,
   MetricBasis,
   NotificationKind,
   ObjectType,
   PlanAction,
+  Positioning,
   Powertrain,
   ProjectType,
   ProposalKind,
@@ -142,6 +146,9 @@ export const Signal = z.object({
   marketBasis: z.enum(["stated", "inferred", "unknown"]),
   country: z.string().optional(),
   carArea: CarArea,
+  /** Fixed taxonomy topic (taxonomy/taxonomy.json). Null when nothing fits ("other", review queue). */
+  topicId: z.string().nullable(),
+  aspectGroup: AspectGroup.nullable(),
   featureHint: z.string(),
   summary: z.string(),
   quote: z.string(),
@@ -218,10 +225,27 @@ export const ContextItem = z.object({
 });
 export type ContextItem = z.infer<typeof ContextItem>;
 
+/** What the PM knows that the data doesn't show (case page, step 2). Feeds the requirement draft. */
+export const PmContext = z.object({
+  marketFocus: MarketFocus.nullable(),
+  costSensitivity: CostSensitivity.nullable(),
+  positioning: Positioning.nullable(),
+  timing: ReleaseTarget.nullable(),
+  note: z.string(),
+  updatedAt: IsoDate,
+  updatedBy: Id,
+});
+export type PmContext = z.infer<typeof PmContext>;
+
 export const Case = z.object({
   id: Id,
   title: z.string(),
   summary: z.string(),
+  /** Three short bullets shown under the evidence diagram: problem, who, competition. */
+  highlights: z.array(z.string()),
+  /** Main taxonomy topic of the case. */
+  topicId: z.string().nullable(),
+  pmContext: PmContext.nullable(),
   series: Series,
   /** Other series the same problem shows up in (Baukasten / cross-series cases). */
   relatedSeries: z.array(Series),

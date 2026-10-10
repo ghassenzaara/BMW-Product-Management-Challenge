@@ -1,10 +1,12 @@
 import type {
   Agent,
+  AspectGroup,
   Audience,
   CarArea,
   Case,
   ChatMessage,
   Market,
+  PmContext,
   Powertrain,
   Series,
   SignalKind,
@@ -38,6 +40,8 @@ export interface StudyRef {
   attribute: string;
   model: "F70" | "G60" | "G68" | "G70";
   market: "EU" | "China" | "US";
+  /** Taxonomy topic; defaults to the case's main topic. */
+  topicId?: string;
 }
 
 /** An invented external signal. The URL points to the real site, never a fake post. */
@@ -62,6 +66,9 @@ export interface WebSignalSpec {
   reach?: number;
   reachUnit?: "views" | "upvotes" | "likes" | "none";
   metric?: { name: string; value: number; unit: string; cycle?: string };
+  /** Taxonomy topic; defaults to the case's main topic. */
+  topicId?: string;
+  aspectGroup?: AspectGroup;
 }
 
 export type CaseSpec = Omit<
@@ -82,7 +89,15 @@ export type CaseSpec = Omit<
   | "mergedInto"
   | "relatedSeries"
   | "factors"
+  | "highlights"
+  | "topicId"
+  | "pmContext"
 > & {
+  /** Three short bullets; derived from the body when missing. */
+  highlights?: string[];
+  /** Main taxonomy topic; derived from the case's BMW verbatims when missing. */
+  topicId?: string;
+  pmContext?: PmContext;
   createdAt: string;
   updatedAt?: string;
   markets?: Market[];

@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Loader2, Plus, RefreshCw, ShieldAlert, XCircle } from "lucide-react";
+import { Activity, CheckCircle2, Inbox, Loader2, Plus, RefreshCw, ShieldAlert, XCircle } from "lucide-react";
 import {
-  Agent as Agents,
   CarArea as CarAreas,
   CaseType as CaseTypes,
   ChangeDepth as ChangeDepths,
@@ -15,55 +14,50 @@ import {
   changeDepthLabel,
   regionLabel,
   seriesShort,
-  type Agent,
   type CarArea,
   type CaseType,
   type ChangeDepth,
   type Region,
   type Series,
-  type SignalCluster,
 } from "@/contracts";
 import { useApi, useApiMutation } from "@/lib/api/hooks";
 import { fromNow } from "@/lib/format";
-import { cn } from "@/lib/utils";
-import { PageHeader, Section } from "@/components/common/page";
-import { Pill } from "@/components/common/badges";
+import { overviewSankey, type SankeyNode } from "@/lib/sankey";
+import { PageHeader } from "@/components/common/page";
 import { RationaleDialog } from "@/components/common/rationale-dialog";
+import { SankeyChart } from "@/components/sankey/sankey-chart";
 import { SignalCard } from "@/components/signals/signal-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
+/** Signals: everything the agents fetched, as one Sankey (sources → car areas → cases). */
 export function RadarView() {
   const router = useRouter();
   const me = useApi("me");
   const [series, setSeries] = useState<Series | null>(null);
   const activeSeries: Series = series ?? me.data?.workspace.series ?? "G60";
-  const [agent, setAgent] = useState<Agent | "all">("all");
-  const [onlyLoose, setOnlyLoose] = useState(true);
-  const [cluster, setCluster] = useState<SignalCluster | null>(null);
+  const [open, setOpen] = useState<{ title: string; ids: string[] } | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
   const [creating, setCreating] = useState(false);
   const { data: signals = [] } = useApi("signals", { query: { series: activeSeries } });
-  const { data: clusters = [] } = useApi("clusters", { query: { series: activeSeries } });
+  const { data: cases = [] } = useApi("cases", { query: { series: activeSeries } });
   const { data: runs = [] } = useApi("agentRuns");
   const { data: quarantine = [] } = useApi("quarantine");
-  const refresh = useApiMutation("refresh", { success: (r) => (r.signals.length ? `${r.signals.length} new signals, ${r.notifications} notifications sent` : "No new findings: everything already seen (dedupe)") });
+  const refresh = useApiMutation("refresh", { success: (r) => (r.signals.length ? `${r.signals.length} new signals` : "Nothing new since the last run") });
 
-  const feed = signals.filter(
-    (s) => (agent === "all" || s.agent === agent) && (!onlyLoose || s.status !== "clustered") && (!cluster || cluster.signalIds.includes(s.id)),
-  );
-  const maxSize = Math.max(1, ...clusters.map((c) => c.size));
+  const graph = overviewSankey(signals, cases);
+  const loose = signals.filter((s) => s.status !== "clustered");
+  const list = open ? signals.filter((s) => open.ids.includes(s.id)) : [];
+  const onNode = (n: SankeyNode) => (n.href ? router.push(n.href) : setOpen({ title: n.label, ids: n.signalIds }));
 
   return (
     <div>
       <PageHeader
-        title="Signal radar"
-        description="Everything the agents fetched: BMW data plus competitors, customer and public voices, trends and the innovation scout. Clusters become cases when they cross a threshold, or when you start one by hand."
+        title="Signals"
         actions={
           <>
             <Select value={activeSeries} onValueChange={(v) => setSeries(v as Series)}>
@@ -78,141 +72,103 @@ export function RadarView() {
                 ))}
               </SelectContent>
             </Select>
+            <RunsPopover runs={runs} />
+            <QuarantinePopover items={quarantine} />
             <Button size="sm" onClick={() => refresh.mutate({ body: { series: activeSeries } })} disabled={refresh.isPending}>
-              {refresh.isPending ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />} Refresh now
+              {refresh.isPending ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />} Refresh
             </Button>
           </>
         }
-      />
-      <div className="grid gap-4 p-6 xl:grid-cols-[1fr_340px]">
-        <div className="space-y-4">
-          <Section
-            title="Theme map"
-            actions={
-              cluster ? (
-                <Button size="xs" variant="ghost" onClick={() => setCluster(null)}>
-                  Clear filter: {cluster.label}
-                </Button>
-              ) : (
-                <span className="text-xs text-muted-foreground">size = signals · colour = sentiment · click: open case, or filter the feed</span>
-              )
-            }
-          >
-            <div className="flex flex-wrap items-center gap-2">
-              {[...clusters]
-                .sort((a, b) => b.size - a.size)
-                .map((c) => {
-                  const d = 28 + Math.sqrt(c.size / maxSize) * 72;
-                  const hue = c.sentiment > 0.2 ? "bg-emerald-500/80" : c.sentiment < -0.2 ? "bg-red-500/80" : "bg-amber-500/80";
-                  return (
-                    <Tooltip key={c.id}>
-                      <TooltipTrigger asChild>
-                        <button
-                          onClick={() => (c.caseId ? router.push(`/cases/${c.caseId}`) : setCluster(c))}
-                          className={cn("flex shrink-0 items-center justify-center rounded-full p-1 text-center text-[10px] leading-tight font-medium text-white shadow-sm transition hover:scale-105", hue, !c.caseId && "ring-2 ring-primary ring-offset-2 ring-offset-card", cluster?.id === c.id && "outline-3 outline-primary")}
-                          style={{ width: d, height: d }}
-                        >
-                          {d > 54 ? c.label.slice(0, 22) : c.size}
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <div className="font-medium">{c.label}</div>
-                        <div>
-                          {c.size} signals · {carAreaLabel[c.carArea]} · {c.caseId ? `case ${c.caseId}` : "no case yet"}
-                        </div>
-                        <div>{Object.entries(c.markets).map(([m, n]) => `${m} ${n}`).join(" · ")}</div>
-                      </TooltipContent>
-                    </Tooltip>
-                  );
-                })}
-            </div>
-            <p className="mt-3 text-[11px] text-muted-foreground">Ringed bubbles are clusters without a case yet. Select their signals below and start a case.</p>
-          </Section>
-
-          <Section
-            title={`Feed (${feed.length})`}
-            actions={
-              <div className="flex items-center gap-3">
-                <label className="flex items-center gap-1.5 text-xs">
-                  <Switch checked={onlyLoose} onCheckedChange={setOnlyLoose} /> Not in a case yet
-                </label>
-                <Button size="sm" disabled={!selected.length} onClick={() => setCreating(true)}>
-                  <Plus className="size-3.5" /> Start case ({selected.length})
-                </Button>
-              </div>
-            }
-          >
-            <ToggleGroup type="single" size="sm" variant="outline" value={agent} onValueChange={(v) => v && setAgent(v as Agent)} className="mb-3 flex-wrap">
-              <ToggleGroupItem value="all" className="px-2.5">
-                All agents
-              </ToggleGroupItem>
-              {Agents.options.map((a) => (
-                <ToggleGroupItem key={a} value={a} className="px-2.5">
-                  {agentLabel[a]}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
-            <div className="space-y-2">
-              {feed.slice(0, 80).map((s) => (
-                <SignalCard
-                  key={s.id}
-                  s={s}
-                  compact
-                  selectable={s.status !== "clustered"}
-                  selected={selected.includes(s.id)}
-                  onSelect={(v) => setSelected((x) => (v ? [...x, s.id] : x.filter((i) => i !== s.id)))}
-                />
-              ))}
-              {feed.length === 0 && <p className="text-sm text-muted-foreground">No signals for this filter. Switch off “Not in a case yet” to see clustered signals.</p>}
-            </div>
-          </Section>
-        </div>
-
-        <div className="space-y-4">
-          <Section title="Agent runs">
-            <ul className="space-y-2 text-xs">
-              {runs.slice(0, 10).map((r) => (
-                <li key={r.id} className="flex items-start gap-2">
-                  {r.status === "ok" ? <CheckCircle2 className="mt-0.5 size-3.5 text-emerald-600" /> : <XCircle className="mt-0.5 size-3.5 text-amber-500" />}
-                  <span className="min-w-0 flex-1">
-                    <span className="font-medium">{agentLabel[r.agent]}</span> · {r.newSignals} new · {r.rejected} rejected · ${r.llmCostUsd.toFixed(2)}
-                    <span className="block text-muted-foreground">{fromNow(r.startedAt)}</span>
-                    {r.note && <span className="block text-muted-foreground">{r.note}</span>}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </Section>
-          <Section title={`Quarantine (${quarantine.length})`} actions={<ShieldAlert className="size-4 text-muted-foreground" />}>
-            <p className="mb-2 text-[11px] text-muted-foreground">Findings rejected by the validation gate: they never reach a case. The count stays visible.</p>
-            <ul className="space-y-2 text-xs">
-              {quarantine.map((q) => (
-                <li key={q.id} className="rounded border bg-muted/30 p-2">
-                  <span className="font-medium">{q.reason}</span>
-                  <span className="block truncate text-muted-foreground">
-                    {q.sourceName}: “{q.snippet}”
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </Section>
-          <Section title="How signals become cases">
-            <ol className="list-decimal space-y-1 pl-4 text-xs text-muted-foreground">
-              <li>Agents fetch on a daily budget; every record keeps its source, quote and snapshot.</li>
-              <li>Validation gate: quote found, no duplicate, dated competitor fact; else quarantine.</li>
-              <li>Clustering links the signal to a feature and a case (problem).</li>
-              <li>Open threshold reached, or you start a case by hand.</li>
-            </ol>
-            <div className="mt-2 flex flex-wrap gap-1">
-              {Agents.options.map((a) => (
-                <Pill key={a}>{agentLabel[a]}</Pill>
-              ))}
-            </div>
-          </Section>
+      >
+        <button onClick={() => setOpen({ title: "Not in a case yet", ids: loose.map((s) => s.id) })} className="inline-flex items-center gap-2 rounded-full border bg-card px-3.5 py-1.5 text-sm shadow-xs transition hover:border-primary/60">
+          <Inbox className="size-4 text-muted-foreground" /> {loose.length} not in a case yet
+        </button>
+      </PageHeader>
+      <div className="p-6">
+        <div className="rounded-xl border bg-card p-5 shadow-xs">
+          <SankeyChart graph={graph} titles={["Sources", "Car area", "Cases"]} onSelect={onNode} />
         </div>
       </div>
+
+      <Sheet open={!!open} onOpenChange={(o) => !o && (setOpen(null), setSelected([]))}>
+        <SheetContent className="w-full gap-0 p-0 data-[side=right]:sm:max-w-lg">
+          <SheetHeader className="border-b">
+            <SheetTitle>{open?.title}</SheetTitle>
+            <SheetDescription>{list.length} signals</SheetDescription>
+          </SheetHeader>
+          <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-4">
+            {list.slice(0, 100).map((s) => (
+              <SignalCard
+                key={s.id}
+                s={s}
+                compact
+                selectable={s.status !== "clustered"}
+                selected={selected.includes(s.id)}
+                onSelect={(v) => setSelected((x) => (v ? [...x, s.id] : x.filter((i) => i !== s.id)))}
+              />
+            ))}
+          </div>
+          {list.some((s) => s.status !== "clustered") && (
+            <SheetFooter className="border-t">
+              <Button disabled={!selected.length} onClick={() => setCreating(true)}>
+                <Plus className="size-4" /> Start case from {selected.length} selected
+              </Button>
+            </SheetFooter>
+          )}
+        </SheetContent>
+      </Sheet>
       <StartCaseDialog open={creating} onOpenChange={setCreating} signalIds={selected} series={activeSeries} region={me.data?.workspace.region ?? "RoW"} onCreated={(id) => router.push(`/cases/${id}`)} />
     </div>
+  );
+}
+
+function RunsPopover({ runs }: { runs: { id: string; agent: keyof typeof agentLabel; status: string; newSignals: number; rejected: number; llmCostUsd: number; startedAt: string }[] }) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button size="sm" variant="outline">
+          <Activity className="size-3.5" /> Agent runs
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-80">
+        <ul className="space-y-2 text-xs">
+          {runs.slice(0, 8).map((r) => (
+            <li key={r.id} className="flex items-center gap-2">
+              {r.status === "ok" ? <CheckCircle2 className="size-3.5 text-positive" /> : <XCircle className="size-3.5 text-warning" />}
+              <span className="min-w-0 flex-1 truncate">
+                <b className="font-medium">{agentLabel[r.agent]}</b> · {r.newSignals} new · ${r.llmCostUsd.toFixed(2)}
+              </span>
+              <span className="text-muted-foreground">{fromNow(r.startedAt)}</span>
+            </li>
+          ))}
+        </ul>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function QuarantinePopover({ items }: { items: { id: string; reason: string; sourceName: string; snippet: string }[] }) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button size="sm" variant="outline">
+          <ShieldAlert className="size-3.5" /> Quarantine {items.length}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-80">
+        <p className="mb-2 text-xs text-muted-foreground">Rejected by the validation gate; never part of a case.</p>
+        <ul className="space-y-2 text-xs">
+          {items.map((q) => (
+            <li key={q.id}>
+              <span className="font-medium">{q.reason}</span>
+              <span className="block truncate text-muted-foreground">
+                {q.sourceName}: “{q.snippet}”
+              </span>
+            </li>
+          ))}
+        </ul>
+      </PopoverContent>
+    </Popover>
   );
 }
 
@@ -229,7 +185,7 @@ function StartCaseDialog({ open, onOpenChange, signalIds, series, region, onCrea
       open={open}
       onOpenChange={onOpenChange}
       title={`Start a case from ${signalIds.length} signal${signalIds.length === 1 ? "" : "s"}`}
-      description="Name the customer problem (not the solution). The case starts in New and is scored right away."
+      description="Name the customer problem, not the solution."
       confirmLabel="Create case"
       pending={create.isPending}
       canSubmit={title.trim().length > 2}

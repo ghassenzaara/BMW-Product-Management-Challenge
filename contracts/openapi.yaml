@@ -936,6 +936,90 @@ paths:
           description: Not found
         "409":
           description: Invalid state transition
+  /cases/{id}/pm-context:
+    put:
+      operationId: savePmContext
+      summary: Save what the PM knows (step 2); the AI answers with follow-up questions in the case chat
+      tags:
+        - cases
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                marketFocus:
+                  anyOf:
+                    - type: string
+                      enum:
+                        - global
+                        - US
+                        - EU
+                        - CN
+                    - type: "null"
+                costSensitivity:
+                  anyOf:
+                    - type: string
+                      enum:
+                        - low
+                        - medium
+                        - high
+                    - type: "null"
+                positioning:
+                  anyOf:
+                    - type: string
+                      enum:
+                        - base
+                        - premium
+                        - luxury
+                    - type: "null"
+                timing:
+                  anyOf:
+                    - type: string
+                      enum:
+                        - next_gen
+                        - lci
+                        - ota
+                    - type: "null"
+                note:
+                  type: string
+              required:
+                - marketFocus
+                - costSensitivity
+                - positioning
+                - timing
+                - note
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  case:
+                    $ref: "#/components/schemas/Case"
+                  message:
+                    $ref: "#/components/schemas/ChatMessage"
+                required:
+                  - case
+                  - message
+                additionalProperties: false
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
   /cases/{id}/requirements/generate:
     post:
       operationId: generateRequirements
@@ -2560,6 +2644,125 @@ paths:
           description: Not found
         "409":
           description: Invalid state transition
+  /taxonomy:
+    get:
+      operationId: taxonomy
+      summary: "Fixed taxonomy: car areas, topics, aspect groups"
+      tags:
+        - signals
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: string
+                  carAreas:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          enum:
+                            - exterior_design
+                            - interior_comfort
+                            - seats
+                            - climate
+                            - infotainment_hmi
+                            - connectivity_digital
+                            - driver_assistance
+                            - dynamics_powertrain
+                            - range_charging
+                            - practicality
+                            - quality_materials
+                        label:
+                          type: string
+                        description:
+                          type: string
+                      required:
+                        - id
+                        - label
+                        - description
+                      additionalProperties: false
+                  topics:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        label:
+                          type: string
+                        shortLabel:
+                          type: string
+                        carArea:
+                          type: string
+                          enum:
+                            - exterior_design
+                            - interior_comfort
+                            - seats
+                            - climate
+                            - infotainment_hmi
+                            - connectivity_digital
+                            - driver_assistance
+                            - dynamics_powertrain
+                            - range_charging
+                            - practicality
+                            - quality_materials
+                        hint:
+                          type:
+                            - string
+                            - "null"
+                      required:
+                        - id
+                        - label
+                        - shortLabel
+                        - carArea
+                        - hint
+                      additionalProperties: false
+                  aspectGroups:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          enum:
+                            - function
+                            - usability
+                            - reliability
+                            - performance
+                            - efficiency_range
+                            - design
+                            - comfort
+                            - space
+                            - quality
+                            - sound
+                            - price
+                        description:
+                          type: string
+                      required:
+                        - id
+                        - description
+                      additionalProperties: false
+                required:
+                  - version
+                  - carAreas
+                  - topics
+                  - aspectGroups
+                additionalProperties: false
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
   /portfolio:
     get:
       operationId: portfolio
@@ -3086,6 +3289,26 @@ components:
             - range_charging
             - practicality
             - quality_materials
+        topicId:
+          type:
+            - string
+            - "null"
+        aspectGroup:
+          anyOf:
+            - type: string
+              enum:
+                - function
+                - usability
+                - reliability
+                - performance
+                - efficiency_range
+                - design
+                - comfort
+                - space
+                - quality
+                - sound
+                - price
+            - type: "null"
         featureHint:
           type: string
         summary:
@@ -3143,6 +3366,8 @@ components:
         - market
         - marketBasis
         - carArea
+        - topicId
+        - aspectGroup
         - featureHint
         - summary
         - quote
@@ -3329,6 +3554,18 @@ components:
           type: string
         summary:
           type: string
+        highlights:
+          type: array
+          items:
+            type: string
+        topicId:
+          type:
+            - string
+            - "null"
+        pmContext:
+          anyOf:
+            - $ref: "#/components/schemas/PmContext"
+            - type: "null"
         series:
           type: string
           enum:
@@ -3586,6 +3823,9 @@ components:
         - id
         - title
         - summary
+        - highlights
+        - topicId
+        - pmContext
         - series
         - relatedSeries
         - scope
@@ -3617,6 +3857,58 @@ components:
         - createdBy
         - updatedAt
         - synthetic
+      additionalProperties: false
+    PmContext:
+      type: object
+      properties:
+        marketFocus:
+          anyOf:
+            - type: string
+              enum:
+                - global
+                - US
+                - EU
+                - CN
+            - type: "null"
+        costSensitivity:
+          anyOf:
+            - type: string
+              enum:
+                - low
+                - medium
+                - high
+            - type: "null"
+        positioning:
+          anyOf:
+            - type: string
+              enum:
+                - base
+                - premium
+                - luxury
+            - type: "null"
+        timing:
+          anyOf:
+            - type: string
+              enum:
+                - next_gen
+                - lci
+                - ota
+            - type: "null"
+        note:
+          type: string
+        updatedAt:
+          type: string
+        updatedBy:
+          type: string
+          minLength: 1
+      required:
+        - marketFocus
+        - costSensitivity
+        - positioning
+        - timing
+        - note
+        - updatedAt
+        - updatedBy
       additionalProperties: false
     MarketFigure:
       type: object
@@ -4169,6 +4461,62 @@ components:
         - before
         - after
       additionalProperties: false
+    ChatMessage:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+        objectType:
+          type: string
+          enum:
+            - case
+            - requirement
+        objectId:
+          type: string
+          minLength: 1
+        role:
+          type: string
+          enum:
+            - user
+            - assistant
+        authorId:
+          type: string
+          minLength: 1
+        content:
+          type: string
+        citations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Citation"
+        proposalIds:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        createdAt:
+          type: string
+      required:
+        - id
+        - objectType
+        - objectId
+        - role
+        - content
+        - citations
+        - proposalIds
+        - createdAt
+      additionalProperties: false
+    Citation:
+      type: object
+      properties:
+        ref:
+          type: string
+        label:
+          type: string
+      required:
+        - ref
+        - label
+      additionalProperties: false
     PlannedFeature:
       type: object
       properties:
@@ -4397,62 +4745,6 @@ components:
         - sop
         - ownerIds
         - features
-      additionalProperties: false
-    ChatMessage:
-      type: object
-      properties:
-        id:
-          type: string
-          minLength: 1
-        objectType:
-          type: string
-          enum:
-            - case
-            - requirement
-        objectId:
-          type: string
-          minLength: 1
-        role:
-          type: string
-          enum:
-            - user
-            - assistant
-        authorId:
-          type: string
-          minLength: 1
-        content:
-          type: string
-        citations:
-          type: array
-          items:
-            $ref: "#/components/schemas/Citation"
-        proposalIds:
-          type: array
-          items:
-            type: string
-            minLength: 1
-        createdAt:
-          type: string
-      required:
-        - id
-        - objectType
-        - objectId
-        - role
-        - content
-        - citations
-        - proposalIds
-        - createdAt
-      additionalProperties: false
-    Citation:
-      type: object
-      properties:
-        ref:
-          type: string
-        label:
-          type: string
-      required:
-        - ref
-        - label
       additionalProperties: false
     Comment:
       type: object

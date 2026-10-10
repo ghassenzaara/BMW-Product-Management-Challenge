@@ -172,7 +172,7 @@ function IssueCard({ c, zoneLabel, score, onClose }: { c: Case; zoneLabel: strin
       {quotes.length > 0 && (
         <div className="mt-3 space-y-1.5">
           {quotes.map((s) => (
-            <Link key={s.id} href={`/cases/${c.id}?tab=signals&signal=${s.id}`} className="block rounded-md border bg-muted/40 p-2 text-xs hover:border-primary/50">
+            <Link key={s.id} href={`/cases/${c.id}?signal=${s.id}`} className="block rounded-md border bg-muted/40 p-2 text-xs hover:border-primary/50">
               <span className="line-clamp-3">“{s.quoteEn ?? s.quote}”</span>
               <span className="mt-1 flex items-center gap-1.5 text-[11px] text-muted-foreground">
                 <span className="font-mono">{s.id}</span>
@@ -190,7 +190,7 @@ function IssueCard({ c, zoneLabel, score, onClose }: { c: Case; zoneLabel: strin
           </Link>
         </Button>
         <Button asChild size="sm" variant="outline">
-          <Link href={`/cases/${c.id}?tab=signals`}>
+          <Link href={`/cases/${c.id}?step=evidence`}>
             <MessageSquareQuote className="size-3.5" /> {c.signalIds.length} signals
           </Link>
         </Button>

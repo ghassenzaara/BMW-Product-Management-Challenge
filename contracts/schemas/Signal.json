@@ -144,6 +144,35 @@
         "quality_materials"
       ]
     },
+    "topicId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "aspectGroup": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "function",
+            "usability",
+            "reliability",
+            "performance",
+            "efficiency_range",
+            "design",
+            "comfort",
+            "space",
+            "quality",
+            "sound",
+            "price"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "featureHint": {
       "type": "string"
     },
@@ -242,6 +271,8 @@
     "market",
     "marketBasis",
     "carArea",
+    "topicId",
+    "aspectGroup",
     "featureHint",
     "summary",
     "quote",

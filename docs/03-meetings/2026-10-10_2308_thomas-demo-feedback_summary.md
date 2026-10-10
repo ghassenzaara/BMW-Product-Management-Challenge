@@ -92,11 +92,11 @@
 ## What this means for our `web/` demo
 | Thomas's point | Status in `web/` today | Suggested change |
 |---|---|---|
-| Kanban for cases only | Kanban **and** ranked list for both cases and requirements | Requirements page becomes a ranked list or review table (no kanban); keep the case kanban |
-| Vehicle plan together with requirements | Separate `/plan/[series]` page | Make "Vehicle plan" a view or tab of the requirements page |
+| Kanban for cases only | Kanban **and** ranked list for both cases and requirements | **Done:** case kanban (+ ranked toggle); requirements are a list inside the vehicle plan |
+| Vehicle plan together with requirements | Separate `/plan/[series]` page | **Done:** one "Vehicle plan" page lists requirements by car area next to today's equipment |
 | Fixed taxonomy | Cases and requirements already use a fixed `CarArea` enum (11 values). Signals carry BMW's VFC level-2 `topic` (about 225 distinct values in the CSV) but are not mapped to it | **Done:** [`taxonomy/`](../../taxonomy/README.md) maps all 226 VFC level-2 labels onto 219 topics in the 11 car areas, with a closed-enum classifier schema and an eval against BMW labels. Next, Ghassen wires it into the agents |
-| Less is more | 16 screens; sidebar has desk, inbox, radar, cases, requirements, plan, innovation, questions, portfolio, approvals, settings, audit | Cut to about 5 entries: **Desk, Radar, Cases, Requirements (+ plan), Innovation pool**, plus **Approvals** for the head. Fold Inbox into the bell, Meeting prep into the case's questions tab, Audit into each object's activity, Portfolio into Approvals |
-| AI as colleague that asks questions and acts | Proposals (questions, diffs, drafts), meeting-note extraction, scripted research | Add a short **PM-context questionnaire** on the case (market focus, cost sensitivity, positioning). The answers feed the context pack and the requirement draft. Let the chat ask the PM follow-up questions |
+| Less is more | 16 screens; sidebar has desk, inbox, radar, cases, requirements, plan, innovation, questions, portfolio, approvals, settings, audit | **Done:** six nav items (My desk, Inbox, Cases, Vehicle plan, Signals, Innovation pool); desk sorted by kind of work; case page as three steps with a Sankey of the evidence; explanatory text removed |
+| AI as colleague that asks questions and acts | Proposals (questions, diffs, drafts), meeting-note extraction, scripted research | **Done:** step ② "Your knowledge" (market focus, cost sensitivity, positioning, timing, note); saving it makes the AI colleague ask 1–2 follow-up questions |
 | No colleague chat; comments and notifications yes | Comments with @mentions, notifications, no DM chat | Nothing to change. This matches |
 | Competitor agent flags agreed requirements | Monitor alerts (e.g. Xiaomi SU7 800 km CLTC vs our 750 km target), PM verdict with remark | Nothing to change. Show it early in the demo |
 | Pitch: a collaboration platform like Jira | Personas, referrals, sign-off, escalations | Lead the pitch with the case kanban and the hand-offs between PMs |

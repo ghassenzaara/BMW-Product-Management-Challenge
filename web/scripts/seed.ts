@@ -14,10 +14,12 @@ import { fileURLToPath } from "node:url";
 import { parse } from "csv-parse/sync";
 import {
   Dataset,
+  TaxonomyResponse,
   type AgentRun,
   type AuditEvent,
   type Case,
   type CaseState,
+  type AspectGroup,
   type CarArea,
   type ChatMessage,
   type Market,
@@ -51,6 +53,8 @@ import { webSpecToSignal } from "../src/mock/convert";
 const here = dirname(fileURLToPath(import.meta.url));
 const dataDir = resolve(here, "../../docs/02-data/processed");
 const outFile = resolve(here, "../src/mock/fixtures/seed.json");
+const taxonomyFile = resolve(here, "../../taxonomy/taxonomy.json");
+const taxonomyOut = resolve(here, "../src/mock/fixtures/taxonomy.json");
 
 // ---------- Load real data ----------
 type Row = Record<string, string>;
@@ -78,6 +82,51 @@ function share2030(series: Series, market: Market): number {
   const total = rows.reduce((s, r) => s + Number(r.volume_2030), 0);
   const row = rows.find((r) => r.market_code === market);
   return row && total ? Number(row.volume_2030) / total : 0;
+}
+
+// ---------- Taxonomy (taxonomy/taxonomy.json, built by taxonomy/build.py) ----------
+interface TaxonomyFile {
+  version: string;
+  car_areas: { id: CarArea; label: string; description: string }[];
+  topics: { id: string; label: string; car_area: CarArea; hint: string | null }[];
+  aspect_groups: { id: AspectGroup; description: string }[];
+  vfc_level2_to_topic: Record<string, string | null>;
+  vfc_level3_to_aspect_group: Record<string, AspectGroup>;
+}
+const taxonomy: TaxonomyFile = JSON.parse(readFileSync(taxonomyFile, "utf8"));
+const topicArea = new Map(taxonomy.topics.map((t) => [t.id, t.car_area]));
+
+/** Short UI labels for topics whose BMW label is long or generic. */
+const SHORT_LABELS: Record<string, string> = {
+  drive_driving_dynamics_and_chassis_overall_technology: "Driving dynamics",
+  body_equipment_overall_technology: "Body equipment",
+  connecteddrive_and_infotainment_overall_technology: "Infotainment",
+  driver_assistance_automated_driving_overall_technology: "Driver assistance",
+  air_conditioning_overall_technology: "Air conditioning",
+  vehicle_safety_overall_technology: "Safety",
+  connecteddrive_services_smartphone_technology_overall: "ConnectedDrive services",
+  charge_high_voltage_battery: "Charging the battery",
+  vehicle_climatization: "Climate",
+  seating_ventilate_heat: "Seat heating & ventilation",
+  active_cruise_control: "Cruise control",
+  automatic_engine_start_stop_function_msa: "Auto start-stop",
+  remote_services_remote_keyless_entry_my_bmw_app_mini_app: "Remote services",
+  my_bmw_app_mini_app: "My BMW App",
+  non_contact_trunk_lid_opening: "Hands-free tailgate",
+};
+function shortLabel(id: string, label: string) {
+  if (SHORT_LABELS[id]) return SHORT_LABELS[id];
+  const cut = label.replace(/\s*\(.*?\)\s*/g, " ").split(/ \/ |, /)[0].trim();
+  return cut.length >= 4 ? cut : label;
+}
+
+/** BMW "Topic : Aspect | Topic : Aspect" -> taxonomy pairs, meta labels dropped. */
+function topicPairs(topics: string): { topicId: string; aspectGroup: AspectGroup | null }[] {
+  return topics
+    .split("|")
+    .map((p) => p.split(" : ").map((x) => x.trim()))
+    .map(([l2, l3]) => ({ topicId: taxonomy.vfc_level2_to_topic[l2] ?? null, aspectGroup: (l3 && taxonomy.vfc_level3_to_aspect_group[l3]) || null }))
+    .filter((p): p is { topicId: string; aspectGroup: AspectGroup | null } => !!p.topicId);
 }
 
 // ---------- Helpers ----------
@@ -119,9 +168,13 @@ function selectVerbatims(sel: VerbatimSelector): Row[] {
   return out;
 }
 
-function verbatimSignal(r: Row, caseId: string | null, carArea: CarArea, featureHint: string): Signal {
+function verbatimSignal(r: Row, caseId: string | null, carArea: CarArea | null, featureHint: string): Signal {
   const { kind, severity } = classify(r.feedback_types);
   const source = r.source.replace("Source ", "");
+  const pairs = topicPairs(r.topics);
+  // One finding = one topic: prefer a topic in the case's car area.
+  const pick = pairs.find((p) => carArea && topicArea.get(p.topicId) === carArea) ?? pairs[0] ?? null;
+  const area: CarArea = carArea ?? (pick ? topicArea.get(pick.topicId)! : "interior_comfort");
   return {
     id: r.id,
     kind,
@@ -139,7 +192,9 @@ function verbatimSignal(r: Row, caseId: string | null, carArea: CarArea, feature
     market: marketOf(r.country),
     marketBasis: "stated",
     country: r.country,
-    carArea,
+    carArea: area,
+    topicId: pick?.topicId ?? null,
+    aspectGroup: pick?.aspectGroup ?? null,
     featureHint: featureHint || r.topics.split("|")[0].split(" : ")[0],
     summary: summarize(r.text),
     quote: r.text.trim(),
@@ -151,8 +206,10 @@ function verbatimSignal(r: Row, caseId: string | null, carArea: CarArea, feature
   };
 }
 
-function studySignal(ref: StudyRef, id: string, caseId: string, series: Series, carArea: CarArea, featureHint: string): Signal | null {
+function studySignal(ref: StudyRef, id: string, caseId: string, series: Series, carArea: CarArea, featureHint: string, topicId: string | null): Signal | null {
   const base = {
+    topicId: ref.topicId ?? topicId,
+    aspectGroup: null,
     agent: "bmw_data" as const,
     sourceType: "bmw_study" as const,
     trust: "A" as const,
@@ -217,6 +274,18 @@ function between(a: string, b: string, f: number) {
   return new Date(ta + (tb - ta) * f).toISOString();
 }
 
+/** Three short bullets from the case page: problem, who is affected, competition. */
+function deriveHighlights(bodyMd: string, competitorOffer: string[]): string[] {
+  const section = (name: string) => {
+    const m = bodyMd.match(new RegExp(`## ${name}\\s*\\n+([^#]+)`));
+    const text = m?.[1].replace(/^(?:[-*]|\d+\.)\s+/gm, "").replace(/\s+/g, " ").trim() ?? "";
+    const first = text.split(/(?<=[.!?])\s/)[0] ?? "";
+    return first.length > 160 ? first.slice(0, 157).trimEnd() + "…" : first;
+  };
+  const offer = competitorOffer.find((o) => o.trim() && o.trim() !== "—");
+  return [section("Problem"), section("Who is affected"), offer ? `Competition: ${offer}` : section("Competitors")].filter((h) => h && h !== "—" && !h.startsWith("_"));
+}
+
 // ---------- Build signals and cases ----------
 const signals = new Map<string, Signal>();
 const cases: Case[] = [];
@@ -226,8 +295,13 @@ for (const spec of caseSpecs) {
   for (const sel of spec.verbatims) {
     for (const r of selectVerbatims(sel)) caseSignals.push(verbatimSignal(r, spec.id, spec.carArea, spec.featureName));
   }
+  // Main topic: the authored one, else the most frequent verbatim topic in the case's area.
+  if (spec.topicId && !topicArea.has(spec.topicId)) throw new Error(`${spec.id}: unknown topicId ${spec.topicId}`);
+  const topicCount = new Map<string, number>();
+  caseSignals.forEach((s) => s.topicId && topicArea.get(s.topicId) === spec.carArea && topicCount.set(s.topicId, (topicCount.get(s.topicId) ?? 0) + 1));
+  const mainTopic = spec.topicId ?? [...topicCount].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
   spec.study.forEach((ref, i) => {
-    const s = studySignal(ref, `SIG-${spec.id}-S${i}`, spec.id, spec.series, spec.carArea, spec.featureName);
+    const s = studySignal(ref, `SIG-${spec.id}-S${i}`, spec.id, spec.series, spec.carArea, spec.featureName, mainTopic);
     if (s) caseSignals.push(s);
     else console.warn(`  study row not found: ${ref.attribute} / ${ref.model} / ${ref.market}`);
   });
@@ -239,6 +313,7 @@ for (const spec of caseSpecs) {
         carArea: spec.carArea,
         featureHint: spec.featureName,
         caseId: spec.id,
+        topicId: w.kind === "competitor_fact" ? null : mainTopic,
         fetchedAt: addDays(w.publishedAt.length > 7 ? `${w.publishedAt}T00:00:00Z` : "2026-09-01T00:00:00Z", 2),
       }),
     ),
@@ -274,10 +349,13 @@ for (const spec of caseSpecs) {
   const marketVolume =
     spec.factors.market_volume ?? Math.min(1, [...markets].filter((m) => m !== "unknown").reduce((s, m) => s + share2030(spec.series, m), 0));
 
-  const { verbatims: _v, study: _s, web: _w, equipmentToday, competitorOffer, trend, powertrainHint: _p, ...rest } = spec;
+  const { verbatims: _v, study: _s, web: _w, equipmentToday, competitorOffer, trend, powertrainHint: _p, highlights, ...rest } = spec;
   const updatedAt = spec.updatedAt ?? between(spec.createdAt, NOW, 0.8);
   cases.push({
     ...rest,
+    highlights: highlights ?? deriveHighlights(spec.bodyMd, competitorOffer),
+    topicId: mainTopic,
+    pmContext: spec.pmContext ?? null,
     relatedSeries: spec.relatedSeries ?? [],
     coOwnerIds: spec.coOwnerIds ?? [],
     watcherIds: spec.watcherIds ?? [],
@@ -300,19 +378,10 @@ for (const spec of caseSpecs) {
   });
 }
 
-// Unclustered signals for the radar.
-const topicArea: [RegExp, CarArea][] = [
-  [/Head-Up|Instrument|Touch|Operating|Driver profile|Navigation/i, "infotainment_hmi"],
-  [/Highway|Parking|cruise/i, "driver_assistance"],
-  [/Ambient|Interior/i, "interior_comfort"],
-  [/Exterior/i, "exterior_design"],
-  [/Software|App|eSIM|Connected/i, "connectivity_digital"],
-  [/Seats/i, "seats"],
-];
+// Unclustered signals for the radar; the car area comes from the taxonomy topic.
 for (const sel of unclusteredSelectors) {
   for (const r of selectVerbatims(sel)) {
-    const area = topicArea.find(([re]) => re.test(r.topics))?.[1] ?? "interior_comfort";
-    const s = verbatimSignal(r, null, area, "");
+    const s = verbatimSignal(r, null, null, "");
     signals.set(s.id, s);
   }
 }
@@ -550,7 +619,17 @@ if (problems.length) {
 
 mkdirSync(dirname(outFile), { recursive: true });
 writeFileSync(outFile, JSON.stringify(parsed.data, null, 1));
+
+// Slim taxonomy for the mock /taxonomy endpoint (the backend serves it from its TOPIC table).
+const taxonomyPayload = TaxonomyResponse.parse({
+  version: taxonomy.version,
+  carAreas: taxonomy.car_areas.map((a) => ({ id: a.id, label: a.label, description: a.description })),
+  topics: taxonomy.topics.map((t) => ({ id: t.id, label: t.label, shortLabel: shortLabel(t.id, t.label), carArea: t.car_area, hint: t.hint })),
+  aspectGroups: taxonomy.aspect_groups,
+});
+writeFileSync(taxonomyOut, JSON.stringify(taxonomyPayload, null, 1));
+const untagged = [...signals.values()].filter((s) => !s.topicId && s.kind !== "competitor_fact").length;
 const real = [...signals.values()].filter((s) => !s.synthetic).length;
 console.log(
-  `seed.json written: ${cases.length} cases, ${signals.size} signals (${real} real BMW records, ${signals.size - real} synthetic), ${requirements.length} requirements, ${sortedAudit.length} audit events`,
+  `seed.json written: ${cases.length} cases, ${signals.size} signals (${real} real BMW records, ${signals.size - real} synthetic), ${requirements.length} requirements, ${sortedAudit.length} audit events; taxonomy ${taxonomy.version}, ${untagged} signals without topic`,
 );

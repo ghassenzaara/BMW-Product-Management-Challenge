@@ -1,17 +1,24 @@
 "use client";
 
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
-import { AlertTriangle, ArrowRight, AtSign, CircleDot, Forward, Gauge, Scale, Signature } from "lucide-react";
-import { CaseState as CaseStates, caseStateLabel, marketLabel, agentLabel, type Market } from "@/contracts";
-import { useApi } from "@/lib/api/hooks";
+import { AlertTriangle, ArrowRight, AtSign, CheckCircle2, CircleDot, ClipboardCheck, CornerUpLeft, Forward, KanbanSquare, MessageSquareReply, Radar, Scale, Signature } from "lucide-react";
+import type { Case, Referral, Requirement, RequirementAction } from "@/contracts";
+import { useApi, useApiMutation } from "@/lib/api/hooks";
 import { fmtDate, fromNow } from "@/lib/format";
-import { PageHeader, Section, Stat } from "@/components/common/page";
-import { CaseStateBadge, Pill, ScoreBar } from "@/components/common/badges";
+import { cn } from "@/lib/utils";
+import { CaseStateBadge, ReqStatusBadge } from "@/components/common/badges";
 import { useUsers } from "@/components/common/people";
-import { AuditTimeline } from "@/components/common/activity";
+import { RationaleDialog } from "@/components/common/rationale-dialog";
 import { useScores } from "@/components/cases/use-scores";
-import { Progress } from "@/components/ui/progress";
+import { RequirementActionDialog } from "@/components/requirements/requirement-action-dialog";
+import { RequirementSheet } from "@/components/requirements/requirement-sheet";
+import { Button } from "@/components/ui/button";
 
+/**
+ * My desk: what needs the PM, sorted by the kind of work it is.
+ * Four cards, one line per item, everything clickable.
+ */
 export function DeskView() {
   const me = useApi("me");
   const { data: cases = [] } = useApi("cases");
@@ -20,168 +27,203 @@ export function DeskView() {
   const { data: alerts = [] } = useApi("alerts");
   const { data: notifications = [] } = useApi("notifications");
   const { data: requirements = [] } = useApi("requirements");
-  const series = me.data?.workspace.series;
-  const { data: signals = [] } = useApi("signals", { query: { series } }, { enabled: !!series });
-  const { data: events = [] } = useApi("audit", { query: { limit: 8 } });
   const scores = useScores();
   const { name } = useUsers();
+  const [reqId, setReqId] = useState<string | null>(null);
   const user = me.data?.user;
   if (!user) return null;
   const isHead = user.role === "head";
-
-  const mine = cases.filter((c) => c.ownerId === user.id || c.coOwnerIds.includes(user.id));
-  const active = mine.filter((c) => c.state !== "decided" && c.state !== "observed");
-  const openQs = questions.filter((q) => q.status === "open").sort((a, b) => (a.dueDate ?? "9").localeCompare(b.dueDate ?? "9"));
-  const toMe = referrals.filter((r) => r.toUserId === user.id && r.status === "pending");
-  const openAlerts = alerts.filter((a) => a.status === "open");
-  const mentions = notifications.filter((n) => n.kind === "mention" && !n.read);
-  const signOff = requirements.filter((r) => r.status === "pm_approved");
-  const top = (scores.data?.cases ?? []).filter((s) => (isHead ? true : mine.some((c) => c.id === s.caseId))).slice(0, 6);
   const caseById = new Map(cases.map((c) => [c.id, c]));
+  const rank = (id: string) => scores.cases.get(id)?.rank ?? 999;
+  const objectHref = (type: "case" | "requirement", id: string) => (type === "case" ? `/cases/${id}?step=knowledge` : `/requirements/${id}`);
 
-  const byMarket = new Map<Market, number>();
-  const byAgent = new Map<string, number>();
-  signals.forEach((s) => {
-    byMarket.set(s.market, (byMarket.get(s.market) ?? 0) + 1);
-    byAgent.set(s.agent, (byAgent.get(s.agent) ?? 0) + 1);
-  });
-  const maxM = Math.max(1, ...byMarket.values());
+  // Agent flags: monitor alerts on my work, @mentions.
+  const flags = [
+    ...alerts
+      .filter((a) => a.status === "open" && (isHead || a.ownerId === user.id))
+      .map((a) => ({ key: a.id, icon: <AlertTriangle className="text-amber-500" />, title: a.title, meta: fromNow(a.createdAt), href: a.caseId ? `/cases/${a.caseId}` : "/inbox" })),
+    ...notifications
+      .filter((n) => n.kind === "mention" && !n.read)
+      .map((n) => ({ key: n.id, icon: <AtSign className="text-primary" />, title: n.title, meta: n.body, href: n.link })),
+  ];
+
+  // My cases: active cases I own (the head sees what is ready to decide), plus referrals waiting for me.
+  const myCases = cases
+    .filter((c) => (isHead ? c.state === "ready" : (c.ownerId === user.id || c.coOwnerIds.includes(user.id)) && c.state !== "decided" && c.state !== "observed"))
+    .sort((a, b) => rank(a.id) - rank(b.id));
+  const toMe = referrals.filter((r) => r.toUserId === user.id && r.status === "pending" && r.kind === "referral");
+
+  // Review: the head signs off and resolves escalations; a PM reworks what came back and finishes drafts.
+  const signOff = requirements.filter((r) => r.status === "pm_approved");
+  const escalations = referrals.filter((r) => r.kind === "escalation" && r.status === "pending");
+  const sentBack = requirements.filter((r) => r.ownerId === user.id && r.status === "in_discussion" && r.sentBackReason);
+  const drafts = requirements.filter((r) => r.ownerId === user.id && (r.status === "draft" || (r.status === "in_discussion" && !r.sentBackReason)));
+
+  // Follow up: answers that came back (file them into the case or requirement), and my open questions by due date.
+  const answered = questions.filter((q) => q.status === "answered").sort((a, b) => (b.answeredAt ?? "").localeCompare(a.answeredAt ?? ""));
+  const open = questions.filter((q) => q.status === "open").sort((a, b) => (a.dueDate ?? "9").localeCompare(b.dueDate ?? "9"));
 
   return (
-    <div>
-      <PageHeader
-        title={`Good morning, ${user.name.split(" ")[0]}`}
-        description={isHead ? "Portfolio across the 1, 5 and 7 Series. Sign-offs and escalations wait for you." : `${user.title}. Here is what needs you today.`}
-        actions={
-          <Link href="/cases" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
-            Open the case board <ArrowRight className="size-3.5" />
-          </Link>
-        }
-      />
-      <div className="space-y-4 p-6">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          {isHead ? (
-            <>
-              <Stat label="Waiting for sign-off" value={signOff.length} hint="PM-approved requirements" />
-              <Stat label="Escalations" value={referrals.filter((r) => r.kind === "escalation" && r.status === "pending").length} hint="China vs RoW and contested referrals" />
-            </>
-          ) : (
-            <>
-              <Stat label="My active cases" value={active.length} hint={`${mine.length} owned in total`} />
-              <Stat label="Referrals to me" value={toMe.length} hint="accept or send back" />
-            </>
-          )}
-          <Stat label="Open questions" value={openQs.length} hint={openQs[0]?.dueDate ? `next due ${fmtDate(openQs[0].dueDate)}` : "none due"} />
-          <Stat label="Monitor alerts" value={openAlerts.length} hint="competitor raises the bar, contradictions" />
-          <Stat label="Unread mentions" value={mentions.length} />
-        </div>
+    <div className="mx-auto max-w-6xl p-6">
+      <h1 className="text-2xl font-semibold tracking-tight">Good morning, {user.name.split(" ")[0]}</h1>
+      <div className="mt-5 grid gap-4 lg:grid-cols-2">
+        <Card icon={<Radar />} title="Agent flags" count={flags.length}>
+          {flags.map((f) => (
+            <Row key={f.key} icon={f.icon} title={f.title} meta={f.meta} href={f.href} />
+          ))}
+        </Card>
 
-        <div className="grid gap-4 lg:grid-cols-3">
-          <Section title="Needs you" className="lg:col-span-2">
-            <ul className="divide-y text-sm">
-              {openAlerts.map((a) => (
-                <Row key={a.id} icon={<AlertTriangle className="size-4 text-amber-500" />} href={a.caseId ? `/cases/${a.caseId}` : "/inbox"} title={a.title} meta={`Monitor · ${fromNow(a.createdAt)}`} />
-              ))}
-              {toMe.map((r) => (
-                <Row
-                  key={r.id}
-                  icon={r.kind === "escalation" ? <Scale className="size-4 text-violet-500" /> : <Forward className="size-4 text-violet-500" />}
-                  href={isHead ? "/approvals" : "/inbox"}
-                  title={`${r.kind === "escalation" ? "Escalation" : "Referral"} from ${name(r.fromUserId)}: ${caseById.get(r.caseId)?.title ?? r.caseId}`}
-                  meta={r.note}
-                />
-              ))}
-              {isHead &&
-                signOff.map((r) => <Row key={r.id} icon={<Signature className="size-4 text-sky-500" />} href="/approvals" title={`Sign off ${r.id}: ${r.title}`} meta={`by ${name(r.ownerId)}`} />)}
-              {mentions.map((n) => (
-                <Row key={n.id} icon={<AtSign className="size-4 text-primary" />} href={n.link} title={n.title} meta={n.body} />
-              ))}
-              {openQs.slice(0, 5).map((q) => (
-                <Row key={q.id} icon={<CircleDot className="size-4 text-amber-500" />} href={`/cases/${q.objectId}?tab=questions`} title={q.question} meta={`${q.addressee} · ${q.objectId}${q.dueDate ? ` · due ${fmtDate(q.dueDate)}` : ""}`} />
-              ))}
-              {!openAlerts.length && !toMe.length && !mentions.length && !openQs.length && <li className="py-6 text-center text-muted-foreground">Nothing waiting. Nice.</li>}
-            </ul>
-          </Section>
+        <Card icon={<KanbanSquare />} title={isHead ? "Ready to decide" : "My cases"} count={myCases.length + toMe.length} more={{ href: "/cases", label: "Case board" }}>
+          {toMe.map((r) => (
+            <Row key={r.id} icon={<Forward className="text-violet-500" />} title={caseById.get(r.caseId)?.title ?? r.caseId} meta={`Referred by ${name(r.fromUserId)}`} href="/inbox" />
+          ))}
+          {myCases.map((c) => (
+            <Row key={c.id} title={c.title} href={`/cases/${c.id}`} right={<CaseStateBadge state={c.state} />} meta={c.id} />
+          ))}
+        </Card>
 
-          <Section title={isHead ? "Top cases (all series)" : "Top of my ranking"} actions={<Link href="/cases?view=ranked" className="text-xs text-primary hover:underline">Ranked view</Link>}>
-            <ul className="space-y-2.5">
-              {top.map((s) => {
-                const c = caseById.get(s.caseId);
-                if (!c) return null;
-                return (
-                  <li key={s.caseId}>
-                    <Link href={`/cases/${c.id}`} className="block rounded-md p-1 hover:bg-muted/60">
-                      <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                        <span className="font-mono font-semibold text-foreground">#{s.rank}</span>
-                        <span className="font-mono">{c.id}</span>
-                        <CaseStateBadge state={c.state} />
-                      </div>
-                      <div className="truncate text-sm">{c.title}</div>
-                      <ScoreBar value={s.score} className="mt-1" />
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </Section>
-        </div>
+        <Card icon={<ClipboardCheck />} title="Review" count={isHead ? signOff.length + escalations.length : sentBack.length + drafts.length}>
+          {isHead && signOff.map((r) => <SignOffRow key={r.id} r={r} owner={name(r.ownerId)} onOpen={() => setReqId(r.id)} />)}
+          {isHead && escalations.map((e) => <EscalationRow key={e.id} e={e} c={caseById.get(e.caseId)} from={name(e.fromUserId)} />)}
+          {!isHead &&
+            sentBack.map((r) => (
+              <Row key={r.id} icon={<CornerUpLeft className="text-amber-600" />} title={r.title} meta={`Sent back: ${r.sentBackReason}`} onClick={() => setReqId(r.id)} right={<ReqStatusBadge status={r.status} />} />
+            ))}
+          {!isHead && drafts.map((r) => <Row key={r.id} title={r.title} meta={r.id} onClick={() => setReqId(r.id)} right={<ReqStatusBadge status={r.status} />} />)}
+        </Card>
 
-        <div className="grid gap-4 lg:grid-cols-3">
-          <Section title="My cases by stage">
-            <div className="space-y-2">
-              {CaseStates.options.map((st) => {
-                const n = (isHead ? cases : mine).filter((c) => c.state === st).length;
-                return (
-                  <Link key={st} href="/cases" className="flex items-center gap-3 text-sm hover:underline">
-                    <span className="w-36 text-muted-foreground">{caseStateLabel[st]}</span>
-                    <Progress value={(n / Math.max(1, (isHead ? cases : mine).length)) * 100} className="h-1.5 flex-1" />
-                    <span className="w-6 text-right font-mono">{n}</span>
-                  </Link>
-                );
-              })}
-            </div>
-          </Section>
-
-          <Section title={`Coverage meter · ${series ?? ""}`} actions={<Gauge className="size-4 text-muted-foreground" />}>
-            <div className="space-y-2">
-              {(["US", "EU", "CN", "RoW", "unknown"] as Market[]).map((m) => (
-                <div key={m} className="flex items-center gap-3 text-sm">
-                  <span className="w-28 text-muted-foreground">{marketLabel[m]}</span>
-                  <Progress value={((byMarket.get(m) ?? 0) / maxM) * 100} className="h-1.5 flex-1" />
-                  <span className="w-8 text-right font-mono">{byMarket.get(m) ?? 0}</span>
-                </div>
-              ))}
-            </div>
-            <div className="mt-3 flex flex-wrap gap-1">
-              {[...byAgent.entries()].map(([a, n]) => (
-                <Pill key={a}>
-                  {agentLabel[a as keyof typeof agentLabel]} {n}
-                </Pill>
-              ))}
-            </div>
-            <p className="mt-3 text-[11px] text-muted-foreground">Honest gaps: no Chinese verbatims in BMW feedback; 5 and 7 Series verbatims are 90–95% US. Weight by market volume, not verbatim volume.</p>
-          </Section>
-
-          <Section title="Recent activity" actions={<Link href="/audit" className="text-xs text-primary hover:underline">Audit trail</Link>}>
-            <AuditTimeline events={events} />
-          </Section>
-        </div>
+        <Card icon={<MessageSquareReply />} title="Follow up" count={answered.length + open.length}>
+          {answered.map((q) => (
+            <Row key={q.id} icon={<CheckCircle2 className="text-positive" />} title={q.answer ?? q.question} meta={`${q.addressee} answered · ${q.objectId}`} href={objectHref(q.objectType, q.objectId)} />
+          ))}
+          {open.map((q) => (
+            <Row key={q.id} icon={<CircleDot className="text-muted-foreground" />} title={q.question} meta={`${q.addressee}${q.dueDate ? ` · due ${fmtDate(q.dueDate)}` : ""}`} href={objectHref(q.objectType, q.objectId)} />
+          ))}
+        </Card>
       </div>
+      <RequirementSheet id={reqId} onOpenChange={(o) => !o && setReqId(null)} />
     </div>
   );
 }
 
-function Row({ icon, href, title, meta }: { icon: React.ReactNode; href: string; title: string; meta?: string }) {
+function Card({ icon, title, count, more, children }: { icon: ReactNode; title: string; count: number; more?: { href: string; label: string }; children: ReactNode[] | ReactNode }) {
+  const [all, setAll] = useState(false);
+  const items = (Array.isArray(children) ? children.flat() : [children]).filter(Boolean);
+  const shown = all ? items : items.slice(0, 4);
   return (
-    <li>
-      <Link href={href} className="flex items-start gap-3 py-2.5 hover:bg-muted/40">
-        <span className="mt-0.5">{icon}</span>
-        <span className="min-w-0 flex-1">
-          <span className="block truncate font-medium">{title}</span>
-          {meta && <span className="block truncate text-xs text-muted-foreground">{meta}</span>}
+    <section className="flex flex-col rounded-xl border bg-card shadow-xs">
+      <header className="flex items-center gap-2.5 px-4 pt-4 pb-2">
+        <span className="grid size-8 place-items-center rounded-lg bg-primary/10 text-primary [&_svg]:size-4">{icon}</span>
+        <h2 className="text-sm font-semibold">{title}</h2>
+        <span className="ml-auto text-2xl font-semibold tabular-nums">{count}</span>
+      </header>
+      {items.length === 0 ? (
+        <p className="flex items-center gap-2 px-4 pt-1 pb-4 text-sm text-muted-foreground">
+          <CheckCircle2 className="size-4 text-positive" /> All clear
+        </p>
+      ) : (
+        <ul className="divide-y px-2 pb-2">{shown}</ul>
+      )}
+      {(items.length > 4 || more) && (
+        <div className="mt-auto flex items-center border-t px-4 py-2 text-sm">
+          {items.length > 4 && (
+            <button onClick={() => setAll(!all)} className="text-primary hover:underline">
+              {all ? "Show less" : `Show all ${items.length}`}
+            </button>
+          )}
+          {more && (
+            <Link href={more.href} className="ml-auto inline-flex items-center gap-1 text-muted-foreground hover:text-foreground">
+              {more.label} <ArrowRight className="size-3.5" />
+            </Link>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function Row({ icon, title, meta, href, onClick, right }: { icon?: ReactNode; title: string; meta?: string; href?: string; onClick?: () => void; right?: ReactNode }) {
+  const body = (
+    <>
+      {icon && <span className="mt-0.5 shrink-0 [&_svg]:size-4">{icon}</span>}
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-medium">{title}</span>
+        {meta && <span className="block truncate text-xs text-muted-foreground">{meta}</span>}
+      </span>
+      {right}
+    </>
+  );
+  const cls = "flex w-full items-center gap-3 rounded-lg px-2 py-2.5 text-left transition hover:bg-muted/60";
+  return <li>{href ? <Link href={href} className={cls}>{body}</Link> : <button onClick={onClick} className={cls}>{body}</button>}</li>;
+}
+
+function SignOffRow({ r, owner, onOpen }: { r: Requirement; owner: string; onOpen: () => void }) {
+  const [action, setAction] = useState<RequirementAction | null>(null);
+  return (
+    <li className="flex items-center gap-3 px-2 py-2.5">
+      <Signature className="size-4 shrink-0 text-sky-500" />
+      <button onClick={onOpen} className="min-w-0 flex-1 text-left">
+        <span className="block truncate text-sm font-medium hover:underline">{r.title}</span>
+        <span className="block truncate text-xs text-muted-foreground">
+          {r.id} · {owner}
         </span>
-        <ArrowRight className="mt-1 size-3.5 text-muted-foreground" />
+      </button>
+      <Button size="xs" variant="outline" onClick={() => setAction("send_back")}>
+        Send back
+      </Button>
+      <Button size="xs" onClick={() => setAction("sign_off")}>
+        Sign off
+      </Button>
+      <RequirementActionDialog r={r} action={action} onOpenChange={(o) => !o && setAction(null)} />
+    </li>
+  );
+}
+
+const resolutions = [
+  ["variant", "Build a market variant"],
+  ["one_market", "Prioritize one market"],
+  ["keep_both", "Keep both open, get more evidence"],
+] as const;
+
+function EscalationRow({ e, c, from }: { e: Referral; c?: Case; from: string }) {
+  const [open, setOpen] = useState(false);
+  const [resolution, setResolution] = useState<(typeof resolutions)[number][0]>("variant");
+  const decide = useApiMutation("decideReferral", { success: "Escalation resolved; both PMs notified" });
+  return (
+    <li className="flex items-center gap-3 px-2 py-2.5">
+      <Scale className="size-4 shrink-0 text-violet-500" />
+      <Link href={c ? `/cases/${c.id}` : "/cases"} className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-medium hover:underline">{c?.title ?? e.caseId}</span>
+        <span className="block truncate text-xs text-muted-foreground">Escalated by {from}</span>
       </Link>
+      <Button size="xs" onClick={() => setOpen(true)}>
+        Decide
+      </Button>
+      <RationaleDialog
+        open={open}
+        onOpenChange={setOpen}
+        title="Resolve the escalation"
+        description={c?.marketConflict?.note ?? e.note}
+        confirmLabel="Decide"
+        pending={decide.isPending}
+        onSubmit={async (rationale) => {
+          await decide.mutateAsync({ params: { id: e.id }, body: { decision: "resolve", resolution, rationale } });
+          setOpen(false);
+        }}
+      >
+        <div className="flex flex-wrap gap-2">
+          {resolutions.map(([v, label]) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setResolution(v)}
+              className={cn("rounded-full border px-3 py-1 text-sm", resolution === v ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground")}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </RationaleDialog>
     </li>
   );
 }

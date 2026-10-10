@@ -29,12 +29,12 @@ export function InboxView() {
 
   return (
     <div>
-      <PageHeader title="Inbox" description="Referrals and escalations between PMs, monitor alerts, mentions and everything else that needs your attention." />
+      <PageHeader title="Inbox" />
       <Tabs defaultValue="routing" className="p-6">
         <TabsList>
-          <TabsTrigger value="routing">Referrals & escalations ({incoming.filter((r) => r.status === "pending").length})</TabsTrigger>
-          <TabsTrigger value="alerts">Monitor alerts ({alerts.filter((a) => a.status === "open").length})</TabsTrigger>
-          <TabsTrigger value="all">All notifications ({notifications.filter((n) => !n.read).length})</TabsTrigger>
+          <TabsTrigger value="routing">Referrals ({incoming.filter((r) => r.status === "pending").length})</TabsTrigger>
+          <TabsTrigger value="alerts">Agent flags ({alerts.filter((a) => a.status === "open").length})</TabsTrigger>
+          <TabsTrigger value="all">Notifications ({notifications.filter((n) => !n.read).length})</TabsTrigger>
         </TabsList>
         <TabsContent value="routing" className="space-y-6 pt-4">
           <div className="space-y-2">

@@ -55,6 +55,12 @@ async function main() {
   await call("cases", { query: { series: "G60" } });
   await call("caseBundle", { params: { id: "CASE-G60-0001" } });
   await call("exportCaseMd", { params: { id: "CASE-G60-0001" } });
+  await call("taxonomy");
+  await call("savePmContext", {
+    params: { id: "CASE-G60-0003" },
+    body: { marketFocus: "EU", costSensitivity: "medium", positioning: "premium", timing: "next_gen", note: "Nordic winter matters most" },
+  });
+  await call("savePmContext", { params: { id: "CASE-G60-0003" }, body: { marketFocus: null, costSensitivity: null, positioning: null, timing: null, note: "" }, as: "u-wei", expect: 403 });
   await call("questions");
   await call("requirements");
   await call("requirementBundle", { params: { id: "REQ-G60-0004" } });

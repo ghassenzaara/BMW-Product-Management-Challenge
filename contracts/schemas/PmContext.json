@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "marketFocus": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "global",
+            "US",
+            "EU",
+            "CN"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "costSensitivity": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "positioning": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "base",
+            "premium",
+            "luxury"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "timing": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "next_gen",
+            "lci",
+            "ota"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "note": {
+      "type": "string"
+    },
+    "updatedAt": {
+      "type": "string"
+    },
+    "updatedBy": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "marketFocus",
+    "costSensitivity",
+    "positioning",
+    "timing",
+    "note",
+    "updatedAt",
+    "updatedBy"
+  ],
+  "additionalProperties": false
+}

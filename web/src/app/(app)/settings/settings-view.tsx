@@ -27,7 +27,7 @@ export function SettingsView() {
 
   return (
     <div>
-      <PageHeader title="Settings" description="Your workspace is a saved view on the shared data: same evidence and formula for every PM, your own goals, filters and watchlist." />
+      <PageHeader title="Settings" />
       <div className="grid gap-4 p-6 xl:grid-cols-2">
         <Section title="Workspace">
           <div className="space-y-4 text-sm">

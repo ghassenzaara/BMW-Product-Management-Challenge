@@ -28,7 +28,7 @@ export function QuestionsPanel({ caseId, questions, proposals, canEdit }: { case
     <div className="space-y-5">
       <div className="flex flex-wrap items-center gap-2">
         <p className="mr-auto text-sm text-muted-foreground">
-          {open} open · {questions.length - open} answered. Engineering, finance and design don&apos;t use this tool: you log their answers, or paste meeting notes and let the AI propose them.
+          {open} open · {questions.length - open} answered
         </p>
         <Button size="sm" variant="outline" onClick={() => setNoteOpen(true)}>
           <ClipboardPaste className="size-3.5" /> Paste meeting notes
@@ -57,7 +57,7 @@ export function QuestionsPanel({ caseId, questions, proposals, canEdit }: { case
           ))}
         </div>
       ))}
-      {questions.length === 0 && !adding && <p className="text-sm text-muted-foreground">No questions yet. Ask the AI “What should I ask engineering and finance?”</p>}
+      {questions.length === 0 && !adding && <p className="text-sm text-muted-foreground">No questions yet.</p>}
       <MeetingNoteDialog caseId={caseId} open={noteOpen} onOpenChange={setNoteOpen} />
     </div>
   );

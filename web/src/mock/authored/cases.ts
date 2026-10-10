@@ -741,6 +741,7 @@ export const caseSpecs: CaseSpec[] = [
   // ======================= 5 Series · China (Wei) =======================
   {
     id: "CASE-G60-CN-0001",
+    topicId: "body_equipment_overall_technology",
     title: "5 Series Li feels under-equipped against Chinese rivals",
     summary: "China G68 rates level of equipment 7.49 (7 Series: 9.82) while Chinese rivals ship rich standard equipment.",
     series: "G60",
@@ -845,6 +846,7 @@ export const caseSpecs: CaseSpec[] = [
   },
   {
     id: "CASE-G60-CN-0002",
+    topicId: "interior_comfort",
     title: "Rear-seat cooler for chauffeured long-wheelbase customers",
     summary: "Rear-seat owners in China expect a cooler/fridge; Chinese rivals offer one as standard.",
     series: "G60",
@@ -921,6 +923,7 @@ export const caseSpecs: CaseSpec[] = [
   },
   {
     id: "CASE-G60-CN-0003",
+    topicId: "electric_range",
     title: "BEV range target falls behind Chinese benchmarks (CLTC)",
     summary: "Xiaomi SU7 Max advertises 800 km CLTC; the i5 Li target of 700 km CLTC looks outdated.",
     series: "G60",
@@ -1015,6 +1018,7 @@ export const caseSpecs: CaseSpec[] = [
   },
   {
     id: "CASE-G60-CN-0004",
+    topicId: "apps_in_car",
     title: "Connected services and in-car apps lag behind local ecosystems",
     summary: "Connected services score 7.35 in China; local rivals integrate WeChat, payments and app stores deeply.",
     series: "G60",
@@ -1342,6 +1346,7 @@ export const caseSpecs: CaseSpec[] = [
   },
   {
     id: "CASE-G70-0003",
+    topicId: "space_spatial_impression",
     title: "Chinese owners find the 7 Series cramped; Europeans find it roomy",
     summary: "Rear roominess China 7.52 vs EU 9.41. One car or a China long-wheelbase variant?",
     series: "G70",
@@ -1544,6 +1549,7 @@ export const caseSpecs: CaseSpec[] = [
   },
   {
     id: "CASE-INNO-0003",
+    topicId: "bidirectional_charging",
     title: "Vehicle-to-load: power outdoor gear and the home from the i5",
     summary: "Bidirectional charging (V2L/V2H) as a BEV benefit; popular in China and with US owners.",
     series: "G60",

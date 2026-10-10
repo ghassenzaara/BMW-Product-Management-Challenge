@@ -1,0 +1,1641 @@
+{
+ "version": "2026-10-11.1",
+ "carAreas": [
+  {
+   "id": "exterior_design",
+   "label": "Exterior, design & lighting",
+   "description": "Look of the car from outside, body panels, mirrors, exterior lights, glass and wipers."
+  },
+  {
+   "id": "interior_comfort",
+   "label": "Interior & comfort",
+   "description": "Cabin look and feel, dashboard, console, ambient light, roominess, glass roof, sun protection."
+  },
+  {
+   "id": "seats",
+   "label": "Seats",
+   "description": "Seat comfort, adjustment, heating/ventilation, massage, memory, headrests, child seats."
+  },
+  {
+   "id": "climate",
+   "label": "Climate",
+   "description": "Heating, air conditioning, blower, climate controls, heated surfaces."
+  },
+  {
+   "id": "infotainment_hmi",
+   "label": "Infotainment & HMI",
+   "description": "Screens, operating concept, iDrive, navigation, audio, smartphone mirroring, voice control, displays."
+  },
+  {
+   "id": "connectivity_digital",
+   "label": "Connectivity & digital (incl. AI assistant)",
+   "description": "My BMW App, remote functions, digital key, eSIM/Wi-Fi, OTA upgrades, in-car apps, the intelligent personal assistant, phone pairing and charging."
+  },
+  {
+   "id": "driver_assistance",
+   "label": "Driver assistance & safety",
+   "description": "ADAS, parking aids, cameras, warnings, automated driving, airbags, belts, perceived safety."
+  },
+  {
+   "id": "dynamics_powertrain",
+   "label": "Driving dynamics & powertrain",
+   "description": "Engine/motor, acceleration, handling, ride, brakes, steering, transmission, drive modes, tires, start-stop."
+  },
+  {
+   "id": "range_charging",
+   "label": "Range, charging & refuelling",
+   "description": "Electric range, charging (public, home, cable, socket), high-voltage battery, fuel tank."
+  },
+  {
+   "id": "practicality",
+   "label": "Practicality & access",
+   "description": "Luggage, storage, doors, tailgate, frunk, keys and access, towing, everyday handling."
+  },
+  {
+   "id": "quality_materials",
+   "label": "Quality & materials",
+   "description": "Materials, trim, workmanship, cabin quietness, overall build of the body."
+  }
+ ],
+ "topics": [
+  {
+   "id": "vehicle_climatization",
+   "label": "Vehicle, climatization",
+   "shortLabel": "Climate",
+   "carArea": "climate",
+   "hint": null
+  },
+  {
+   "id": "air_conditioning_setting",
+   "label": "Air conditioning, setting",
+   "shortLabel": "Air conditioning",
+   "carArea": "climate",
+   "hint": null
+  },
+  {
+   "id": "blower_function",
+   "label": "Blower function",
+   "shortLabel": "Blower function",
+   "carArea": "climate",
+   "hint": null
+  },
+  {
+   "id": "heated_steering_wheel",
+   "label": "Heated steering wheel",
+   "shortLabel": "Heated steering wheel",
+   "carArea": "climate",
+   "hint": null
+  },
+  {
+   "id": "air_conditioning_control_panel",
+   "label": "Air conditioning control panel",
+   "shortLabel": "Air conditioning control panel",
+   "carArea": "climate",
+   "hint": null
+  },
+  {
+   "id": "air_conditioning_overall_technology",
+   "label": "Air conditioning, overall technology",
+   "shortLabel": "Air conditioning",
+   "carArea": "climate",
+   "hint": null
+  },
+  {
+   "id": "panel_heating",
+   "label": "Panel heating",
+   "shortLabel": "Panel heating",
+   "carArea": "climate",
+   "hint": null
+  },
+  {
+   "id": "heated_rear_window",
+   "label": "Heated rear window",
+   "shortLabel": "Heated rear window",
+   "carArea": "climate",
+   "hint": null
+  },
+  {
+   "id": "auxiliary_heater_function",
+   "label": "Auxiliary heater function",
+   "shortLabel": "Auxiliary heater function",
+   "carArea": "climate",
+   "hint": null
+  },
+  {
+   "id": "my_bmw_app_mini_app",
+   "label": "My BMW App / MINI App",
+   "shortLabel": "My BMW App",
+   "carArea": "connectivity_digital",
+   "hint": null
+  },
+  {
+   "id": "intelligent_personal_assistant",
+   "label": "Intelligent Personal Assistant",
+   "shortLabel": "Intelligent Personal Assistant",
+   "carArea": "connectivity_digital",
+   "hint": null
+  },
+  {
+   "id": "digital_key",
+   "label": "Digital Key",
+   "shortLabel": "Digital Key",
+   "carArea": "connectivity_digital",
+   "hint": null
+  },
+  {
+   "id": "personal_esim",
+   "label": "Personal eSIM",
+   "shortLabel": "Personal eSIM",
+   "carArea": "connectivity_digital",
+   "hint": null
+  },
+  {
+   "id": "usb_port",
+   "label": "USB port",
+   "shortLabel": "USB port",
+   "carArea": "connectivity_digital",
+   "hint": null
+  },
+  {
+   "id": "mobile_device_wireless_charging",
+   "label": "Mobile device, wireless charging",
+   "shortLabel": "Mobile device",
+   "carArea": "connectivity_digital",
+   "hint": null
+  },
+  {
+   "id": "remote_software_upgrade_rsu",
+   "label": "Remote Software Upgrade/RSU",
+   "shortLabel": "Remote Software Upgrade/RSU",
+   "carArea": "connectivity_digital",
+   "hint": null
+  },
+  {
+   "id": "manage_pair_mobile_device_bluetooth",
+   "label": "Manage / pair mobile device (Bluetooth)",
+   "shortLabel": "Manage",
+   "carArea": "connectivity_digital",
+   "hint": null
+  },
+  {
+   "id": "wifi_hotspot",
+   "label": "WiFi hotspot",
+   "shortLabel": "WiFi hotspot",
+   "carArea": "connectivity_digital",
+   "hint": null
+  },
+  {
+   "id": "remote_services_remote_keyless_entry_my_bmw_app_mini_app",
+   "label": "Remote Services & Remote Keyless Entry (My BMW App/MINI App)",
+   "shortLabel": "Remote services",
+   "carArea": "connectivity_digital",
+   "hint": null
+  },
+  {
+   "id": "apps_in_car",
+   "label": "Apps (in-car)",
+   "shortLabel": "Apps",
+   "carArea": "connectivity_digital",
+   "hint": null
+  },
+  {
+   "id": "intelligent_personal_assistant_activation_word",
+   "label": "Intelligent Personal Assistant, activation word",
+   "shortLabel": "Intelligent Personal Assistant",
+   "carArea": "connectivity_digital",
+   "hint": null
+  },
+  {
+   "id": "remote_engine_start_my_bmw_app_mini_app",
+   "label": "Remote Engine Start (My BMW App / MINI App)",
+   "shortLabel": "Remote Engine Start",
+   "carArea": "connectivity_digital",
+   "hint": null
+  },
+  {
+   "id": "connecteddrive_services_smartphone_technology_overall",
+   "label": "ConnectedDrive services (smartphone) technology overall",
+   "shortLabel": "ConnectedDrive services",
+   "carArea": "connectivity_digital",
+   "hint": null
+  },
+  {
+   "id": "priorities_for_telephones",
+   "label": "Priorities for telephones",
+   "shortLabel": "Priorities for telephones",
+   "carArea": "connectivity_digital",
+   "hint": null
+  },
+  {
+   "id": "interior_camera",
+   "label": "Interior camera",
+   "shortLabel": "Interior camera",
+   "carArea": "connectivity_digital",
+   "hint": null
+  },
+  {
+   "id": "bmw_connecteddrive_upgrades_mini_connected_upgrades",
+   "label": "BMW ConnectedDrive upgrades/ MINI CONNECTED upgrades",
+   "shortLabel": "BMW ConnectedDrive upgrades/ MINI CONNECTED upgrades",
+   "carArea": "connectivity_digital",
+   "hint": null
+  },
+  {
+   "id": "remote_3d_view_my_bmw_app_mini_app",
+   "label": "Remote 3D View (My BMW App / MINI App)",
+   "shortLabel": "Remote 3D View",
+   "carArea": "connectivity_digital",
+   "hint": null
+  },
+  {
+   "id": "my_bmw_mini_portal",
+   "label": "My BMW / MINI Portal",
+   "shortLabel": "My BMW",
+   "carArea": "connectivity_digital",
+   "hint": null
+  },
+  {
+   "id": "teleservices",
+   "label": "Teleservices",
+   "shortLabel": "Teleservices",
+   "carArea": "connectivity_digital",
+   "hint": "Service intervals and remote service notifications."
+  },
+  {
+   "id": "remote_interior_camera_my_bmw_app_mini_app",
+   "label": "Remote interior camera (My BMW App / MINI App)",
+   "shortLabel": "Remote interior camera",
+   "carArea": "connectivity_digital",
+   "hint": null
+  },
+  {
+   "id": "display_key",
+   "label": "Display key",
+   "shortLabel": "Display key",
+   "carArea": "connectivity_digital",
+   "hint": "BMW key fob with a display."
+  },
+  {
+   "id": "bmw_online_mini_online",
+   "label": "BMW Online / MINI Online",
+   "shortLabel": "BMW Online",
+   "carArea": "connectivity_digital",
+   "hint": null
+  },
+  {
+   "id": "customer_account_my_bmw_mini_portal",
+   "label": "Customer Account (My BMW / MINI Portal)",
+   "shortLabel": "Customer Account",
+   "carArea": "connectivity_digital",
+   "hint": null
+  },
+  {
+   "id": "driver_s_guide_app",
+   "label": "Driver's Guide App",
+   "shortLabel": "Driver's Guide App",
+   "carArea": "connectivity_digital",
+   "hint": null
+  },
+  {
+   "id": "apps_smartphone",
+   "label": "Apps (smartphone)",
+   "shortLabel": "Apps",
+   "carArea": "connectivity_digital",
+   "hint": null
+  },
+  {
+   "id": "impression_of_safety",
+   "label": "Impression of safety",
+   "shortLabel": "Impression of safety",
+   "carArea": "driver_assistance",
+   "hint": "How safe the car feels overall."
+  },
+  {
+   "id": "driver_assistance_automated_driving_overall_technology",
+   "label": "Driver assistance, automated driving, overall technology",
+   "shortLabel": "Driver assistance",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "highway_assistant",
+   "label": "Highway assistant",
+   "shortLabel": "Highway assistant",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "active_cruise_control",
+   "label": "(Active) cruise control",
+   "shortLabel": "Cruise control",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "parking_assistant",
+   "label": "Parking Assistant",
+   "shortLabel": "Parking Assistant",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "rear_view_camera",
+   "label": "Rear view camera",
+   "shortLabel": "Rear view camera",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "lane_departure_warning",
+   "label": "Lane departure warning",
+   "shortLabel": "Lane departure warning",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "park_distance_control_pdc",
+   "label": "Park Distance Control (PDC)",
+   "shortLabel": "Park Distance Control",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "vehicle_safety_overall_technology",
+   "label": "Vehicle safety, overall technology",
+   "shortLabel": "Safety",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "steering_and_lane_guide_assist",
+   "label": "Steering and lane guide assist",
+   "shortLabel": "Steering and lane guide assist",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "surround_view",
+   "label": "Surround View",
+   "shortLabel": "Surround View",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "seat_belts",
+   "label": "Seat belts",
+   "shortLabel": "Seat belts",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "all_round_view",
+   "label": "All-round view",
+   "shortLabel": "All-round view",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "speed_limit_assistant",
+   "label": "Speed Limit Assistant",
+   "shortLabel": "Speed Limit Assistant",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "drive_recorder",
+   "label": "Drive Recorder",
+   "shortLabel": "Drive Recorder",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "back_up_assistant",
+   "label": "Back-up Assistant",
+   "shortLabel": "Back-up Assistant",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "blind_spot_monitoring",
+   "label": "Blind spot monitoring",
+   "shortLabel": "Blind spot monitoring",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "front_collision_warning",
+   "label": "Front collision warning",
+   "shortLabel": "Front collision warning",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "remote_controlled_parking",
+   "label": "Remote controlled parking",
+   "shortLabel": "Remote controlled parking",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "emergency_request",
+   "label": "Emergency request",
+   "shortLabel": "Emergency request",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "cross_traffic_warning_rear_with_brake_intervention",
+   "label": "Cross Traffic Warning Rear with Brake Intervention",
+   "shortLabel": "Cross Traffic Warning Rear with Brake Intervention",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "fatigue_alert",
+   "label": "Fatigue Alert",
+   "shortLabel": "Fatigue Alert",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "anti_theft_alarm_system",
+   "label": "Anti-theft alarm system",
+   "shortLabel": "Anti-theft alarm system",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "high_beam_assistant",
+   "label": "High-beam assistant",
+   "shortLabel": "High-beam assistant",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "lane_change_assistant",
+   "label": "Lane Change Assistant",
+   "shortLabel": "Lane Change Assistant",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "child_safety_latch",
+   "label": "Child safety latch",
+   "shortLabel": "Child safety latch",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "night_vision",
+   "label": "Night Vision",
+   "shortLabel": "Night Vision",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "side_view",
+   "label": "Side View",
+   "shortLabel": "Side View",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "traffic_light_and_sign_warning",
+   "label": "Traffic Light And Sign Warning",
+   "shortLabel": "Traffic Light And Sign Warning",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "rear_end_collision_warning",
+   "label": "Rear-end collision warning",
+   "shortLabel": "Rear-end collision warning",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "airbags",
+   "label": "Airbags",
+   "shortLabel": "Airbags",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "emergency_stop_assistant",
+   "label": "Emergency Stop Assistant",
+   "shortLabel": "Emergency Stop Assistant",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "traffic_jam_assistant",
+   "label": "Traffic Jam Assistant",
+   "shortLabel": "Traffic Jam Assistant",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "intersection_warning_with_brake_intervention",
+   "label": "Intersection Warning with Brake Intervention",
+   "shortLabel": "Intersection Warning with Brake Intervention",
+   "carArea": "driver_assistance",
+   "hint": null
+  },
+  {
+   "id": "drivetrain",
+   "label": "Drivetrain",
+   "shortLabel": "Drivetrain",
+   "carArea": "dynamics_powertrain",
+   "hint": "Engine/motor power, acceleration, fuel or energy efficiency of the propulsion system."
+  },
+  {
+   "id": "drive_driving_dynamics_and_chassis_overall_technology",
+   "label": "Drive, driving dynamics and chassis, overall technology",
+   "shortLabel": "Driving dynamics",
+   "carArea": "dynamics_powertrain",
+   "hint": "Overall driving feel: sportiness, agility, 'fun to drive'."
+  },
+  {
+   "id": "handling_riding",
+   "label": "Handling / Riding",
+   "shortLabel": "Handling",
+   "carArea": "dynamics_powertrain",
+   "hint": "Ride comfort and handling on the road."
+  },
+  {
+   "id": "my_modes_driving_experience",
+   "label": "My Modes / driving experience",
+   "shortLabel": "My Modes",
+   "carArea": "dynamics_powertrain",
+   "hint": "BMW My Modes: selectable driving/experience modes (Sport, Efficient, Personal)."
+  },
+  {
+   "id": "cushioning_damping_vehicle",
+   "label": "Cushioning / damping vehicle",
+   "shortLabel": "Cushioning",
+   "carArea": "dynamics_powertrain",
+   "hint": null
+  },
+  {
+   "id": "braking",
+   "label": "Braking",
+   "shortLabel": "Braking",
+   "carArea": "dynamics_powertrain",
+   "hint": null
+  },
+  {
+   "id": "wheels_tires",
+   "label": "Wheels / tires",
+   "shortLabel": "Wheels",
+   "carArea": "dynamics_powertrain",
+   "hint": null
+  },
+  {
+   "id": "automatic_engine_start_stop_function_msa",
+   "label": "Automatic engine start-stop function (MSA)",
+   "shortLabel": "Auto start-stop",
+   "carArea": "dynamics_powertrain",
+   "hint": null
+  },
+  {
+   "id": "transmission",
+   "label": "Transmission",
+   "shortLabel": "Transmission",
+   "carArea": "dynamics_powertrain",
+   "hint": null
+  },
+  {
+   "id": "engine_acoustics_engine_sound",
+   "label": "Engine acoustics / engine sound",
+   "shortLabel": "Engine acoustics",
+   "carArea": "dynamics_powertrain",
+   "hint": null
+  },
+  {
+   "id": "steering",
+   "label": "Steering",
+   "shortLabel": "Steering",
+   "carArea": "dynamics_powertrain",
+   "hint": null
+  },
+  {
+   "id": "resting_state_after_door_opening",
+   "label": "Resting state after door opening",
+   "shortLabel": "Resting state after door opening",
+   "carArea": "dynamics_powertrain",
+   "hint": "Vehicle wake/sleep behaviour: car stays on or switches off when doors open, settings not retained."
+  },
+  {
+   "id": "brake_energy_regeneration_recuperation",
+   "label": "Brake Energy Regeneration / recuperation",
+   "shortLabel": "Brake Energy Regeneration",
+   "carArea": "dynamics_powertrain",
+   "hint": "Regenerative braking, one-pedal feel of electrified cars."
+  },
+  {
+   "id": "operate_selector_lever",
+   "label": "Operate selector lever",
+   "shortLabel": "Operate selector lever",
+   "carArea": "dynamics_powertrain",
+   "hint": null
+  },
+  {
+   "id": "automatic_hold",
+   "label": "Automatic-hold",
+   "shortLabel": "Automatic-hold",
+   "carArea": "dynamics_powertrain",
+   "hint": null
+  },
+  {
+   "id": "rsc_tire",
+   "label": "RSC tire",
+   "shortLabel": "RSC tire",
+   "carArea": "dynamics_powertrain",
+   "hint": null
+  },
+  {
+   "id": "vehicle_battery",
+   "label": "Vehicle battery",
+   "shortLabel": "Vehicle battery",
+   "carArea": "dynamics_powertrain",
+   "hint": "12 V battery and its warnings. The high-voltage battery is range_charging."
+  },
+  {
+   "id": "ground_clearance",
+   "label": "ground clearance",
+   "shortLabel": "ground clearance",
+   "carArea": "dynamics_powertrain",
+   "hint": null
+  },
+  {
+   "id": "tire_pressure_control",
+   "label": "Tire pressure control",
+   "shortLabel": "Tire pressure control",
+   "carArea": "dynamics_powertrain",
+   "hint": null
+  },
+  {
+   "id": "parking_brake",
+   "label": "Parking brake",
+   "shortLabel": "Parking brake",
+   "carArea": "dynamics_powertrain",
+   "hint": null
+  },
+  {
+   "id": "self_leveling_suspension",
+   "label": "Self-leveling suspension",
+   "shortLabel": "Self-leveling suspension",
+   "carArea": "dynamics_powertrain",
+   "hint": null
+  },
+  {
+   "id": "tirefit",
+   "label": "Tirefit",
+   "shortLabel": "Tirefit",
+   "carArea": "dynamics_powertrain",
+   "hint": null
+  },
+  {
+   "id": "starting_engine",
+   "label": "Starting engine",
+   "shortLabel": "Starting engine",
+   "carArea": "dynamics_powertrain",
+   "hint": null
+  },
+  {
+   "id": "pedals_operate",
+   "label": "Pedals, operate",
+   "shortLabel": "Pedals",
+   "carArea": "dynamics_powertrain",
+   "hint": null
+  },
+  {
+   "id": "start_engine_switch_on_drive_readiness",
+   "label": "Start engine/switch on drive readiness",
+   "shortLabel": "Start engine/switch on drive readiness",
+   "carArea": "dynamics_powertrain",
+   "hint": null
+  },
+  {
+   "id": "dynamic_stability_control",
+   "label": "Dynamic Stability Control",
+   "shortLabel": "Dynamic Stability Control",
+   "carArea": "dynamics_powertrain",
+   "hint": null
+  },
+  {
+   "id": "shift_paddle",
+   "label": "Shift paddle",
+   "shortLabel": "Shift paddle",
+   "carArea": "dynamics_powertrain",
+   "hint": null
+  },
+  {
+   "id": "cooling",
+   "label": "Cooling",
+   "shortLabel": "Cooling",
+   "carArea": "dynamics_powertrain",
+   "hint": "Engine or drivetrain cooling (overheating, coolant). Cabin cooling is climate."
+  },
+  {
+   "id": "engine_oil",
+   "label": "Engine oil",
+   "shortLabel": "Engine oil",
+   "carArea": "dynamics_powertrain",
+   "hint": null
+  },
+  {
+   "id": "launch_control",
+   "label": "Launch Control",
+   "shortLabel": "Launch Control",
+   "carArea": "dynamics_powertrain",
+   "hint": null
+  },
+  {
+   "id": "exhaust_system",
+   "label": "Exhaust system",
+   "shortLabel": "Exhaust system",
+   "carArea": "dynamics_powertrain",
+   "hint": null
+  },
+  {
+   "id": "exterior_design",
+   "label": "Exterior design",
+   "shortLabel": "Exterior design",
+   "carArea": "exterior_design",
+   "hint": null
+  },
+  {
+   "id": "exterior",
+   "label": "Exterior",
+   "shortLabel": "Exterior",
+   "carArea": "exterior_design",
+   "hint": null
+  },
+  {
+   "id": "exterior_rearview_mirror",
+   "label": "Exterior rearview mirror",
+   "shortLabel": "Exterior rearview mirror",
+   "carArea": "exterior_design",
+   "hint": null
+  },
+  {
+   "id": "exterior_lighting",
+   "label": "Exterior lighting",
+   "shortLabel": "Exterior lighting",
+   "carArea": "exterior_design",
+   "hint": null
+  },
+  {
+   "id": "welcome_light_carpet",
+   "label": "Welcome Light Carpet",
+   "shortLabel": "Welcome Light Carpet",
+   "carArea": "exterior_design",
+   "hint": null
+  },
+  {
+   "id": "windshield_wiper",
+   "label": "Windshield wiper",
+   "shortLabel": "Windshield wiper",
+   "carArea": "exterior_design",
+   "hint": null
+  },
+  {
+   "id": "windshield",
+   "label": "Windshield",
+   "shortLabel": "Windshield",
+   "carArea": "exterior_design",
+   "hint": null
+  },
+  {
+   "id": "flashing",
+   "label": "Flashing",
+   "shortLabel": "Flashing",
+   "carArea": "exterior_design",
+   "hint": "Turn signals and hazard lights."
+  },
+  {
+   "id": "radiator_grille",
+   "label": "Radiator grille",
+   "shortLabel": "Radiator grille",
+   "carArea": "exterior_design",
+   "hint": null
+  },
+  {
+   "id": "rain_sensor_mode",
+   "label": "Rain sensor mode",
+   "shortLabel": "Rain sensor mode",
+   "carArea": "exterior_design",
+   "hint": null
+  },
+  {
+   "id": "roof",
+   "label": "Roof",
+   "shortLabel": "Roof",
+   "carArea": "exterior_design",
+   "hint": null
+  },
+  {
+   "id": "bumper_rear",
+   "label": "Bumper, rear",
+   "shortLabel": "Bumper",
+   "carArea": "exterior_design",
+   "hint": null
+  },
+  {
+   "id": "hood",
+   "label": "Hood",
+   "shortLabel": "Hood",
+   "carArea": "exterior_design",
+   "hint": null
+  },
+  {
+   "id": "rear_wiper",
+   "label": "Rear wiper",
+   "shortLabel": "Rear wiper",
+   "carArea": "exterior_design",
+   "hint": null
+  },
+  {
+   "id": "bumper_front",
+   "label": "Bumper, front",
+   "shortLabel": "Bumper",
+   "carArea": "exterior_design",
+   "hint": null
+  },
+  {
+   "id": "fog_light",
+   "label": "Fog light",
+   "shortLabel": "Fog light",
+   "carArea": "exterior_design",
+   "hint": null
+  },
+  {
+   "id": "side_sill_trim_panel",
+   "label": "Side sill trim panel",
+   "shortLabel": "Side sill trim panel",
+   "carArea": "exterior_design",
+   "hint": null
+  },
+  {
+   "id": "opening_closing_convertible_top_hardtop",
+   "label": "Opening / closing convertible top / hardtop",
+   "shortLabel": "Opening",
+   "carArea": "exterior_design",
+   "hint": null
+  },
+  {
+   "id": "running_board",
+   "label": "Running board",
+   "shortLabel": "Running board",
+   "carArea": "exterior_design",
+   "hint": null
+  },
+  {
+   "id": "wash_wipe_switch",
+   "label": "Wash / wipe switch",
+   "shortLabel": "Wash",
+   "carArea": "exterior_design",
+   "hint": null
+  },
+  {
+   "id": "touch_screen_operation",
+   "label": "Touch screen, operation",
+   "shortLabel": "Touch screen",
+   "carArea": "infotainment_hmi",
+   "hint": null
+  },
+  {
+   "id": "connecteddrive_and_infotainment_overall_technology",
+   "label": "ConnectedDrive and Infotainment, overall technology",
+   "shortLabel": "Infotainment",
+   "carArea": "infotainment_hmi",
+   "hint": null
+  },
+  {
+   "id": "audio_mode_sound",
+   "label": "Audio mode, sound",
+   "shortLabel": "Audio mode",
+   "carArea": "infotainment_hmi",
+   "hint": null
+  },
+  {
+   "id": "operating_concept_operating_system",
+   "label": "Operating concept, operating system",
+   "shortLabel": "Operating concept",
+   "carArea": "infotainment_hmi",
+   "hint": null
+  },
+  {
+   "id": "owner_s_manual",
+   "label": "Owner's Manual",
+   "shortLabel": "Owner's Manual",
+   "carArea": "infotainment_hmi",
+   "hint": "Printed or digital owner's manual, how-to information in the car."
+  },
+  {
+   "id": "navigation",
+   "label": "Navigation",
+   "shortLabel": "Navigation",
+   "carArea": "infotainment_hmi",
+   "hint": null
+  },
+  {
+   "id": "apple_carplay",
+   "label": "Apple CarPlay",
+   "shortLabel": "Apple CarPlay",
+   "carArea": "infotainment_hmi",
+   "hint": null
+  },
+  {
+   "id": "head_up_display",
+   "label": "Head-Up Display",
+   "shortLabel": "Head-Up Display",
+   "carArea": "infotainment_hmi",
+   "hint": null
+  },
+  {
+   "id": "instrument_cluster",
+   "label": "Instrument cluster",
+   "shortLabel": "Instrument cluster",
+   "carArea": "infotainment_hmi",
+   "hint": null
+  },
+  {
+   "id": "driver_profile",
+   "label": "Driver profile",
+   "shortLabel": "Driver profile",
+   "carArea": "infotainment_hmi",
+   "hint": null
+  },
+  {
+   "id": "rear_seat_entertainment",
+   "label": "Rear seat entertainment",
+   "shortLabel": "Rear seat entertainment",
+   "carArea": "infotainment_hmi",
+   "hint": null
+  },
+  {
+   "id": "radio_function",
+   "label": "Radio function",
+   "shortLabel": "Radio function",
+   "carArea": "infotainment_hmi",
+   "hint": null
+  },
+  {
+   "id": "voice_control_speech_recognition",
+   "label": "Voice control / speech recognition",
+   "shortLabel": "Voice control",
+   "carArea": "infotainment_hmi",
+   "hint": null
+  },
+  {
+   "id": "android_auto",
+   "label": "Android Auto",
+   "shortLabel": "Android Auto",
+   "carArea": "infotainment_hmi",
+   "hint": null
+  },
+  {
+   "id": "gesture_control",
+   "label": "Gesture control",
+   "shortLabel": "Gesture control",
+   "carArea": "infotainment_hmi",
+   "hint": null
+  },
+  {
+   "id": "controller_operation",
+   "label": "Controller operation",
+   "shortLabel": "Controller operation",
+   "carArea": "infotainment_hmi",
+   "hint": null
+  },
+  {
+   "id": "multi_function_steering_wheel_operation",
+   "label": "Multi-function steering wheel operation",
+   "shortLabel": "Multi-function steering wheel operation",
+   "carArea": "infotainment_hmi",
+   "hint": null
+  },
+  {
+   "id": "touch_command",
+   "label": "Touch Command",
+   "shortLabel": "Touch Command",
+   "carArea": "infotainment_hmi",
+   "hint": "Rear-seat tablet/controls (7 Series) for comfort functions."
+  },
+  {
+   "id": "experience_modes",
+   "label": "Experience Modes",
+   "shortLabel": "Experience Modes",
+   "carArea": "infotainment_hmi",
+   "hint": "Screen and ambience themes of My Modes (artwork, sounds); not the driving behaviour."
+  },
+  {
+   "id": "real_time_traffic_information_rtti",
+   "label": "Real Time Traffic Information (RTTI)",
+   "shortLabel": "Real Time Traffic Information",
+   "carArea": "infotainment_hmi",
+   "hint": null
+  },
+  {
+   "id": "traffic_camera_information",
+   "label": "Traffic Camera Information",
+   "shortLabel": "Traffic Camera Information",
+   "carArea": "infotainment_hmi",
+   "hint": null
+  },
+  {
+   "id": "cd_dvd_changer_playback",
+   "label": "CD / DVD changer, playback",
+   "shortLabel": "CD / DVD changer, playback",
+   "carArea": "infotainment_hmi",
+   "hint": null
+  },
+  {
+   "id": "video_playback_streaming",
+   "label": "Video: playback / streaming",
+   "shortLabel": "Video: playback",
+   "carArea": "infotainment_hmi",
+   "hint": null
+  },
+  {
+   "id": "map_update",
+   "label": "Map update",
+   "shortLabel": "Map update",
+   "carArea": "infotainment_hmi",
+   "hint": null
+  },
+  {
+   "id": "display_time",
+   "label": "Display, time",
+   "shortLabel": "Display",
+   "carArea": "infotainment_hmi",
+   "hint": null
+  },
+  {
+   "id": "light_switch_operating_unit",
+   "label": "Light switch operating unit",
+   "shortLabel": "Light switch operating unit",
+   "carArea": "infotainment_hmi",
+   "hint": null
+  },
+  {
+   "id": "screen_mirroring",
+   "label": "Screen mirroring",
+   "shortLabel": "Screen mirroring",
+   "carArea": "infotainment_hmi",
+   "hint": null
+  },
+  {
+   "id": "smart_poi_search",
+   "label": "Smart POI search",
+   "shortLabel": "Smart POI search",
+   "carArea": "infotainment_hmi",
+   "hint": null
+  },
+  {
+   "id": "interior_design",
+   "label": "Interior design",
+   "shortLabel": "Interior design",
+   "carArea": "interior_comfort",
+   "hint": null
+  },
+  {
+   "id": "interior_comfort",
+   "label": "Interior comfort",
+   "shortLabel": "Interior comfort",
+   "carArea": "interior_comfort",
+   "hint": null
+  },
+  {
+   "id": "space_spatial_impression",
+   "label": "Space / spatial impression",
+   "shortLabel": "Space",
+   "carArea": "interior_comfort",
+   "hint": "Perceived roominess of the cabin (legroom, headroom)."
+  },
+  {
+   "id": "ambient_light",
+   "label": "Ambient light",
+   "shortLabel": "Ambient light",
+   "carArea": "interior_comfort",
+   "hint": null
+  },
+  {
+   "id": "instrument_panel",
+   "label": "Instrument panel",
+   "shortLabel": "Instrument panel",
+   "carArea": "interior_comfort",
+   "hint": "Dashboard as an object: layout, look, materials."
+  },
+  {
+   "id": "panorama_glass_roof",
+   "label": "Panorama glass roof",
+   "shortLabel": "Panorama glass roof",
+   "carArea": "interior_comfort",
+   "hint": null
+  },
+  {
+   "id": "steering_wheel",
+   "label": "Steering wheel",
+   "shortLabel": "Steering wheel",
+   "carArea": "interior_comfort",
+   "hint": "The wheel itself: rim, size, material, look. Steering feel is 'Steering'."
+  },
+  {
+   "id": "center_console_front",
+   "label": "Center console, front",
+   "shortLabel": "Center console",
+   "carArea": "interior_comfort",
+   "hint": null
+  },
+  {
+   "id": "interior",
+   "label": "Interior",
+   "shortLabel": "Interior",
+   "carArea": "interior_comfort",
+   "hint": null
+  },
+  {
+   "id": "vehicle_interior_lighting",
+   "label": "Vehicle interior, lighting",
+   "shortLabel": "Vehicle interior",
+   "carArea": "interior_comfort",
+   "hint": null
+  },
+  {
+   "id": "sun_protection",
+   "label": "Sun protection",
+   "shortLabel": "Sun protection",
+   "carArea": "interior_comfort",
+   "hint": null
+  },
+  {
+   "id": "interior_rearview_mirror",
+   "label": "Interior rearview mirror",
+   "shortLabel": "Interior rearview mirror",
+   "carArea": "interior_comfort",
+   "hint": null
+  },
+  {
+   "id": "center_armrest_front",
+   "label": "Center armrest, front",
+   "shortLabel": "Center armrest",
+   "carArea": "interior_comfort",
+   "hint": null
+  },
+  {
+   "id": "grab_handle",
+   "label": "Grab handle",
+   "shortLabel": "Grab handle",
+   "carArea": "interior_comfort",
+   "hint": null
+  },
+  {
+   "id": "sun_visor_front",
+   "label": "Sun visor, front",
+   "shortLabel": "Sun visor",
+   "carArea": "interior_comfort",
+   "hint": null
+  },
+  {
+   "id": "roof_function_centre",
+   "label": "Roof function centre",
+   "shortLabel": "Roof function centre",
+   "carArea": "interior_comfort",
+   "hint": "Overhead console: reading lights, SOS button, switches."
+  },
+  {
+   "id": "caring_car",
+   "label": "Caring Car",
+   "shortLabel": "Caring Car",
+   "carArea": "interior_comfort",
+   "hint": "Wellness programs (vitalize / relax)."
+  },
+  {
+   "id": "luggage_compartment",
+   "label": "Luggage compartment",
+   "shortLabel": "Luggage compartment",
+   "carArea": "practicality",
+   "hint": null
+  },
+  {
+   "id": "door_open_close",
+   "label": "Door, open / close",
+   "shortLabel": "Door",
+   "carArea": "practicality",
+   "hint": null
+  },
+  {
+   "id": "trunk_lid_open_close",
+   "label": "Trunk lid, open / close",
+   "shortLabel": "Trunk lid",
+   "carArea": "practicality",
+   "hint": null
+  },
+  {
+   "id": "vehicle_key",
+   "label": "Vehicle key",
+   "shortLabel": "Vehicle key",
+   "carArea": "practicality",
+   "hint": null
+  },
+  {
+   "id": "automatic_doors",
+   "label": "Automatic doors",
+   "shortLabel": "Automatic doors",
+   "carArea": "practicality",
+   "hint": null
+  },
+  {
+   "id": "non_contact_trunk_lid_opening",
+   "label": "non-contact trunk lid opening",
+   "shortLabel": "Hands-free tailgate",
+   "carArea": "practicality",
+   "hint": null
+  },
+  {
+   "id": "vehicle_lock_unlock",
+   "label": "Vehicle, lock / unlock",
+   "shortLabel": "Vehicle",
+   "carArea": "practicality",
+   "hint": null
+  },
+  {
+   "id": "comfort_access",
+   "label": "Comfort Access",
+   "shortLabel": "Comfort Access",
+   "carArea": "practicality",
+   "hint": null
+  },
+  {
+   "id": "vehicle_access_and_exit",
+   "label": "Vehicle, access and exit",
+   "shortLabel": "Vehicle",
+   "carArea": "practicality",
+   "hint": null
+  },
+  {
+   "id": "garage_door_opener",
+   "label": "Garage door opener",
+   "shortLabel": "Garage door opener",
+   "carArea": "practicality",
+   "hint": null
+  },
+  {
+   "id": "glove_box",
+   "label": "Glove box",
+   "shortLabel": "Glove box",
+   "carArea": "practicality",
+   "hint": null
+  },
+  {
+   "id": "storage_compartments",
+   "label": "Storage compartments",
+   "shortLabel": "Storage compartments",
+   "carArea": "practicality",
+   "hint": null
+  },
+  {
+   "id": "cupholder",
+   "label": "Cupholder",
+   "shortLabel": "Cupholder",
+   "carArea": "practicality",
+   "hint": null
+  },
+  {
+   "id": "door_front",
+   "label": "Door, front",
+   "shortLabel": "Door",
+   "carArea": "practicality",
+   "hint": null
+  },
+  {
+   "id": "side_window_open_close",
+   "label": "Side window, open / close",
+   "shortLabel": "Side window",
+   "carArea": "practicality",
+   "hint": null
+  },
+  {
+   "id": "accessories_parts",
+   "label": "Accessories / Parts",
+   "shortLabel": "Accessories",
+   "carArea": "practicality",
+   "hint": "BMW accessories and spare parts (roof rack, cargo net, tray tables)."
+  },
+  {
+   "id": "outer_door_handle_front",
+   "label": "Outer door handle, front",
+   "shortLabel": "Outer door handle",
+   "carArea": "practicality",
+   "hint": null
+  },
+  {
+   "id": "remote_engine_start_vehicle_key",
+   "label": "Remote Engine Start (Vehicle Key )",
+   "shortLabel": "Remote Engine Start",
+   "carArea": "practicality",
+   "hint": null
+  },
+  {
+   "id": "frunk",
+   "label": "Frunk",
+   "shortLabel": "Frunk",
+   "carArea": "practicality",
+   "hint": null
+  },
+  {
+   "id": "towing_eye",
+   "label": "Towing eye",
+   "shortLabel": "Towing eye",
+   "carArea": "practicality",
+   "hint": null
+  },
+  {
+   "id": "12_v_connection",
+   "label": "12 V connection",
+   "shortLabel": "12 V connection",
+   "carArea": "practicality",
+   "hint": null
+  },
+  {
+   "id": "hood_open_close",
+   "label": "Hood, open / close",
+   "shortLabel": "Hood",
+   "carArea": "practicality",
+   "hint": null
+  },
+  {
+   "id": "washer_fluid_top_up",
+   "label": "Washer fluid, top up",
+   "shortLabel": "Washer fluid",
+   "carArea": "practicality",
+   "hint": null
+  },
+  {
+   "id": "through_loading_facility",
+   "label": "Through-loading facility",
+   "shortLabel": "Through-loading facility",
+   "carArea": "practicality",
+   "hint": null
+  },
+  {
+   "id": "trailer_use",
+   "label": "Trailer, use",
+   "shortLabel": "Trailer",
+   "carArea": "practicality",
+   "hint": null
+  },
+  {
+   "id": "trunk_light",
+   "label": "Trunk light",
+   "shortLabel": "Trunk light",
+   "carArea": "practicality",
+   "hint": null
+  },
+  {
+   "id": "horns",
+   "label": "Horns",
+   "shortLabel": "Horns",
+   "carArea": "practicality",
+   "hint": null
+  },
+  {
+   "id": "outer_door_handle_rear",
+   "label": "Outer door handle, rear",
+   "shortLabel": "Outer door handle",
+   "carArea": "practicality",
+   "hint": null
+  },
+  {
+   "id": "body_equipment_overall_technology",
+   "label": "Body equipment, overall technology",
+   "shortLabel": "Body equipment",
+   "carArea": "quality_materials",
+   "hint": "General equipment level and overall build/technology of the body."
+  },
+  {
+   "id": "interior_acoustics",
+   "label": "Interior acoustics",
+   "shortLabel": "Interior acoustics",
+   "carArea": "quality_materials",
+   "hint": "Cabin quietness and noise insulation."
+  },
+  {
+   "id": "door_finisher_panel_front",
+   "label": "Door, finisher panel, front",
+   "shortLabel": "Door",
+   "carArea": "quality_materials",
+   "hint": null
+  },
+  {
+   "id": "upholstery_interior_trim",
+   "label": "Upholstery / interior trim",
+   "shortLabel": "Upholstery",
+   "carArea": "quality_materials",
+   "hint": null
+  },
+  {
+   "id": "floor_mat",
+   "label": "Floor mat",
+   "shortLabel": "Floor mat",
+   "carArea": "quality_materials",
+   "hint": null
+  },
+  {
+   "id": "electric_range",
+   "label": "Electric Range",
+   "shortLabel": "Electric Range",
+   "carArea": "range_charging",
+   "hint": null
+  },
+  {
+   "id": "public_charging_external_providers",
+   "label": "Public charging / external providers",
+   "shortLabel": "Public charging",
+   "carArea": "range_charging",
+   "hint": null
+  },
+  {
+   "id": "charge_high_voltage_battery",
+   "label": "Charge high-voltage battery",
+   "shortLabel": "Charging the battery",
+   "carArea": "range_charging",
+   "hint": null
+  },
+  {
+   "id": "high_voltage_battery",
+   "label": "High voltage battery",
+   "shortLabel": "High voltage battery",
+   "carArea": "range_charging",
+   "hint": null
+  },
+  {
+   "id": "wallbox_charging_home_charging",
+   "label": "Wallbox, charging / home charging",
+   "shortLabel": "Wallbox",
+   "carArea": "range_charging",
+   "hint": null
+  },
+  {
+   "id": "opening_closing_charging_socket_cover",
+   "label": "Opening/closing charging socket cover",
+   "shortLabel": "Opening/closing charging socket cover",
+   "carArea": "range_charging",
+   "hint": null
+  },
+  {
+   "id": "fuel_filler_flap_open_close",
+   "label": "Fuel filler flap , open / close",
+   "shortLabel": "Fuel filler flap",
+   "carArea": "range_charging",
+   "hint": null
+  },
+  {
+   "id": "high_voltage_battery_preconditioning",
+   "label": "High voltage battery, preconditioning",
+   "shortLabel": "High voltage battery",
+   "carArea": "range_charging",
+   "hint": null
+  },
+  {
+   "id": "charging_cable",
+   "label": "Charging cable",
+   "shortLabel": "Charging cable",
+   "carArea": "range_charging",
+   "hint": null
+  },
+  {
+   "id": "fuel_tank",
+   "label": "Fuel tank",
+   "shortLabel": "Fuel tank",
+   "carArea": "range_charging",
+   "hint": null
+  },
+  {
+   "id": "high_voltage_charging_power_socket",
+   "label": "High-voltage charging power socket",
+   "shortLabel": "High-voltage charging power socket",
+   "carArea": "range_charging",
+   "hint": null
+  },
+  {
+   "id": "route_optimized_for_charging",
+   "label": "Route optimized for charging",
+   "shortLabel": "Route optimized for charging",
+   "carArea": "range_charging",
+   "hint": null
+  },
+  {
+   "id": "bidirectional_charging",
+   "label": "Bidirectional charging",
+   "shortLabel": "Bidirectional charging",
+   "carArea": "range_charging",
+   "hint": null
+  },
+  {
+   "id": "seats",
+   "label": "Seats",
+   "shortLabel": "Seats",
+   "carArea": "seats",
+   "hint": null
+  },
+  {
+   "id": "seating_ventilate_heat",
+   "label": "Seating, ventilate / heat",
+   "shortLabel": "Seat heating & ventilation",
+   "carArea": "seats",
+   "hint": null
+  },
+  {
+   "id": "seat_massage",
+   "label": "Seat massage",
+   "shortLabel": "Seat massage",
+   "carArea": "seats",
+   "hint": null
+  },
+  {
+   "id": "seat_memory",
+   "label": "Seat memory",
+   "shortLabel": "Seat memory",
+   "carArea": "seats",
+   "hint": null
+  },
+  {
+   "id": "headrest_adjust",
+   "label": "Headrest, adjust",
+   "shortLabel": "Headrest",
+   "carArea": "seats",
+   "hint": null
+  },
+  {
+   "id": "adjustment_of_lower_lumbar_support",
+   "label": "Adjustment of lower lumbar support",
+   "shortLabel": "Adjustment of lower lumbar support",
+   "carArea": "seats",
+   "hint": null
+  },
+  {
+   "id": "child_restraint_seat_use",
+   "label": "Child restraint seat, use",
+   "shortLabel": "Child restraint seat",
+   "carArea": "seats",
+   "hint": null
+  },
+  {
+   "id": "headrests_rear",
+   "label": "Headrests, rear",
+   "shortLabel": "Headrests",
+   "carArea": "seats",
+   "hint": null
+  }
+ ],
+ "aspectGroups": [
+  {
+   "id": "function",
+   "description": "Does the feature exist and do its job (incl. missing equipment)."
+  },
+  {
+   "id": "usability",
+   "description": "How easy it is to operate; ergonomics; can't switch it off."
+  },
+  {
+   "id": "reliability",
+   "description": "Defects, faults, things that stop working."
+  },
+  {
+   "id": "performance",
+   "description": "Power, speed, responsiveness, strength of an effect."
+  },
+  {
+   "id": "efficiency_range",
+   "description": "Consumption, efficiency, electric range, charging infrastructure."
+  },
+  {
+   "id": "design",
+   "description": "Look and styling."
+  },
+  {
+   "id": "comfort",
+   "description": "Physical comfort."
+  },
+  {
+   "id": "space",
+   "description": "Size, room, storage, view."
+  },
+  {
+   "id": "quality",
+   "description": "Materials, workmanship, damage, leaks, rattles, smells."
+  },
+  {
+   "id": "sound",
+   "description": "Noise and sound."
+  },
+  {
+   "id": "price",
+   "description": "Price-performance, standard vs. paid option."
+  }
+ ]
+}

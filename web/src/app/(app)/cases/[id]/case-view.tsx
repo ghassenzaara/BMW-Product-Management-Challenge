@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
@@ -8,46 +8,61 @@ import {
   ArrowRight,
   Bot,
   Box,
+  Check,
   ChevronDown,
+  ChevronLeft,
   Download,
   Eye,
   EyeOff,
   FileText,
   GitBranch,
+  Heart,
   Info,
-  PanelRight,
+  Lightbulb,
+  MessageSquare,
+  MoreHorizontal,
   Pencil,
+  Plus,
   Scale,
   Sparkles,
+  X,
 } from "lucide-react";
-import type { Alert, Case, Signal, SignalKind } from "@/contracts";
-import { marketLabel, signalKindLabel } from "@/contracts";
+import type { Alert, Case, Requirement, Signal } from "@/contracts";
+import { caseStateLabel, marketLabel } from "@/contracts";
 import { api } from "@/lib/api/client";
 import { useApi, useApiMutation } from "@/lib/api/hooks";
-import { download, fmtDate, fromNow } from "@/lib/format";
-import { CaseStateBadge, OutcomeBadge, Pill, RegionChip } from "@/components/common/badges";
+import { download, fromNow } from "@/lib/format";
+import { caseSankey, isCustomer, isFact, sayLabel, topicLabels, type SankeyNode } from "@/lib/sankey";
+import { cn } from "@/lib/utils";
+import { CaseStateBadge, EvidenceBars, MarketChip, OutcomeBadge, Pill, ReleaseChip, ReqStatusBadge } from "@/components/common/badges";
 import { Markdown } from "@/components/common/markdown";
 import { PageSkeleton } from "@/components/common/page";
-import { AvatarStack, UserAvatar, useUsers } from "@/components/common/people";
+import { UserAvatar, useUsers } from "@/components/common/people";
 import { ObjectActivity } from "@/components/common/activity";
 import { RationaleDialog } from "@/components/common/rationale-dialog";
 import { CaseActionDialog, type UiCaseAction } from "@/components/cases/case-action-dialog";
 import { CaseDetails } from "@/components/cases/case-details";
+import { KnowledgeForm } from "@/components/cases/knowledge-form";
 import { QuestionsPanel } from "@/components/cases/questions-panel";
 import { useScores } from "@/components/cases/use-scores";
 import { ChatPanel } from "@/components/chat/chat-panel";
-import { RequirementCard } from "@/components/requirements/requirement-card";
+import { RequirementSheet } from "@/components/requirements/requirement-sheet";
+import { SankeyChart } from "@/components/sankey/sankey-chart";
 import { SignalCard } from "@/components/signals/signal-card";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-type Tab = "overview" | "signals" | "questions" | "requirements" | "activity";
+type Step = "evidence" | "knowledge" | "requirements";
+type Drawer = "details" | "activity" | null;
+interface QuoteSet {
+  title: string;
+  sub?: string;
+  signalIds: string[];
+}
 
 export function CaseView() {
   const { id } = useParams<{ id: string }>();
@@ -55,16 +70,18 @@ export function CaseView() {
   const router = useRouter();
   const bundle = useApi("caseBundle", { params: { id } });
   const me = useApi("me");
+  const taxonomy = useApi("taxonomy");
   const scores = useScores();
   const { name } = useUsers();
-  const tab = (params.get("tab") as Tab | null) ?? "overview";
-  const highlight = params.get("signal");
-  const [side, setSide] = useState<"details" | "chat">(params.get("chat") ? "chat" : "details");
+  const step = (params.get("step") as Step | null) ?? "evidence";
+  const [chat, setChat] = useState(params.get("chat") === "1");
+  const [drawer, setDrawer] = useState<Drawer>(null);
+  const [quotes, setQuotes] = useState<QuoteSet | null>(null);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [reqId, setReqId] = useState<string | null>(null);
   const [action, setAction] = useState<UiCaseAction | null>(null);
-
-  useEffect(() => {
-    if (highlight && tab === "signals") setTimeout(() => document.getElementById(`signal-${highlight}`)?.scrollIntoView({ behavior: "smooth", block: "center" }), 150);
-  }, [highlight, tab, bundle.data]);
+  const research = useApiMutation("postMessage", { success: "The assistant is looking for more sources" });
+  const patchWatch = useApiMutation("patchCase", { silent: true });
 
   if (bundle.isLoading || !bundle.data || !me.data) return <PageSkeleton />;
   const { case: c, signals, questions, requirements, referrals, alerts, proposals, linkedCases } = bundle.data;
@@ -72,320 +89,366 @@ export function CaseView() {
   const canEdit = user.id === c.ownerId || c.coOwnerIds.includes(user.id) || user.role === "head";
   const watching = c.watcherIds.includes(user.id);
   const openAlerts = alerts.filter((a) => a.status === "open");
-  const pendingProposals = proposals.filter((p) => p.status === "pending");
+  const pending = proposals.filter((p) => p.status === "pending").length;
   const openQuestions = questions.filter((q) => q.status === "open").length;
 
-  const changeTab = (t: Tab, signal?: string) => router.replace(`/cases/${c.id}?tab=${t}${signal ? `&signal=${signal}` : ""}`, { scroll: false });
+  const graph = caseSankey(c, signals, topicLabels(taxonomy.data));
+  const customers = signals.filter(isCustomer).length;
+  const likes = signals.filter((s) => s.kind === "like");
+  const facts = signals.filter((s) => isFact(s) && ["A", "B", "C"].includes(s.trust));
+  const assumptions = signals.filter((s) => ["D", "E"].includes(s.trust));
+  // A cited signal (?signal=) opens its quote directly.
+  const cited = params.get("signal");
+  const quoteSet: QuoteSet | null = quotes ?? (cited && signals.some((s) => s.id === cited) ? { title: "Cited source", signalIds: [cited] } : null);
+
+  const go = (s: Step) => router.replace(`/cases/${c.id}?step=${s}`, { scroll: false });
   const onCite = (ref: string) => {
-    if (ref.startsWith("Q-")) return changeTab("questions");
-    if (ref.startsWith("REQ-")) return router.push(`/requirements/${ref}`);
+    if (ref.startsWith("Q-")) return go("knowledge");
+    if (ref.startsWith("REQ-")) return setReqId(ref);
     if (ref.startsWith("CASE-")) return router.push(`/cases/${ref}`);
-    changeTab("signals", ref);
+    setQuotes({ title: "Cited source", signalIds: [ref] });
+  };
+  const onNode = (n: SankeyNode) => {
+    if (n.hero) return go("requirements");
+    setSelected(n.id);
+    setQuotes({ title: n.label, sub: n.say ? sayLabel[n.say] : n.sub, signalIds: n.signalIds });
   };
 
   return (
     <div className="flex min-h-full">
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 px-6 pt-4 pb-10">
         {/* Header */}
-        <div className="border-b bg-background px-6 pt-4 pb-3">
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Link href="/cases" className="hover:underline">
-              Cases
-            </Link>
-            <span>/</span>
-            <span className="font-mono">{c.id}</span>
-            {c.synthetic && <Pill className="ml-1">synthetic case</Pill>}
+        <Link href="/cases" className="inline-flex items-center gap-1 font-mono text-sm text-muted-foreground hover:text-foreground">
+          <ChevronLeft className="size-4" /> {c.id}
+        </Link>
+        <div className="mt-1 flex flex-wrap items-start gap-3">
+          <h1 className="min-w-0 flex-1 text-2xl leading-snug font-semibold tracking-tight text-balance">{c.title}</h1>
+          <div className="flex items-center gap-1">
+            <IconButton label={watching ? "Stop watching" : "Watch"} onClick={() => toggleWatch()}>
+              {watching ? <EyeOff /> : <Eye />}
+            </IconButton>
+            <IconButton label="Details and score" onClick={() => setDrawer("details")}>
+              <Info />
+            </IconButton>
+            <IconButton label="Comments and history" onClick={() => setDrawer("activity")}>
+              <MessageSquare />
+            </IconButton>
+            <MoreMenu c={c} onAction={setAction} canEdit={canEdit} />
+            <Button asChild variant="outline" size="sm" className="ml-1">
+              <Link href={`/car?case=${c.id}`}>
+                <Box className="size-4" /> View on car
+              </Link>
+            </Button>
+            <Button variant={chat ? "secondary" : "outline"} size="sm" className="ml-1" onClick={() => setChat(!chat)}>
+              <Bot className="size-4" /> AI colleague
+            </Button>
+            {canEdit && c.state !== "decided" && c.state !== "observed" && <DecideMenu onAction={setAction} />}
           </div>
-          <div className="mt-2 flex flex-wrap items-start gap-3">
-            <div className="min-w-0 flex-1">
-              <h1 className="text-xl leading-snug font-semibold tracking-tight">{c.title}</h1>
-              <p className="mt-1 text-sm text-muted-foreground">{c.summary}</p>
-              <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
-                <CaseStateBadge state={c.state} />
-                {c.outcome && <OutcomeBadge outcome={c.outcome} />}
-                <RegionChip region={c.scope} />
-                <span className="flex items-center gap-1.5 text-muted-foreground">
-                  <UserAvatar id={c.ownerId} size="xs" /> {name(c.ownerId)}
-                </span>
-                {c.watcherIds.length > 0 && (
-                  <span className="flex items-center gap-1 text-muted-foreground">
-                    <Eye className="size-3" /> <AvatarStack ids={c.watcherIds} />
-                  </span>
-                )}
-                <span className="text-muted-foreground">
-                  created {fromNow(c.createdAt)} by {name(c.createdBy)} · updated {fromNow(c.updatedAt)}
-                </span>
-              </div>
-            </div>
-            <CaseActions c={c} canEdit={canEdit} watching={watching} onAction={setAction} userId={user.id} />
-          </div>
-          {!canEdit && (
-            <p className="mt-3 flex items-center gap-1.5 rounded-md bg-muted px-3 py-1.5 text-xs text-muted-foreground">
-              <Info className="size-3.5" /> Owned by {name(c.ownerId)}. You can read everything, comment, watch, ask the AI and escalate conflicts. Status changes are the owner&apos;s.
-            </p>
+        </div>
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2">
+          <StateControl c={c} canEdit={canEdit} onAction={setAction} />
+          {c.outcome && <OutcomeBadge outcome={c.outcome} />}
+          <span className="flex items-center gap-1.5 text-sm">
+            <UserAvatar id={c.ownerId} size="xs" /> {name(c.ownerId)}
+          </span>
+          <EvidenceBars level={c.evidenceLevel} />
+          <span className="flex gap-1">
+            {c.markets.map((m) => (
+              <MarketChip key={m} market={m} muted />
+            ))}
+          </span>
+        </div>
+
+        {/* One-click facts about the evidence */}
+        <div className="mt-4 flex flex-wrap gap-2">
+          <PillButton icon={<Heart />} onClick={() => setQuotes({ title: "What they like", signalIds: likes.map((s) => s.id) })} disabled={!likes.length}>
+            {likes.length} like it today
+          </PillButton>
+          <PillButton icon={<Lightbulb />} onClick={() => setQuotes({ title: "Facts and assumptions", signalIds: [...facts, ...assumptions].map((s) => s.id) })} disabled={!facts.length && !assumptions.length}>
+            {facts.length} facts, {assumptions.length} assumptions
+          </PillButton>
+          <MarketsPopover c={c} />
+          {canEdit && (
+            <PillButton
+              icon={<Plus />}
+              dashed
+              onClick={() => {
+                setChat(true);
+                research.mutate({ params: { type: "case", id: c.id }, body: { content: "Research what owners say" } });
+              }}
+            >
+              Add source
+            </PillButton>
           )}
         </div>
 
-        <div className="space-y-3 px-6 pt-4">
+        <div className="mt-4 space-y-2">
           {openAlerts.map((a) => (
             <AlertBanner key={a.id} a={a} canResolve={a.ownerId === user.id || user.role === "head"} onCite={onCite} />
           ))}
-          <LinkBanners c={c} referrals={referrals} linkedCases={linkedCases} />
-          {pendingProposals.length > 0 && tab !== "questions" && (
-            <button onClick={() => changeTab("questions")} className="flex w-full items-center gap-2 rounded-lg border border-primary/40 bg-primary/5 px-3 py-2 text-left text-sm">
-              <Sparkles className="size-4 text-primary" /> {pendingProposals.length} AI proposal{pendingProposals.length > 1 ? "s" : ""} waiting for your decision
-              <ArrowRight className="ml-auto size-4" />
-            </button>
-          )}
+          <LinkBanner c={c} referrals={referrals} linkedCases={linkedCases} />
         </div>
 
-        <Tabs value={tab} onValueChange={(v) => changeTab(v as Tab)} className="px-6 py-4">
-          <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="signals">Signals ({signals.length})</TabsTrigger>
-            <TabsTrigger value="questions">Open questions {openQuestions > 0 && `(${openQuestions})`}</TabsTrigger>
-            <TabsTrigger value="requirements">Requirements ({requirements.length})</TabsTrigger>
-            <TabsTrigger value="activity">Activity</TabsTrigger>
-          </TabsList>
-          <TabsContent value="overview" className="pt-3">
-            <CaseDocument c={c} canEdit={canEdit} onCite={onCite} />
-          </TabsContent>
-          <TabsContent value="signals" className="pt-3">
-            <SignalsTab signals={signals} highlight={highlight} c={c} />
-          </TabsContent>
-          <TabsContent value="questions" className="pt-3">
-            <QuestionsPanel caseId={c.id} questions={questions} proposals={proposals} canEdit={canEdit} />
-          </TabsContent>
-          <TabsContent value="requirements" className="pt-3">
-            <RequirementsTab c={c} requirements={requirements} canEdit={canEdit} scores={scores.reqs} onConfirm={() => setAction("confirm")} />
-          </TabsContent>
-          <TabsContent value="activity" className="pt-3">
-            <ObjectActivity objectType="case" objectId={c.id} />
-          </TabsContent>
-        </Tabs>
+        {/* Three steps */}
+        <nav className="mt-5 flex flex-wrap items-center gap-1 border-b" aria-label="Case steps">
+          <StepTab n={1} active={step === "evidence"} onClick={() => go("evidence")} label="Evidence" meta={`${signals.length}`} done />
+          <StepTab n={2} active={step === "knowledge"} onClick={() => go("knowledge")} label="Your knowledge" meta={openQuestions ? `${openQuestions} open` : undefined} done={!!c.pmContext} badge={pending} />
+          <StepTab n={3} active={step === "requirements"} onClick={() => go("requirements")} label="Requirements" meta={requirements.length ? `${requirements.length}` : undefined} done={requirements.length > 0} />
+        </nav>
+
+        <div className="pt-5">
+          {step === "evidence" && (
+            <div className="space-y-5">
+              <div className="rounded-xl border bg-card p-5 shadow-xs">
+                <SankeyChart graph={graph} heroValue={customers} selectedId={selected} onSelect={onNode} />
+              </div>
+              <Highlights c={c} canEdit={canEdit} onCite={onCite} />
+              <NextButton onClick={() => go("knowledge")}>Next: add your knowledge</NextButton>
+            </div>
+          )}
+          {step === "knowledge" && (
+            <div className="space-y-6">
+              <KnowledgeForm c={c} canEdit={canEdit} onSaved={() => setChat(true)} />
+              <section>
+                <h2 className="mb-2 text-sm font-semibold">Open questions</h2>
+                <QuestionsPanel caseId={c.id} questions={questions} proposals={proposals} canEdit={canEdit} />
+              </section>
+              <NextButton onClick={() => go("requirements")}>Next: requirements</NextButton>
+            </div>
+          )}
+          {step === "requirements" && <RequirementsStep c={c} requirements={requirements} canEdit={canEdit} onOpen={setReqId} onConfirm={() => setAction("confirm")} onChat={() => setChat(true)} />}
+        </div>
       </div>
 
-      {/* Right side: details or AI */}
-      <aside className="sticky top-0 flex h-[calc(100dvh-3.5rem)] w-[340px] shrink-0 flex-col border-l bg-background 2xl:w-[420px]">
-        <div className="flex items-center gap-2 border-b px-3 py-2">
-          <ToggleGroup type="single" size="sm" variant="outline" value={side} onValueChange={(v) => v && setSide(v as "details")} className="w-full">
-            <ToggleGroupItem value="details" className="flex-1 gap-1.5">
-              <PanelRight className="size-3.5" /> Details
-            </ToggleGroupItem>
-            <ToggleGroupItem value="chat" className="flex-1 gap-1.5">
-              <Bot className="size-3.5" /> AI assistant
-            </ToggleGroupItem>
-          </ToggleGroup>
-        </div>
-        <div className="min-h-0 flex-1 overflow-y-auto">
-          {side === "details" ? (
-            <CaseDetails c={c} scored={scores.cases.get(c.id)} signals={signals} canEdit={canEdit} />
-          ) : (
+      {chat && (
+        <aside className="sticky top-0 flex h-[calc(100dvh-3.5rem)] w-[360px] shrink-0 flex-col border-l bg-background 2xl:w-[420px]">
+          <div className="flex items-center gap-2 border-b px-3 py-2 text-sm font-medium">
+            <Bot className="size-4 text-primary" /> AI colleague
+            <span className="flex-1" />
+            <Button size="icon-sm" variant="ghost" aria-label="Close" onClick={() => setChat(false)}>
+              <X className="size-4" />
+            </Button>
+          </div>
+          <div className="min-h-0 flex-1">
             <ChatPanel objectType="case" objectId={c.id} proposals={proposals} canEdit={canEdit} onCite={onCite} />
+          </div>
+        </aside>
+      )}
+
+      <QuotesSheet set={quoteSet} signals={signals} onClose={() => {
+        setQuotes(null);
+        setSelected(null);
+        if (cited) router.replace(`/cases/${c.id}?step=${step}`, { scroll: false });
+      }} />
+      <Sheet open={drawer !== null} onOpenChange={(o) => !o && setDrawer(null)}>
+        <SheetContent className="w-full gap-0 overflow-y-auto p-0 data-[side=right]:sm:max-w-md">
+          <SheetHeader className="border-b">
+            <SheetTitle>{drawer === "details" ? "Details and score" : "Comments and history"}</SheetTitle>
+            <SheetDescription className="sr-only">{c.title}</SheetDescription>
+          </SheetHeader>
+          {drawer === "details" && <CaseDetails c={c} scored={scores.cases.get(c.id)} signals={signals} canEdit={canEdit} />}
+          {drawer === "activity" && (
+            <div className="p-4">
+              <ObjectActivity objectType="case" objectId={c.id} />
+            </div>
           )}
-        </div>
-      </aside>
+        </SheetContent>
+      </Sheet>
+      <RequirementSheet id={reqId} onOpenChange={(o) => !o && setReqId(null)} />
       <CaseActionDialog c={c} action={action} onOpenChange={(o) => !o && setAction(null)} />
+    </div>
+  );
+
+  function toggleWatch() {
+    patchWatch.mutate({ params: { id: c.id }, body: { patch: { watcherIds: watching ? c.watcherIds.filter((w) => w !== user.id) : [...c.watcherIds, user.id] } } });
+  }
+}
+
+function IconButton({ label, onClick, children }: { label: string; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button variant="ghost" size="icon-sm" aria-label={label} onClick={onClick} className="[&_svg]:size-4.5">
+          {children}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
+  );
+}
+
+function PillButton({ icon, children, onClick, disabled, dashed }: { icon: React.ReactNode; children: React.ReactNode; onClick?: () => void; disabled?: boolean; dashed?: boolean }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        "inline-flex items-center gap-2 rounded-full border bg-card px-3.5 py-1.5 text-sm shadow-xs transition hover:border-primary/60 disabled:opacity-50 [&_svg]:size-4 [&_svg]:text-muted-foreground",
+        dashed && "border-dashed text-muted-foreground shadow-none",
+      )}
+    >
+      {icon}
+      {children}
+    </button>
+  );
+}
+
+function StepTab({ n, label, meta, active, done, badge, onClick }: { n: number; label: string; meta?: string; active: boolean; done?: boolean; badge?: number; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      aria-current={active ? "step" : undefined}
+      className={cn("-mb-px flex items-center gap-2 border-b-2 px-3 py-2.5 text-sm transition", active ? "border-primary font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground")}
+    >
+      <span className={cn("grid size-5 place-items-center rounded-full text-[11px] font-semibold", active ? "bg-primary text-primary-foreground" : done ? "bg-positive/15 text-positive" : "bg-muted text-muted-foreground")}>
+        {done && !active ? <Check className="size-3" /> : n}
+      </span>
+      {label}
+      {meta && <span className="text-xs text-muted-foreground tabular-nums">{meta}</span>}
+      {!!badge && (
+        <span className="rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground" title="AI proposals waiting">
+          {badge}
+        </span>
+      )}
+    </button>
+  );
+}
+
+function NextButton({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
+  return (
+    <div className="flex justify-end">
+      <Button onClick={onClick}>
+        {children} <ArrowRight className="size-4" />
+      </Button>
     </div>
   );
 }
 
-function CaseActions({ c, canEdit, watching, onAction, userId }: { c: Case; canEdit: boolean; watching: boolean; onAction: (a: UiCaseAction) => void; userId: string }) {
-  const patch = useApiMutation("patchCase", { success: watching ? "Stopped watching" : "Watching: you'll be notified about new signals" });
+function StateControl({ c, canEdit, onAction }: { c: Case; canEdit: boolean; onAction: (a: UiCaseAction) => void }) {
   const next: Partial<Record<Case["state"], [UiCaseAction, string]>> = {
     observed: ["open", "Open case"],
     new: ["start", "Start investigating"],
     investigating: ["await", "Waiting for answers"],
     awaiting_answers: ["ready", "Ready to decide"],
+    decided: ["reopen", "Reopen"],
   };
   const step = next[c.state];
+  if (!canEdit || !step) return <CaseStateBadge state={c.state} />;
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => patch.mutate({ params: { id: c.id }, body: { patch: { watcherIds: watching ? c.watcherIds.filter((w) => w !== userId) : [...c.watcherIds, userId] } } })}
-      >
-        {watching ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />} {watching ? "Unwatch" : "Watch"}
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={async () => {
-          const r = await api("exportCaseMd", { params: { id: c.id } });
-          download(r.filename, r.content, "text/markdown");
-        }}
-      >
-        <Download className="size-3.5" /> .md
-      </Button>
-      <Button asChild variant="outline" size="sm">
-        <Link href={`/car?case=${c.id}`}>
-          <Box className="size-3.5" /> View on car
-        </Link>
-      </Button>
-      {c.marketConflict && c.state !== "decided" && (
-        <Button variant="outline" size="sm" onClick={() => onAction("escalate")}>
-          <Scale className="size-3.5" /> Escalate
-        </Button>
-      )}
-      {canEdit && step && (
-        <Button variant="outline" size="sm" onClick={() => onAction(step[0])}>
-          {step[1]}
-        </Button>
-      )}
-      {canEdit && c.state === "decided" && (
-        <Button variant="outline" size="sm" onClick={() => onAction("reopen")}>
-          Reopen
-        </Button>
-      )}
-      {canEdit && c.state !== "decided" && c.state !== "observed" && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button size="sm">
-              Decide <ChevronDown className="size-3.5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-72">
-            <DropdownMenuItem onClick={() => onAction("confirm")}>
-              <span>
-                <span className="block font-medium">Confirm → build requirement(s)</span>
-                <span className="block text-xs text-muted-foreground">Next generation, mid-life update or OTA</span>
-              </span>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onAction("refer")}>
-              <span>
-                <span className="block font-medium">Refer to another PM</span>
-                <span className="block text-xs text-muted-foreground">Other series or attribute owner (Baukasten)</span>
-              </span>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onAction("innovation")}>
-              <span>
-                <span className="block font-medium">Innovation pool</span>
-                <span className="block text-xs text-muted-foreground">For a future series or new product</span>
-              </span>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onAction("park")}>
-              <span>
-                <span className="block font-medium">Park and keep watching</span>
-                <span className="block text-xs text-muted-foreground">Comes back with new evidence</span>
-              </span>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onAction("merge")}>
-              <span>
-                <span className="block font-medium">Merge into another case</span>
-                <span className="block text-xs text-muted-foreground">Same problem, keep one case</span>
-              </span>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive" onClick={() => onAction("reject")}>
-              Reject (reason kept for the next generation)
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger className="inline-flex items-center gap-0.5 rounded-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none" aria-label={`State: ${caseStateLabel[c.state]}. Change`}>
+        <CaseStateBadge state={c.state} />
+        <ChevronDown className="size-3.5 text-muted-foreground" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start">
+        <DropdownMenuItem onClick={() => onAction(step[0])}>{step[1]}</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
-function AlertBanner({ a, canResolve, onCite }: { a: Alert; canResolve: boolean; onCite: (ref: string) => void }) {
-  const [mode, setMode] = useState<"dismissed" | "rework" | null>(null);
-  const resolve = useApiMutation("resolveAlert", { success: (r) => (r.status === "rework" ? "Sent back for rework" : "Alert dismissed") });
+function DecideMenu({ onAction }: { onAction: (a: UiCaseAction) => void }) {
   return (
-    <div className="flex flex-wrap items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2.5 dark:border-amber-800 dark:bg-amber-950/40">
-      <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-500" />
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2 text-sm font-medium">
-          {a.title}
-          <Pill t="amber">{a.verdict === "raises_the_bar" ? "Raises the bar" : "Contradicts"}</Pill>
-          <span className="text-xs font-normal text-muted-foreground">monitor · {fromNow(a.createdAt)}</span>
-        </div>
-        <p className="text-xs text-muted-foreground">{a.detail}</p>
-        <div className="mt-1 flex gap-1">
-          {a.signalIds.map((s) => (
-            <button key={s} onClick={() => onCite(s)} className="rounded border border-primary/30 bg-primary/5 px-1 font-mono text-[11px] text-primary">
-              {s}
-            </button>
-          ))}
-        </div>
-      </div>
-      {canResolve && (
-        <div className="flex gap-2">
-          <Button size="xs" variant="outline" onClick={() => setMode("dismissed")}>
-            Dismiss
-          </Button>
-          <Button size="xs" onClick={() => setMode("rework")}>
-            Rework
-          </Button>
-        </div>
-      )}
-      <RationaleDialog
-        open={!!mode}
-        onOpenChange={(o) => !o && setMode(null)}
-        title={mode === "rework" ? "Send back for rework" : "Dismiss the alert"}
-        description="The monitor never edits a case or requirement. You decide, and the decision is logged."
-        pending={resolve.isPending}
-        onSubmit={async (rationale) => {
-          await resolve.mutateAsync({ params: { id: a.id }, body: { status: mode!, rationale } });
-          setMode(null);
-        }}
-      />
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button size="sm">
+          Decide <ChevronDown className="size-3.5" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-60">
+        <DropdownMenuItem onClick={() => onAction("confirm")}>Confirm → requirements</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onAction("refer")}>Refer to another PM</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onAction("innovation")}>Innovation pool</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onAction("park")}>Park and keep watching</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onAction("merge")}>Merge into another case</DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem variant="destructive" onClick={() => onAction("reject")}>
+          Reject
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
-function LinkBanners({ c, referrals, linkedCases }: { c: Case; referrals: { id: string; kind: string; caseId: string; toUserId: string; fromUserId: string; status: string; linkedCaseId: string | null; resolution?: string; declineReason?: string }[]; linkedCases: Case[] }) {
-  const { name } = useUsers();
-  const items: React.ReactNode[] = [];
-  const origin = linkedCases.find((x) => x.id === c.originCaseId);
-  if (origin)
-    items.push(
-      <span key="o">
-        Linked from <Link className="font-mono text-primary hover:underline" href={`/cases/${origin.id}`}>{origin.id}</Link> ({name(origin.ownerId)}): {origin.title}
-      </span>,
-    );
-  if (c.mergedInto)
-    items.push(
-      <span key="m">
-        Merged into <Link className="font-mono text-primary hover:underline" href={`/cases/${c.mergedInto}`}>{c.mergedInto}</Link>
-      </span>,
-    );
-  for (const r of referrals.filter((r) => r.caseId === c.id)) {
-    if (r.kind === "escalation")
-      items.push(
-        <span key={r.id}>
-          Escalated by {name(r.fromUserId)} to {name(r.toUserId)} · <b>{r.status}</b>
-          {r.resolution && `: ${r.resolution}`}
-        </span>,
-      );
-    else
-      items.push(
-        <span key={r.id}>
-          Referred by {name(r.fromUserId)} to {name(r.toUserId)} · <b>{r.status}</b>
-          {r.linkedCaseId && (
-            <>
-              {" "}
-              → <Link className="font-mono text-primary hover:underline" href={`/cases/${r.linkedCaseId}`}>{r.linkedCaseId}</Link>
-            </>
-          )}
-          {r.declineReason && ` (${r.declineReason})`}
-        </span>,
-      );
-  }
-  for (const x of linkedCases.filter((x) => x.originCaseId === c.id && !referrals.some((r) => r.linkedCaseId === x.id)))
-    items.push(
-      <span key={x.id}>
-        Pulled into <Link className="font-mono text-primary hover:underline" href={`/cases/${x.id}`}>{x.id}</Link> by {name(x.ownerId)}
-      </span>,
-    );
-  if (!items.length) return null;
+function MoreMenu({ c, canEdit, onAction }: { c: Case; canEdit: boolean; onAction: (a: UiCaseAction) => void }) {
   return (
-    <div className="space-y-1 rounded-lg border bg-card px-3 py-2 text-sm">
-      {items.map((it, i) => (
-        <div key={i} className="flex items-start gap-2">
-          <GitBranch className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
-          {it}
-        </div>
-      ))}
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon-sm" aria-label="More" className="[&_svg]:size-4.5">
+          <MoreHorizontal />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem
+          onClick={async () => {
+            const r = await api("exportCaseMd", { params: { id: c.id } });
+            download(r.filename, r.content, "text/markdown");
+          }}
+        >
+          <Download /> Export as .md
+        </DropdownMenuItem>
+        {c.marketConflict && c.state !== "decided" && (
+          <DropdownMenuItem onClick={() => onAction("escalate")}>
+            <Scale /> Escalate market conflict
+          </DropdownMenuItem>
+        )}
+        {canEdit && c.state === "decided" && <DropdownMenuItem onClick={() => onAction("reopen")}>Reopen</DropdownMenuItem>}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function MarketsPopover({ c }: { c: Case }) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button className="inline-flex items-center gap-2 rounded-full border bg-card px-3.5 py-1.5 text-sm shadow-xs transition hover:border-primary/60">
+          Markets {c.marketConflict && <AlertTriangle className="size-3.5 text-warning" />}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-[360px] p-0">
+        <table className="w-full text-sm">
+          <thead className="text-xs text-muted-foreground">
+            <tr className="border-b">
+              <th className="px-3 py-2 text-left font-medium">Market</th>
+              <th className="px-2 py-2 text-right font-medium">Customers</th>
+              <th className="px-2 py-2 text-right font-medium">Study</th>
+              <th className="px-3 py-2 text-right font-medium">Sales 2030</th>
+            </tr>
+          </thead>
+          <tbody>
+            {c.figures.perMarket.map((m) => (
+              <tr key={m.market} className="border-b last:border-0">
+                <td className="px-3 py-2">{marketLabel[m.market]}</td>
+                <td className="px-2 py-2 text-right tabular-nums">{m.customers}</td>
+                <td className="px-2 py-2 text-right tabular-nums">{m.studyScore ?? "–"}</td>
+                <td className="px-3 py-2 text-right tabular-nums">{m.salesShare2030 !== undefined ? `${Math.round(m.salesShare2030 * 100)}%` : "–"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {c.marketConflict && <p className="border-t px-3 py-2 text-xs text-muted-foreground">{c.marketConflict.note}</p>}
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function Highlights({ c, canEdit, onCite }: { c: Case; canEdit: boolean; onCite: (r: string) => void }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="rounded-xl border bg-card p-5 shadow-xs">
+      <ul className="space-y-2">
+        {c.highlights.map((h, i) => (
+          <li key={i} className="flex gap-2.5 text-sm">
+            <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary" />
+            {h}
+          </li>
+        ))}
+      </ul>
+      <button onClick={() => setOpen(!open)} className="mt-3 inline-flex items-center gap-1 text-sm text-primary hover:underline">
+        <FileText className="size-3.5" /> {open ? "Hide full analysis" : "Read full analysis"}
+      </button>
+      {open && <CaseDocument c={c} canEdit={canEdit} onCite={onCite} />}
     </div>
   );
 }
@@ -394,21 +457,14 @@ function CaseDocument({ c, canEdit, onCite }: { c: Case; canEdit: boolean; onCit
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(c.bodyMd);
   const [saveOpen, setSaveOpen] = useState(false);
-  const patch = useApiMutation("patchCase", { success: "Page saved (new version)" });
+  const patch = useApiMutation("patchCase", { success: "Page saved" });
   return (
-    <div className="rounded-lg border bg-card">
-      <div className="flex items-center gap-2 border-b px-4 py-2 text-xs text-muted-foreground">
-        <FileText className="size-3.5" /> Case page · version {c.bodyVersion}
+    <div className="mt-4 border-t pt-4">
+      <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
+        Version {c.bodyVersion}
         <span className="flex-1" />
         {canEdit && !editing && (
-          <Button
-            size="xs"
-            variant="ghost"
-            onClick={() => {
-              setDraft(c.bodyMd);
-              setEditing(true);
-            }}
-          >
+          <Button size="xs" variant="ghost" onClick={() => (setDraft(c.bodyMd), setEditing(true))}>
             <Pencil className="size-3" /> Edit
           </Button>
         )}
@@ -424,22 +480,15 @@ function CaseDocument({ c, canEdit, onCite }: { c: Case; canEdit: boolean; onCit
         )}
       </div>
       {editing ? (
-        <div className="grid gap-0 lg:grid-cols-2">
-          <Textarea value={draft} onChange={(e) => setDraft(e.target.value)} className="min-h-[520px] rounded-none border-0 border-r font-mono text-xs focus-visible:ring-0" />
-          <div className="max-h-[520px] overflow-y-auto p-5">
-            <Markdown>{draft}</Markdown>
-          </div>
-        </div>
+        <Textarea value={draft} onChange={(e) => setDraft(e.target.value)} className="min-h-[420px] font-mono text-xs" />
       ) : (
-        <div className="p-5">
-          <Markdown onCite={onCite}>{c.bodyMd}</Markdown>
-        </div>
+        <Markdown onCite={onCite}>{c.bodyMd}</Markdown>
       )}
       <RationaleDialog
         open={saveOpen}
         onOpenChange={setSaveOpen}
         title="Save the case page"
-        description="A new version is stored; the audit trail keeps the previous text."
+        description="A new version is stored; the history keeps the old text."
         pending={patch.isPending}
         onSubmit={async (rationale) => {
           await patch.mutateAsync({ params: { id: c.id }, body: { patch: { bodyMd: draft }, rationale } });
@@ -451,127 +500,149 @@ function CaseDocument({ c, canEdit, onCite }: { c: Case; canEdit: boolean; onCit
   );
 }
 
-const sourceGroups = { all: "All sources", bmw: "BMW data", web: "Web" } as const;
-
-function SignalsTab({ signals, highlight, c }: { signals: Signal[]; highlight: string | null; c: Case }) {
-  const [group, setGroup] = useState<keyof typeof sourceGroups>("all");
-  const [kind, setKind] = useState<string>("all");
-  const [market, setMarket] = useState<string>("all");
-  const [noSocial, setNoSocial] = useState(false);
-  const [ownersOnly, setOwnersOnly] = useState(false);
-  const [q, setQ] = useState("");
-  const list = useMemo(
-    () =>
-      signals.filter(
-        (s) =>
-          (group === "all" || (group === "bmw" ? s.agent === "bmw_data" : s.agent !== "bmw_data")) &&
-          (kind === "all" || s.kind === kind) &&
-          (market === "all" || s.market === market) &&
-          (!noSocial || (s.sourceType !== "social" && s.sourceType !== "video")) &&
-          (!ownersOnly || s.audience === "owner") &&
-          (!q || (s.quote + s.summary + s.id).toLowerCase().includes(q.toLowerCase())),
-      ),
-    [signals, group, kind, market, noSocial, ownersOnly, q],
-  );
-  const markets = [...new Set(signals.map((s) => s.market))];
-  const kinds = [...new Set(signals.map((s) => s.kind))] as SignalKind[];
-  return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <ToggleGroup type="single" size="sm" variant="outline" value={group} onValueChange={(v) => v && setGroup(v as "all")}>
-          {(Object.keys(sourceGroups) as (keyof typeof sourceGroups)[]).map((g) => (
-            <ToggleGroupItem key={g} value={g} className="px-2.5">
-              {sourceGroups[g]}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-        <Select value={kind} onValueChange={setKind}>
-          <SelectTrigger size="sm" className="w-36">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All kinds</SelectItem>
-            {kinds.map((k) => (
-              <SelectItem key={k} value={k}>
-                {signalKindLabel[k]}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={market} onValueChange={setMarket}>
-          <SelectTrigger size="sm" className="w-36">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All markets</SelectItem>
-            {markets.map((m) => (
-              <SelectItem key={m} value={m}>
-                {marketLabel[m]}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <label className="flex items-center gap-1.5 text-xs">
-          <Switch checked={noSocial} onCheckedChange={setNoSocial} /> Exclude social & video
-        </label>
-        <label className="flex items-center gap-1.5 text-xs">
-          <Switch checked={ownersOnly} onCheckedChange={setOwnersOnly} /> Owners only
-        </label>
-        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search quotes" className="h-7 w-48" />
-        <span className="text-xs text-muted-foreground">
-          {list.length} of {signals.length}
-        </span>
-      </div>
-      <p className="text-xs text-muted-foreground">
-        Every signal links back to its source: a BMW record (verbatim ID, study row) or a web page with a deep link and a stored snapshot. Counts use distinct customers, never views or likes. Last fetch {fmtDate(c.updatedAt)}.
-      </p>
-      <div className="space-y-2">
-        {list.map((s) => (
-          <SignalCard key={s.id} s={s} highlighted={s.id === highlight} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function RequirementsTab({
+function RequirementsStep({
   c,
   requirements,
   canEdit,
-  scores,
+  onOpen,
   onConfirm,
+  onChat,
 }: {
   c: Case;
-  requirements: import("@/contracts").Requirement[];
+  requirements: Requirement[];
   canEdit: boolean;
-  scores: Map<string, { score: number; rank: number }>;
+  onOpen: (id: string) => void;
   onConfirm: () => void;
+  onChat: () => void;
 }) {
   const generate = useApiMutation("generateRequirements", { success: (r) => `${r.length} requirement draft${r.length === 1 ? "" : "s"} created` });
+  const confirmed = c.outcome === "confirmed";
   return (
-    <div className="space-y-3">
-      {c.outcome !== "confirmed" && (
-        <div className="flex items-center gap-3 rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
-          <Info className="size-4 shrink-0" />
-          <span className="flex-1">Requirements are built from a case once you confirm it: the case is the problem, a requirement is what BMW builds (with target, release and rough cost). One per case, or one per market when markets differ.</span>
-          {canEdit && c.state !== "decided" && c.state !== "observed" && (
-            <Button size="sm" onClick={onConfirm}>
-              Confirm case
-            </Button>
-          )}
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-2">
+        {!confirmed && canEdit && c.state !== "decided" && c.state !== "observed" && (
+          <Button onClick={onConfirm}>
+            <Sparkles className="size-4" /> Confirm case and create requirements
+          </Button>
+        )}
+        {confirmed && canEdit && (
+          <Button onClick={() => generate.mutate({ params: { id: c.id }, body: {} })} disabled={generate.isPending}>
+            <Sparkles className="size-4" /> Create requirements
+          </Button>
+        )}
+        {requirements.length > 0 && (
+          <Button variant="outline" onClick={onChat}>
+            <Bot className="size-4" /> Harden with the AI
+          </Button>
+        )}
+        {!confirmed && !canEdit && <p className="text-sm text-muted-foreground">No requirements yet.</p>}
+      </div>
+      {requirements.length > 0 && (
+        <div className="divide-y rounded-xl border bg-card shadow-xs">
+          {requirements.map((r) => (
+            <button key={r.id} onClick={() => onOpen(r.id)} className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-muted/50">
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-medium">{r.title}</span>
+                <span className="font-mono text-xs text-muted-foreground">{r.id}</span>
+              </span>
+              <ReleaseChip release={r.releaseTarget} />
+              <Pill>Cost {r.cost.size}</Pill>
+              <ReqStatusBadge status={r.status} />
+              <ArrowRight className="size-4 text-muted-foreground" />
+            </button>
+          ))}
         </div>
       )}
-      {c.outcome === "confirmed" && canEdit && (
-        <Button size="sm" variant="outline" onClick={() => generate.mutate({ params: { id: c.id }, body: {} })} disabled={generate.isPending}>
-          <Sparkles className="size-3.5" /> Draft another requirement with AI
-        </Button>
-      )}
-      <div className="grid gap-3 md:grid-cols-2">
-        {requirements.map((r) => (
-          <RequirementCard key={r.id} r={r} score={scores.get(r.id)?.score} rank={scores.get(r.id)?.rank} />
-        ))}
-      </div>
     </div>
   );
 }
 
+function QuotesSheet({ set, signals, onClose }: { set: QuoteSet | null; signals: Signal[]; onClose: () => void }) {
+  const list = set ? signals.filter((s) => set.signalIds.includes(s.id)) : [];
+  return (
+    <Sheet open={!!set} onOpenChange={(o) => !o && onClose()}>
+      <SheetContent className="w-full gap-0 overflow-y-auto p-0 data-[side=right]:sm:max-w-lg">
+        <SheetHeader className="border-b">
+          <SheetTitle>{set?.title}</SheetTitle>
+          <SheetDescription>
+            {list.length} source{list.length === 1 ? "" : "s"}
+            {set?.sub && ` · ${set.sub}`}
+          </SheetDescription>
+        </SheetHeader>
+        <div className="space-y-2 p-4">
+          {list.map((s) => (
+            <SignalCard key={s.id} s={s} compact />
+          ))}
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+function AlertBanner({ a, canResolve, onCite }: { a: Alert; canResolve: boolean; onCite: (ref: string) => void }) {
+  const [mode, setMode] = useState<"dismissed" | "rework" | null>(null);
+  const resolve = useApiMutation("resolveAlert", { success: (r) => (r.status === "rework" ? "Sent back for rework" : "Alert dismissed") });
+  return (
+    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-2.5 dark:border-amber-800 dark:bg-amber-950/40">
+      <AlertTriangle className="size-4 shrink-0 text-amber-500" />
+      <button onClick={() => a.signalIds[0] && onCite(a.signalIds[0])} className="min-w-0 flex-1 text-left text-sm">
+        <span className="font-medium">{a.title}</span>
+        <span className="ml-2 text-xs text-muted-foreground">{fromNow(a.createdAt)}</span>
+      </button>
+      {canResolve && (
+        <div className="flex gap-2">
+          <Button size="xs" variant="outline" onClick={() => setMode("dismissed")}>
+            Dismiss
+          </Button>
+          <Button size="xs" onClick={() => setMode("rework")}>
+            Rework
+          </Button>
+        </div>
+      )}
+      <RationaleDialog
+        open={!!mode}
+        onOpenChange={(o) => !o && setMode(null)}
+        title={mode === "rework" ? "Send back for rework" : "Dismiss the alert"}
+        description={a.detail}
+        pending={resolve.isPending}
+        onSubmit={async (rationale) => {
+          await resolve.mutateAsync({ params: { id: a.id }, body: { status: mode!, rationale } });
+          setMode(null);
+        }}
+      />
+    </div>
+  );
+}
+
+function LinkBanner({ c, referrals, linkedCases }: { c: Case; referrals: { id: string; kind: string; caseId: string; toUserId: string; fromUserId: string; status: string; linkedCaseId: string | null }[]; linkedCases: Case[] }) {
+  const { name } = useUsers();
+  const items: React.ReactNode[] = [];
+  const origin = linkedCases.find((x) => x.id === c.originCaseId);
+  if (origin) items.push(<CaseLink key="o" id={origin.id} prefix={`Linked from ${name(origin.ownerId)}`} />);
+  if (c.mergedInto) items.push(<CaseLink key="m" id={c.mergedInto} prefix="Merged into" />);
+  for (const r of referrals.filter((r) => r.caseId === c.id))
+    items.push(
+      <span key={r.id}>
+        {r.kind === "escalation" ? "Escalated" : "Referred"} to {name(r.toUserId)} · {r.status}
+        {r.linkedCaseId && <CaseLink id={r.linkedCaseId} prefix=" →" />}
+      </span>,
+    );
+  if (!items.length) return null;
+  return (
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+      <GitBranch className="size-4" />
+      {items}
+    </div>
+  );
+}
+
+function CaseLink({ id, prefix }: { id: string; prefix: string }) {
+  return (
+    <span>
+      {prefix}{" "}
+      <Link className="font-mono text-primary hover:underline" href={`/cases/${id}`}>
+        {id}
+      </Link>
+    </span>
+  );
+}

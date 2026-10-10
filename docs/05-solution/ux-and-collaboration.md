@@ -48,7 +48,9 @@ Each case has structured fields plus a page with fixed sections: problem, who is
 A case can be exported as `.md` with YAML front matter.
 
 ## 5. Screens
-My desk · Inbox · Signal radar · Cases (kanban + ranked with what-if weights) · Case page (doc, signals, open questions, requirements, activity, AI assistant) · Requirements (kanban + ranked) · Requirement page (SMART spec, trace chain, argument sheet) · Vehicle plan · Innovation pool · Meeting prep · Portfolio and Approvals (head) · Settings · Audit trail.
+After Thomas's feedback (10.10.2026, "less is more") the demo has six screens: **My desk** (agent flags · my cases · review · follow up) · **Inbox** · **Cases** (kanban, ranked toggle) · **Vehicle plan** (requirements as a list by car area, merged with today's equipment) · **Signals** (one Sankey: sources → car areas → cases) · **Innovation pool**. Settings and the audit trail sit in the persona menu.
+
+The **case page** leads with a Sankey of its evidence (sources → topic × type → case, every node opens its quotes) and three steps: ① Evidence → ② Your knowledge (one-click PM context + AI follow-up questions + open questions) → ③ Requirements (side panel, harden with the AI).
 
 ## 6. AI in the loop (all proposals, never silent edits)
 - Answers with citations to signal IDs.

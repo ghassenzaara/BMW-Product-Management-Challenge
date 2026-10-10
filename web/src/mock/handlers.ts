@@ -14,16 +14,18 @@ import type {
   Requirement,
   RequirementStatus,
   Signal,
+  TaxonomyResponse,
   User,
 } from "@/contracts";
 import { ApiError, audit, db, must, nextId, notify, now, resetStore } from "./store";
 import { computeScores } from "./scoring";
 import { draftRequirements } from "./ai/drafts";
-import { cite, scriptedReply, type ProposalDraft } from "./ai/chat";
+import { cite, followUpQuestions, scriptedReply, type ProposalDraft } from "./ai/chat";
 import { extractFromNote } from "./ai/notes";
 import { liveChatEnabled, liveReply } from "./ai/live";
 import { refreshPool } from "./authored/world";
 import { webSpecToSignal } from "./convert";
+import taxonomyData from "./fixtures/taxonomy.json";
 
 type Ep = typeof endpoints;
 type In<T> = T extends z.ZodType ? z.output<T> : undefined;
@@ -132,6 +134,12 @@ function saveProposals(d: Dataset, drafts: ProposalDraft[]): Proposal[] {
   });
 }
 
+function mostFrequentTopic(signals: Signal[]): string | null {
+  const count = new Map<string, number>();
+  signals.forEach((s) => s.topicId && count.set(s.topicId, (count.get(s.topicId) ?? 0) + 1));
+  return [...count].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+}
+
 function linkedCaseFor(d: Dataset, source: Case, owner: User, series = owner.series[0], rationale: string): Case {
   const id = nextId(`CASE-${series}-`, d.cases.filter((c) => c.id.startsWith(`CASE-${series}-`) && !c.id.includes("-CN-")));
   const linked: Case = {
@@ -145,6 +153,7 @@ function linkedCaseFor(d: Dataset, source: Case, owner: User, series = owner.ser
     state: "investigating",
     outcome: null,
     outcomeNote: undefined,
+    pmContext: null,
     originCaseId: source.id,
     mergedInto: null,
     requirementIds: [],
@@ -190,7 +199,7 @@ export const handlers: Handlers = {
       ...d.signals
         .filter((s) => s.id.toLowerCase() === q || (q.length > 3 && hit(s.summary)))
         .slice(0, 8)
-        .map((s) => ({ type: "signal" as const, id: s.id, title: s.summary, subtitle: `${s.id} · ${s.sourceName}`, href: s.caseId ? `/cases/${s.caseId}?tab=signals&signal=${s.id}` : `/radar?signal=${s.id}` })),
+        .map((s) => ({ type: "signal" as const, id: s.id, title: s.summary, subtitle: `${s.id} · ${s.sourceName}`, href: s.caseId ? `/cases/${s.caseId}?signal=${s.id}` : `/radar?signal=${s.id}` })),
     ].slice(0, 25);
   },
 
@@ -227,6 +236,7 @@ export const handlers: Handlers = {
         carArea: c?.carArea ?? "range_charging",
         featureHint: c?.featureName ?? "Charging speed",
         caseId: c?.id ?? null,
+        topicId: c?.topicId ?? null,
         fetchedAt: startedAt,
       });
       s.status = c ? "clustered" : "new";
@@ -238,7 +248,7 @@ export const handlers: Handlers = {
         recomputeFigures(d, c);
         d.clusters.find((cl) => cl.caseId === c.id)?.signalIds.push(s.id);
         for (const uid of new Set([c.ownerId, ...c.watcherIds])) {
-          notify({ userId: uid, kind: "new_signals", title: "New signal", body: `${s.summary} → ${c.id}`, link: `/cases/${c.id}?tab=signals`, actorId: "agent:clusterer" });
+          notify({ userId: uid, kind: "new_signals", title: "New signal", body: `${s.summary} → ${c.id}`, link: `/cases/${c.id}`, actorId: "agent:clusterer" });
           notes++;
         }
         if (s.kind === "competitor_fact" && s.metric) {
@@ -310,6 +320,9 @@ export const handlers: Handlers = {
       type: body.type,
       changeDepth: body.changeDepth,
       featureName: body.title,
+      highlights: [body.summary],
+      topicId: mostFrequentTopic(d.signals.filter((s) => body.signalIds.includes(s.id))),
+      pmContext: null,
       bodyMd: `## Problem\n\n${body.summary}\n\n## Who is affected\n\n_To fill._\n\n## Evidence summary\n\n${body.signalIds.length} signals selected on the radar.\n\n## Today's car\n\n_To fill._\n\n## Competitors\n\n_To fill._\n\n## Brand fit\n\n_AI proposal pending._\n\n## Options considered\n\n_None yet._\n\n## Decision log\n\n- ${now().slice(0, 10)} · Case opened by ${user.name}: ${body.rationale}`,
       bodyVersion: 1,
       signalIds: body.signalIds,
@@ -397,7 +410,7 @@ export const handlers: Handlers = {
       };
       d.referrals.push(ref);
       audit({ actorId: user.id, action: "escalation.created", objectType: "case", objectId: c.id, after: { to: ref.toUserId }, rationale: body.rationale });
-      notify({ userId: ref.toUserId, kind: "escalation", title: `Escalation from ${user.name}`, body: c.title, link: "/approvals", actorId: user.id });
+      notify({ userId: ref.toUserId, kind: "escalation", title: `Escalation from ${user.name}`, body: c.title, link: `/cases/${c.id}`, actorId: user.id });
       return c;
     }
     assertCaseEditor(user, c);
@@ -506,6 +519,35 @@ export const handlers: Handlers = {
     if (proposals.length) audit({ actorId: "agent:note_extractor", action: "proposal.created", objectType: "case", objectId: c.id, after: { count: proposals.length }, rationale: "Extracted from meeting note" });
     return { note, proposals };
   },
+  savePmContext: ({ params, body, user }) => {
+    const d = db();
+    const c = findCase(d, params.id);
+    assertCaseEditor(user, c);
+    const before = c.pmContext;
+    c.pmContext = { ...body, updatedAt: now(), updatedBy: user.id };
+    const parts = [
+      body.marketFocus && `focus ${body.marketFocus}`,
+      body.costSensitivity && `cost sensitivity ${body.costSensitivity}`,
+      body.positioning && `${body.positioning} positioning`,
+      body.timing && `timing ${body.timing}`,
+    ].filter(Boolean);
+    c.context.pmInputs = c.context.pmInputs.filter((i) => i.ref !== "pm-context");
+    c.context.pmInputs.push({ kind: "note", label: "PM knowledge", detail: [parts.join(" · "), body.note].filter(Boolean).join(" — "), at: now(), ref: "pm-context" });
+    touch(c);
+    audit({ actorId: user.id, action: "case.pm_context_saved", objectType: "case", objectId: c.id, before, after: c.pmContext });
+    const message: ChatMessage = {
+      id: nextId("MSG-", d.messages),
+      objectType: "case",
+      objectId: c.id,
+      role: "assistant",
+      content: followUpQuestions(d, c),
+      citations: [],
+      proposalIds: [],
+      createdAt: now(),
+    };
+    d.messages.push(message);
+    return { case: c, message };
+  },
   generateRequirements: ({ params, user }) => {
     const d = db();
     const c = findCase(d, params.id);
@@ -612,7 +654,7 @@ export const handlers: Handlers = {
         need(["draft", "in_discussion"].includes(r.status), "Approve from draft or in discussion.");
         r.status = "pm_approved";
         r.sentBackReason = undefined;
-        notify({ userId: head(d).id, kind: "sign_off_request", title: "Sign-off requested", body: `${r.id} · ${r.title}`, link: "/approvals", actorId: user.id });
+        notify({ userId: head(d).id, kind: "sign_off_request", title: "Sign-off requested", body: `${r.id} · ${r.title}`, link: `/requirements/${r.id}`, actorId: user.id });
         break;
       case "send_back":
         need(isHead, "Only the head of product line sends back.");
@@ -738,7 +780,7 @@ export const handlers: Handlers = {
         r.status = "escalated";
         const esc: Referral = { id: nextId("REF-", d.referrals), kind: "escalation", caseId: c.id, fromUserId: user.id, toUserId: head(d).id, note: `Referral ${r.id} contested: ${body.rationale}`, status: "pending", createdAt: now(), linkedCaseId: null };
         d.referrals.push(esc);
-        notify({ userId: esc.toUserId, kind: "escalation", title: `Escalation from ${user.name}`, body: c.title, link: "/approvals", actorId: user.id });
+        notify({ userId: esc.toUserId, kind: "escalation", title: `Escalation from ${user.name}`, body: c.title, link: `/cases/${c.id}`, actorId: user.id });
         break;
       }
       case "resolve": {
@@ -977,6 +1019,7 @@ export const handlers: Handlers = {
       .reverse();
     return query.limit ? list.slice(0, query.limit) : list;
   },
+  taxonomy: () => taxonomyData as TaxonomyResponse,
   portfolio: () => {
     const d = db();
     const allSeries = ["G60", "F70", "G70"] as const;

@@ -11,16 +11,8 @@ import { Markdown } from "@/components/common/markdown";
 import { ProposalCard } from "@/components/common/proposal-card";
 import { UserAvatar } from "@/components/common/people";
 
-const caseSuggestions = [
-  "Why is this ranked so high?",
-  "Compare the markets",
-  "What do competitors offer?",
-  "What should I ask engineering and finance?",
-  "Draft a SMART requirement",
-  "Research what owners say",
-  "Prepare an argument sheet for engineering",
-];
-const reqSuggestions = ["Prepare an argument sheet for engineering", "What do competitors offer?", "Set the target to 800 km", "Why is this ranked so high?", "Compare the markets"];
+const caseSuggestions = ["What should I ask engineering?", "Draft a SMART requirement", "What do competitors offer?", "Research what owners say"];
+const reqSuggestions = ["Prepare an argument sheet for engineering", "What do competitors offer?", "Why is this ranked so high?"];
 
 export function ChatPanel({
   objectType,
@@ -57,7 +49,7 @@ export function ChatPanel({
         {messages.length === 0 && (
           <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
             <Bot className="mb-2 size-5 text-primary" />
-            Ask about this {objectType}. Answers use only the evidence in the context pack and cite it, e.g. [G60-1430]. Edits come back as proposals you accept or reject; nothing changes without you.
+            Ask about this {objectType}. Answers cite the evidence; changes come back as proposals you accept or reject.
           </div>
         )}
         {messages.map((m) => (

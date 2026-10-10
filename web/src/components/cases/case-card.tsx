@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, GitBranch, MessageSquareQuote, Sparkles } from "lucide-react";
+import { AlertTriangle, GitBranch, Sparkles, Users } from "lucide-react";
 import type { Case } from "@/contracts";
-import { carAreaLabel } from "@/contracts";
 import { cn } from "@/lib/utils";
-import { EvidenceBadge, MarketChip, OutcomeBadge, Pill, ScoreBar } from "@/components/common/badges";
+import { EvidenceBars, OutcomeBadge } from "@/components/common/badges";
 import { UserAvatar } from "@/components/common/people";
 
-export function CaseCard({ c, score, rank, compact, dragging }: { c: Case; score?: number; rank?: number; compact?: boolean; dragging?: boolean }) {
+export function CaseCard({ c, score, rank, dragging }: { c: Case; score?: number; rank?: number; compact?: boolean; dragging?: boolean }) {
+  const customers = c.figures.perMarket.reduce((s, m) => s + m.customers, 0);
   return (
     <Link
       href={`/cases/${c.id}`}
@@ -23,7 +23,7 @@ export function CaseCard({ c, score, rank, compact, dragging }: { c: Case; score
         <span className="font-mono">{c.id}</span>
         <span className="flex-1" />
         {c.newSignalCount > 0 && (
-          <span className="flex items-center gap-0.5 rounded bg-primary/10 px-1 text-primary" title="New signals since you last looked">
+          <span className="flex items-center gap-0.5 rounded bg-primary/10 px-1 text-primary" title="New signals">
             <Sparkles className="size-3" />
             {c.newSignalCount}
           </span>
@@ -31,28 +31,26 @@ export function CaseCard({ c, score, rank, compact, dragging }: { c: Case; score
         {c.marketConflict && c.state !== "decided" && <AlertTriangle className="size-3.5 text-amber-500" aria-label="Market conflict" />}
         {c.originCaseId && <GitBranch className="size-3.5" aria-label="Linked case" />}
       </div>
-      <div className={cn("mt-1 text-sm leading-snug font-medium", compact ? "line-clamp-2" : "line-clamp-3")}>{c.title}</div>
-      <div className="mt-2 flex flex-wrap items-center gap-1">
-        {c.outcome && <OutcomeBadge outcome={c.outcome} />}
-        <Pill>{carAreaLabel[c.carArea]}</Pill>
-        {c.markets
-          .filter((m) => m !== "unknown")
-          .slice(0, 3)
-          .map((m) => (
-            <MarketChip key={m} market={m} muted />
-          ))}
-        {c.scope === "CN" && <Pill t="red">China</Pill>}
-      </div>
-      {score !== undefined && <ScoreBar value={score} className="mt-2.5" />}
-      <div className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground">
+      <div className="mt-1 line-clamp-2 text-sm leading-snug font-medium">{c.title}</div>
+      {c.outcome && (
+        <div className="mt-2">
+          <OutcomeBadge outcome={c.outcome} />
+        </div>
+      )}
+      <div className="mt-2.5 flex items-center gap-2.5 text-xs text-muted-foreground">
         <UserAvatar id={c.ownerId} size="xs" />
-        <span className="flex items-center gap-0.5">
-          <MessageSquareQuote className="size-3" />
-          {c.signalIds.length}
+        <span className="flex items-center gap-1 tabular-nums" title="Customers">
+          <Users className="size-3.5" />
+          {customers}
         </span>
         <span className="flex-1" />
-        {!compact && <EvidenceBadge level={c.evidenceLevel} />}
+        <EvidenceBars level={c.evidenceLevel} showLabel={false} />
       </div>
+      {score !== undefined && (
+        <div className="mt-2 h-1 overflow-hidden rounded-full bg-muted" title={`Score ${score.toFixed(2)}`}>
+          <div className="h-full rounded-full bg-primary" style={{ width: `${Math.round(score * 100)}%` }} />
+        </div>
+      )}
     </Link>
   );
 }
