@@ -33,6 +33,7 @@ Files are named `date_time_topic_type`.
 | Team discussion, 14:24 (German) | [transcript](03-meetings/raw/2026-10-10_1424_team-discussion-de_transcript.md) | [summary](03-meetings/2026-10-10_1424_team-discussion-de_summary.md) |
 | Team discussion, 14:39 (English) | [transcript](03-meetings/raw/2026-10-10_1439_team-discussion-en_transcript.md) | [summary](03-meetings/2026-10-10_1439_team-discussion-en_summary.md) |
 | Product manager interview (about 24 min) | [transcript](03-meetings/raw/2026-10-10_pm-interview_transcript.md) | [summary](03-meetings/2026-10-10_pm-interview_summary.md) |
+| Lifecycle voice note, 18:04 (about 1.5 min) | [transcript](03-meetings/raw/2026-10-10_1804_lifecycle-voice-note_transcript.md) | [summary](03-meetings/2026-10-10_1804_lifecycle-voice-note_summary.md) |
 
 Raw transcripts are in `03-meetings/raw/`; read the summaries first. The PM interview is the most important user input.
 
