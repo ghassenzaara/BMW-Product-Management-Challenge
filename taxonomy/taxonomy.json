@@ -1,0 +1,3595 @@
+{
+  "version": "2026-10-11.1",
+  "source": "BMW VFC level 2/3 labels from docs/02-data/processed/feedback_rows.csv",
+  "car_areas": [
+    {
+      "id": "exterior_design",
+      "label": "Exterior, design & lighting",
+      "description": "Look of the car from outside, body panels, mirrors, exterior lights, glass and wipers."
+    },
+    {
+      "id": "interior_comfort",
+      "label": "Interior & comfort",
+      "description": "Cabin look and feel, dashboard, console, ambient light, roominess, glass roof, sun protection."
+    },
+    {
+      "id": "seats",
+      "label": "Seats",
+      "description": "Seat comfort, adjustment, heating/ventilation, massage, memory, headrests, child seats."
+    },
+    {
+      "id": "climate",
+      "label": "Climate",
+      "description": "Heating, air conditioning, blower, climate controls, heated surfaces."
+    },
+    {
+      "id": "infotainment_hmi",
+      "label": "Infotainment & HMI",
+      "description": "Screens, operating concept, iDrive, navigation, audio, smartphone mirroring, voice control, displays."
+    },
+    {
+      "id": "connectivity_digital",
+      "label": "Connectivity & digital (incl. AI assistant)",
+      "description": "My BMW App, remote functions, digital key, eSIM/Wi-Fi, OTA upgrades, in-car apps, the intelligent personal assistant, phone pairing and charging."
+    },
+    {
+      "id": "driver_assistance",
+      "label": "Driver assistance & safety",
+      "description": "ADAS, parking aids, cameras, warnings, automated driving, airbags, belts, perceived safety."
+    },
+    {
+      "id": "dynamics_powertrain",
+      "label": "Driving dynamics & powertrain",
+      "description": "Engine/motor, acceleration, handling, ride, brakes, steering, transmission, drive modes, tires, start-stop."
+    },
+    {
+      "id": "range_charging",
+      "label": "Range, charging & refuelling",
+      "description": "Electric range, charging (public, home, cable, socket), high-voltage battery, fuel tank."
+    },
+    {
+      "id": "practicality",
+      "label": "Practicality & access",
+      "description": "Luggage, storage, doors, tailgate, frunk, keys and access, towing, everyday handling."
+    },
+    {
+      "id": "quality_materials",
+      "label": "Quality & materials",
+      "description": "Materials, trim, workmanship, cabin quietness, overall build of the body."
+    }
+  ],
+  "topics": [
+    {
+      "id": "vehicle_climatization",
+      "label": "Vehicle, climatization",
+      "car_area": "climate",
+      "hint": null,
+      "vfc_level2": [
+        "Vehicle, climatization"
+      ],
+      "n_verbatims": 90,
+      "n_by_model": {
+        "F70": 21,
+        "G60": 26,
+        "G70": 43
+      }
+    },
+    {
+      "id": "air_conditioning_setting",
+      "label": "Air conditioning, setting",
+      "car_area": "climate",
+      "hint": null,
+      "vfc_level2": [
+        "Air conditioning, setting"
+      ],
+      "n_verbatims": 47,
+      "n_by_model": {
+        "F70": 6,
+        "G60": 23,
+        "G70": 18
+      }
+    },
+    {
+      "id": "blower_function",
+      "label": "Blower function",
+      "car_area": "climate",
+      "hint": null,
+      "vfc_level2": [
+        "Blower function"
+      ],
+      "n_verbatims": 43,
+      "n_by_model": {
+        "F70": 2,
+        "G60": 21,
+        "G70": 20
+      }
+    },
+    {
+      "id": "heated_steering_wheel",
+      "label": "Heated steering wheel",
+      "car_area": "climate",
+      "hint": null,
+      "vfc_level2": [
+        "Heated steering wheel"
+      ],
+      "n_verbatims": 30,
+      "n_by_model": {
+        "F70": 11,
+        "G60": 12,
+        "G70": 7
+      }
+    },
+    {
+      "id": "air_conditioning_control_panel",
+      "label": "Air conditioning control panel",
+      "car_area": "climate",
+      "hint": null,
+      "vfc_level2": [
+        "Air conditioning control panel"
+      ],
+      "n_verbatims": 21,
+      "n_by_model": {
+        "G60": 15,
+        "G70": 6
+      }
+    },
+    {
+      "id": "air_conditioning_overall_technology",
+      "label": "Air conditioning, overall technology",
+      "car_area": "climate",
+      "hint": null,
+      "vfc_level2": [
+        "Air conditioning, overall technology"
+      ],
+      "n_verbatims": 17,
+      "n_by_model": {
+        "F70": 6,
+        "G60": 5,
+        "G70": 6
+      }
+    },
+    {
+      "id": "panel_heating",
+      "label": "Panel heating",
+      "car_area": "climate",
+      "hint": null,
+      "vfc_level2": [
+        "Panel heating"
+      ],
+      "n_verbatims": 8,
+      "n_by_model": {
+        "G60": 4,
+        "G70": 4
+      }
+    },
+    {
+      "id": "heated_rear_window",
+      "label": "Heated rear window",
+      "car_area": "climate",
+      "hint": null,
+      "vfc_level2": [
+        "Heated rear window"
+      ],
+      "n_verbatims": 7,
+      "n_by_model": {
+        "G60": 3,
+        "G70": 4
+      }
+    },
+    {
+      "id": "auxiliary_heater_function",
+      "label": "Auxiliary heater function",
+      "car_area": "climate",
+      "hint": null,
+      "vfc_level2": [
+        "Auxiliary heater function"
+      ],
+      "n_verbatims": 4,
+      "n_by_model": {
+        "G60": 4
+      }
+    },
+    {
+      "id": "my_bmw_app_mini_app",
+      "label": "My BMW App / MINI App",
+      "car_area": "connectivity_digital",
+      "hint": null,
+      "vfc_level2": [
+        "My BMW App / MINI App"
+      ],
+      "n_verbatims": 68,
+      "n_by_model": {
+        "F70": 6,
+        "G60": 28,
+        "G70": 34
+      }
+    },
+    {
+      "id": "intelligent_personal_assistant",
+      "label": "Intelligent Personal Assistant",
+      "car_area": "connectivity_digital",
+      "hint": null,
+      "vfc_level2": [
+        "Intelligent Personal Assistant"
+      ],
+      "n_verbatims": 61,
+      "n_by_model": {
+        "F70": 5,
+        "G60": 19,
+        "G70": 37
+      }
+    },
+    {
+      "id": "digital_key",
+      "label": "Digital Key",
+      "car_area": "connectivity_digital",
+      "hint": null,
+      "vfc_level2": [
+        "Digital Key"
+      ],
+      "n_verbatims": 58,
+      "n_by_model": {
+        "F70": 4,
+        "G60": 28,
+        "G70": 26
+      }
+    },
+    {
+      "id": "personal_esim",
+      "label": "Personal eSIM",
+      "car_area": "connectivity_digital",
+      "hint": null,
+      "vfc_level2": [
+        "Personal eSIM"
+      ],
+      "n_verbatims": 51,
+      "n_by_model": {
+        "F70": 1,
+        "G60": 11,
+        "G70": 39
+      }
+    },
+    {
+      "id": "usb_port",
+      "label": "USB port",
+      "car_area": "connectivity_digital",
+      "hint": null,
+      "vfc_level2": [
+        "USB port"
+      ],
+      "n_verbatims": 46,
+      "n_by_model": {
+        "F70": 20,
+        "G60": 15,
+        "G70": 11
+      }
+    },
+    {
+      "id": "mobile_device_wireless_charging",
+      "label": "Mobile device, wireless charging",
+      "car_area": "connectivity_digital",
+      "hint": null,
+      "vfc_level2": [
+        "Mobile device, wireless charging"
+      ],
+      "n_verbatims": 44,
+      "n_by_model": {
+        "F70": 3,
+        "G60": 29,
+        "G70": 12
+      }
+    },
+    {
+      "id": "remote_software_upgrade_rsu",
+      "label": "Remote Software Upgrade/RSU",
+      "car_area": "connectivity_digital",
+      "hint": null,
+      "vfc_level2": [
+        "Remote Software Upgrade/RSU"
+      ],
+      "n_verbatims": 44,
+      "n_by_model": {
+        "F70": 4,
+        "G60": 18,
+        "G70": 22
+      }
+    },
+    {
+      "id": "manage_pair_mobile_device_bluetooth",
+      "label": "Manage / pair mobile device (Bluetooth)",
+      "car_area": "connectivity_digital",
+      "hint": null,
+      "vfc_level2": [
+        "Manage / pair mobile device (Bluetooth)"
+      ],
+      "n_verbatims": 33,
+      "n_by_model": {
+        "F70": 4,
+        "G60": 13,
+        "G70": 16
+      }
+    },
+    {
+      "id": "wifi_hotspot",
+      "label": "WiFi hotspot",
+      "car_area": "connectivity_digital",
+      "hint": null,
+      "vfc_level2": [
+        "WiFi hotspot",
+        "Wi-Fi connection"
+      ],
+      "n_verbatims": 25,
+      "n_by_model": {
+        "F70": 1,
+        "G60": 10,
+        "G70": 14
+      }
+    },
+    {
+      "id": "remote_services_remote_keyless_entry_my_bmw_app_mini_app",
+      "label": "Remote Services & Remote Keyless Entry (My BMW App/MINI App)",
+      "car_area": "connectivity_digital",
+      "hint": null,
+      "vfc_level2": [
+        "Remote Services & Remote Keyless Entry (My BMW App/MINI App)"
+      ],
+      "n_verbatims": 24,
+      "n_by_model": {
+        "F70": 2,
+        "G60": 11,
+        "G70": 11
+      }
+    },
+    {
+      "id": "apps_in_car",
+      "label": "Apps (in-car)",
+      "car_area": "connectivity_digital",
+      "hint": null,
+      "vfc_level2": [
+        "Apps (in-car)"
+      ],
+      "n_verbatims": 23,
+      "n_by_model": {
+        "G60": 11,
+        "G70": 12
+      }
+    },
+    {
+      "id": "intelligent_personal_assistant_activation_word",
+      "label": "Intelligent Personal Assistant, activation word",
+      "car_area": "connectivity_digital",
+      "hint": null,
+      "vfc_level2": [
+        "Intelligent Personal Assistant, activation word"
+      ],
+      "n_verbatims": 22,
+      "n_by_model": {
+        "F70": 3,
+        "G60": 7,
+        "G70": 12
+      }
+    },
+    {
+      "id": "remote_engine_start_my_bmw_app_mini_app",
+      "label": "Remote Engine Start (My BMW App / MINI App)",
+      "car_area": "connectivity_digital",
+      "hint": null,
+      "vfc_level2": [
+        "Remote Engine Start (My BMW App / MINI App)"
+      ],
+      "n_verbatims": 22,
+      "n_by_model": {
+        "F70": 2,
+        "G60": 11,
+        "G70": 9
+      }
+    },
+    {
+      "id": "connecteddrive_services_smartphone_technology_overall",
+      "label": "ConnectedDrive services (smartphone) technology overall",
+      "car_area": "connectivity_digital",
+      "hint": null,
+      "vfc_level2": [
+        "ConnectedDrive services (smartphone) technology overall"
+      ],
+      "n_verbatims": 19,
+      "n_by_model": {
+        "F70": 10,
+        "G60": 5,
+        "G70": 4
+      }
+    },
+    {
+      "id": "priorities_for_telephones",
+      "label": "Priorities for telephones",
+      "car_area": "connectivity_digital",
+      "hint": null,
+      "vfc_level2": [
+        "Priorities for telephones"
+      ],
+      "n_verbatims": 14,
+      "n_by_model": {
+        "F70": 2,
+        "G60": 6,
+        "G70": 6
+      }
+    },
+    {
+      "id": "interior_camera",
+      "label": "Interior camera",
+      "car_area": "connectivity_digital",
+      "hint": null,
+      "vfc_level2": [
+        "Interior camera"
+      ],
+      "n_verbatims": 13,
+      "n_by_model": {
+        "G60": 8,
+        "G70": 5
+      }
+    },
+    {
+      "id": "bmw_connecteddrive_upgrades_mini_connected_upgrades",
+      "label": "BMW ConnectedDrive upgrades/ MINI CONNECTED upgrades",
+      "car_area": "connectivity_digital",
+      "hint": null,
+      "vfc_level2": [
+        "BMW ConnectedDrive upgrades/ MINI CONNECTED upgrades"
+      ],
+      "n_verbatims": 12,
+      "n_by_model": {
+        "G60": 7,
+        "G70": 5
+      }
+    },
+    {
+      "id": "remote_3d_view_my_bmw_app_mini_app",
+      "label": "Remote 3D View (My BMW App / MINI App)",
+      "car_area": "connectivity_digital",
+      "hint": null,
+      "vfc_level2": [
+        "Remote 3D View (My BMW App / MINI App)"
+      ],
+      "n_verbatims": 8,
+      "n_by_model": {
+        "G60": 5,
+        "G70": 3
+      }
+    },
+    {
+      "id": "my_bmw_mini_portal",
+      "label": "My BMW / MINI Portal",
+      "car_area": "connectivity_digital",
+      "hint": null,
+      "vfc_level2": [
+        "My BMW / MINI Portal"
+      ],
+      "n_verbatims": 6,
+      "n_by_model": {
+        "G60": 5,
+        "G70": 1
+      }
+    },
+    {
+      "id": "teleservices",
+      "label": "Teleservices",
+      "car_area": "connectivity_digital",
+      "hint": "Service intervals and remote service notifications.",
+      "vfc_level2": [
+        "Teleservices"
+      ],
+      "n_verbatims": 6,
+      "n_by_model": {
+        "G60": 5,
+        "G70": 1
+      }
+    },
+    {
+      "id": "remote_interior_camera_my_bmw_app_mini_app",
+      "label": "Remote interior camera (My BMW App / MINI App)",
+      "car_area": "connectivity_digital",
+      "hint": null,
+      "vfc_level2": [
+        "Remote interior camera (My BMW App / MINI App)"
+      ],
+      "n_verbatims": 5,
+      "n_by_model": {
+        "G60": 2,
+        "G70": 3
+      }
+    },
+    {
+      "id": "display_key",
+      "label": "Display key",
+      "car_area": "connectivity_digital",
+      "hint": "BMW key fob with a display.",
+      "vfc_level2": [
+        "Display key"
+      ],
+      "n_verbatims": 4,
+      "n_by_model": {
+        "G60": 1,
+        "G70": 3
+      }
+    },
+    {
+      "id": "bmw_online_mini_online",
+      "label": "BMW Online / MINI Online",
+      "car_area": "connectivity_digital",
+      "hint": null,
+      "vfc_level2": [
+        "BMW Online / MINI Online"
+      ],
+      "n_verbatims": 2,
+      "n_by_model": {
+        "G60": 1,
+        "G70": 1
+      }
+    },
+    {
+      "id": "customer_account_my_bmw_mini_portal",
+      "label": "Customer Account (My BMW / MINI Portal)",
+      "car_area": "connectivity_digital",
+      "hint": null,
+      "vfc_level2": [
+        "Customer Account (My BMW / MINI Portal)"
+      ],
+      "n_verbatims": 2,
+      "n_by_model": {
+        "G60": 2
+      }
+    },
+    {
+      "id": "driver_s_guide_app",
+      "label": "Driver's Guide App",
+      "car_area": "connectivity_digital",
+      "hint": null,
+      "vfc_level2": [
+        "Driver's Guide App"
+      ],
+      "n_verbatims": 2,
+      "n_by_model": {
+        "G60": 2
+      }
+    },
+    {
+      "id": "apps_smartphone",
+      "label": "Apps (smartphone)",
+      "car_area": "connectivity_digital",
+      "hint": null,
+      "vfc_level2": [
+        "Apps (smartphone)"
+      ],
+      "n_verbatims": 1,
+      "n_by_model": {
+        "G60": 1
+      }
+    },
+    {
+      "id": "impression_of_safety",
+      "label": "Impression of safety",
+      "car_area": "driver_assistance",
+      "hint": "How safe the car feels overall.",
+      "vfc_level2": [
+        "Impression of safety"
+      ],
+      "n_verbatims": 104,
+      "n_by_model": {
+        "F70": 59,
+        "G60": 24,
+        "G70": 21
+      }
+    },
+    {
+      "id": "driver_assistance_automated_driving_overall_technology",
+      "label": "Driver assistance, automated driving, overall technology",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "Driver assistance, automated driving, overall technology"
+      ],
+      "n_verbatims": 86,
+      "n_by_model": {
+        "F70": 39,
+        "G60": 25,
+        "G70": 22
+      }
+    },
+    {
+      "id": "highway_assistant",
+      "label": "Highway assistant",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "Highway assistant"
+      ],
+      "n_verbatims": 76,
+      "n_by_model": {
+        "G60": 38,
+        "G70": 38
+      }
+    },
+    {
+      "id": "active_cruise_control",
+      "label": "(Active) cruise control",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "(Active) cruise control"
+      ],
+      "n_verbatims": 65,
+      "n_by_model": {
+        "F70": 11,
+        "G60": 31,
+        "G70": 23
+      }
+    },
+    {
+      "id": "parking_assistant",
+      "label": "Parking Assistant",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "Parking Assistant"
+      ],
+      "n_verbatims": 58,
+      "n_by_model": {
+        "F70": 4,
+        "G60": 27,
+        "G70": 27
+      }
+    },
+    {
+      "id": "rear_view_camera",
+      "label": "Rear view camera",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "Rear view camera"
+      ],
+      "n_verbatims": 37,
+      "n_by_model": {
+        "F70": 15,
+        "G60": 12,
+        "G70": 10
+      }
+    },
+    {
+      "id": "lane_departure_warning",
+      "label": "Lane departure warning",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "Lane departure warning"
+      ],
+      "n_verbatims": 32,
+      "n_by_model": {
+        "F70": 5,
+        "G60": 14,
+        "G70": 13
+      }
+    },
+    {
+      "id": "park_distance_control_pdc",
+      "label": "Park Distance Control (PDC)",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "Park Distance Control (PDC)"
+      ],
+      "n_verbatims": 29,
+      "n_by_model": {
+        "F70": 8,
+        "G60": 12,
+        "G70": 9
+      }
+    },
+    {
+      "id": "vehicle_safety_overall_technology",
+      "label": "Vehicle safety, overall technology",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "Vehicle safety, overall technology"
+      ],
+      "n_verbatims": 29,
+      "n_by_model": {
+        "F70": 17,
+        "G60": 6,
+        "G70": 6
+      }
+    },
+    {
+      "id": "steering_and_lane_guide_assist",
+      "label": "Steering and lane guide assist",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "Steering and lane guide assist"
+      ],
+      "n_verbatims": 27,
+      "n_by_model": {
+        "G60": 10,
+        "G70": 17
+      }
+    },
+    {
+      "id": "surround_view",
+      "label": "Surround View",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "Surround View"
+      ],
+      "n_verbatims": 27,
+      "n_by_model": {
+        "G60": 13,
+        "G70": 14
+      }
+    },
+    {
+      "id": "seat_belts",
+      "label": "Seat belts",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "Seat belts"
+      ],
+      "n_verbatims": 25,
+      "n_by_model": {
+        "F70": 2,
+        "G60": 14,
+        "G70": 9
+      }
+    },
+    {
+      "id": "all_round_view",
+      "label": "All-round view",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "All-round view"
+      ],
+      "n_verbatims": 23,
+      "n_by_model": {
+        "F70": 3,
+        "G60": 10,
+        "G70": 10
+      }
+    },
+    {
+      "id": "speed_limit_assistant",
+      "label": "Speed Limit Assistant",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "Speed Limit Assistant"
+      ],
+      "n_verbatims": 22,
+      "n_by_model": {
+        "F70": 7,
+        "G60": 9,
+        "G70": 6
+      }
+    },
+    {
+      "id": "drive_recorder",
+      "label": "Drive Recorder",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "Drive Recorder"
+      ],
+      "n_verbatims": 21,
+      "n_by_model": {
+        "G60": 13,
+        "G70": 8
+      }
+    },
+    {
+      "id": "back_up_assistant",
+      "label": "Back-up Assistant",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "Back-up Assistant"
+      ],
+      "n_verbatims": 19,
+      "n_by_model": {
+        "F70": 2,
+        "G60": 7,
+        "G70": 10
+      }
+    },
+    {
+      "id": "blind_spot_monitoring",
+      "label": "Blind spot monitoring",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "Blind spot monitoring"
+      ],
+      "n_verbatims": 17,
+      "n_by_model": {
+        "F70": 1,
+        "G60": 9,
+        "G70": 7
+      }
+    },
+    {
+      "id": "front_collision_warning",
+      "label": "Front collision warning",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "Front collision warning"
+      ],
+      "n_verbatims": 17,
+      "n_by_model": {
+        "G60": 9,
+        "G70": 8
+      }
+    },
+    {
+      "id": "remote_controlled_parking",
+      "label": "Remote controlled parking",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "Remote controlled parking"
+      ],
+      "n_verbatims": 17,
+      "n_by_model": {
+        "G60": 9,
+        "G70": 8
+      }
+    },
+    {
+      "id": "emergency_request",
+      "label": "Emergency request",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "Emergency request"
+      ],
+      "n_verbatims": 16,
+      "n_by_model": {
+        "G60": 8,
+        "G70": 8
+      }
+    },
+    {
+      "id": "cross_traffic_warning_rear_with_brake_intervention",
+      "label": "Cross Traffic Warning Rear with Brake Intervention",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "Cross Traffic Warning Rear with Brake Intervention"
+      ],
+      "n_verbatims": 14,
+      "n_by_model": {
+        "G60": 8,
+        "G70": 6
+      }
+    },
+    {
+      "id": "fatigue_alert",
+      "label": "Fatigue Alert",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "Fatigue Alert"
+      ],
+      "n_verbatims": 14,
+      "n_by_model": {
+        "G60": 7,
+        "G70": 7
+      }
+    },
+    {
+      "id": "anti_theft_alarm_system",
+      "label": "Anti-theft alarm system",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "Anti-theft alarm system"
+      ],
+      "n_verbatims": 12,
+      "n_by_model": {
+        "F70": 1,
+        "G60": 6,
+        "G70": 5
+      }
+    },
+    {
+      "id": "high_beam_assistant",
+      "label": "High-beam assistant",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "High-beam assistant"
+      ],
+      "n_verbatims": 12,
+      "n_by_model": {
+        "G60": 7,
+        "G70": 5
+      }
+    },
+    {
+      "id": "lane_change_assistant",
+      "label": "Lane Change Assistant",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "Lane Change Assistant"
+      ],
+      "n_verbatims": 11,
+      "n_by_model": {
+        "G60": 6,
+        "G70": 5
+      }
+    },
+    {
+      "id": "child_safety_latch",
+      "label": "Child safety latch",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "Child safety latch"
+      ],
+      "n_verbatims": 10,
+      "n_by_model": {
+        "G60": 5,
+        "G70": 5
+      }
+    },
+    {
+      "id": "night_vision",
+      "label": "Night Vision",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "Night Vision"
+      ],
+      "n_verbatims": 8,
+      "n_by_model": {
+        "G60": 4,
+        "G70": 4
+      }
+    },
+    {
+      "id": "side_view",
+      "label": "Side View",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "Side View"
+      ],
+      "n_verbatims": 8,
+      "n_by_model": {
+        "G60": 5,
+        "G70": 3
+      }
+    },
+    {
+      "id": "traffic_light_and_sign_warning",
+      "label": "Traffic Light And Sign Warning",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "Traffic Light And Sign Warning"
+      ],
+      "n_verbatims": 8,
+      "n_by_model": {
+        "G60": 5,
+        "G70": 3
+      }
+    },
+    {
+      "id": "rear_end_collision_warning",
+      "label": "Rear-end collision warning",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "Rear-end collision warning"
+      ],
+      "n_verbatims": 6,
+      "n_by_model": {
+        "F70": 2,
+        "G60": 2,
+        "G70": 2
+      }
+    },
+    {
+      "id": "airbags",
+      "label": "Airbags",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "Airbags"
+      ],
+      "n_verbatims": 5,
+      "n_by_model": {
+        "G70": 5
+      }
+    },
+    {
+      "id": "emergency_stop_assistant",
+      "label": "Emergency Stop Assistant",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "Emergency Stop Assistant"
+      ],
+      "n_verbatims": 4,
+      "n_by_model": {
+        "G60": 3,
+        "G70": 1
+      }
+    },
+    {
+      "id": "traffic_jam_assistant",
+      "label": "Traffic Jam Assistant",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "Traffic Jam Assistant"
+      ],
+      "n_verbatims": 4,
+      "n_by_model": {
+        "G70": 4
+      }
+    },
+    {
+      "id": "intersection_warning_with_brake_intervention",
+      "label": "Intersection Warning with Brake Intervention",
+      "car_area": "driver_assistance",
+      "hint": null,
+      "vfc_level2": [
+        "Intersection Warning with Brake Intervention"
+      ],
+      "n_verbatims": 3,
+      "n_by_model": {
+        "G60": 2,
+        "G70": 1
+      }
+    },
+    {
+      "id": "drivetrain",
+      "label": "Drivetrain",
+      "car_area": "dynamics_powertrain",
+      "hint": "Engine/motor power, acceleration, fuel or energy efficiency of the propulsion system.",
+      "vfc_level2": [
+        "Drivetrain"
+      ],
+      "n_verbatims": 1287,
+      "n_by_model": {
+        "F70": 527,
+        "G60": 411,
+        "G70": 349
+      }
+    },
+    {
+      "id": "drive_driving_dynamics_and_chassis_overall_technology",
+      "label": "Drive, driving dynamics and chassis, overall technology",
+      "car_area": "dynamics_powertrain",
+      "hint": "Overall driving feel: sportiness, agility, 'fun to drive'.",
+      "vfc_level2": [
+        "Drive, driving dynamics and chassis, overall technology"
+      ],
+      "n_verbatims": 692,
+      "n_by_model": {
+        "F70": 475,
+        "G60": 126,
+        "G70": 91
+      }
+    },
+    {
+      "id": "handling_riding",
+      "label": "Handling / Riding",
+      "car_area": "dynamics_powertrain",
+      "hint": "Ride comfort and handling on the road.",
+      "vfc_level2": [
+        "Handling / Riding"
+      ],
+      "n_verbatims": 689,
+      "n_by_model": {
+        "F70": 215,
+        "G60": 226,
+        "G70": 248
+      }
+    },
+    {
+      "id": "my_modes_driving_experience",
+      "label": "My Modes / driving experience",
+      "car_area": "dynamics_powertrain",
+      "hint": "BMW My Modes: selectable driving/experience modes (Sport, Efficient, Personal).",
+      "vfc_level2": [
+        "My Modes / driving experience"
+      ],
+      "n_verbatims": 159,
+      "n_by_model": {
+        "F70": 46,
+        "G60": 58,
+        "G70": 55
+      }
+    },
+    {
+      "id": "cushioning_damping_vehicle",
+      "label": "Cushioning / damping vehicle",
+      "car_area": "dynamics_powertrain",
+      "hint": null,
+      "vfc_level2": [
+        "Cushioning / damping vehicle"
+      ],
+      "n_verbatims": 103,
+      "n_by_model": {
+        "F70": 42,
+        "G60": 23,
+        "G70": 38
+      }
+    },
+    {
+      "id": "braking",
+      "label": "Braking",
+      "car_area": "dynamics_powertrain",
+      "hint": null,
+      "vfc_level2": [
+        "Braking"
+      ],
+      "n_verbatims": 96,
+      "n_by_model": {
+        "F70": 28,
+        "G60": 37,
+        "G70": 31
+      }
+    },
+    {
+      "id": "wheels_tires",
+      "label": "Wheels / tires",
+      "car_area": "dynamics_powertrain",
+      "hint": null,
+      "vfc_level2": [
+        "Wheels / tires"
+      ],
+      "n_verbatims": 87,
+      "n_by_model": {
+        "F70": 27,
+        "G60": 30,
+        "G70": 30
+      }
+    },
+    {
+      "id": "automatic_engine_start_stop_function_msa",
+      "label": "Automatic engine start-stop function (MSA)",
+      "car_area": "dynamics_powertrain",
+      "hint": null,
+      "vfc_level2": [
+        "Automatic engine start-stop function (MSA)"
+      ],
+      "n_verbatims": 83,
+      "n_by_model": {
+        "F70": 13,
+        "G60": 36,
+        "G70": 34
+      }
+    },
+    {
+      "id": "transmission",
+      "label": "Transmission",
+      "car_area": "dynamics_powertrain",
+      "hint": null,
+      "vfc_level2": [
+        "Transmission"
+      ],
+      "n_verbatims": 64,
+      "n_by_model": {
+        "F70": 40,
+        "G60": 13,
+        "G70": 11
+      }
+    },
+    {
+      "id": "engine_acoustics_engine_sound",
+      "label": "Engine acoustics / engine sound",
+      "car_area": "dynamics_powertrain",
+      "hint": null,
+      "vfc_level2": [
+        "Engine acoustics / engine sound"
+      ],
+      "n_verbatims": 53,
+      "n_by_model": {
+        "F70": 23,
+        "G60": 22,
+        "G70": 8
+      }
+    },
+    {
+      "id": "steering",
+      "label": "Steering",
+      "car_area": "dynamics_powertrain",
+      "hint": null,
+      "vfc_level2": [
+        "Steering"
+      ],
+      "n_verbatims": 53,
+      "n_by_model": {
+        "F70": 17,
+        "G60": 22,
+        "G70": 14
+      }
+    },
+    {
+      "id": "resting_state_after_door_opening",
+      "label": "Resting state after door opening",
+      "car_area": "dynamics_powertrain",
+      "hint": "Vehicle wake/sleep behaviour: car stays on or switches off when doors open, settings not retained.",
+      "vfc_level2": [
+        "Resting state after door opening"
+      ],
+      "n_verbatims": 34,
+      "n_by_model": {
+        "F70": 3,
+        "G60": 18,
+        "G70": 13
+      }
+    },
+    {
+      "id": "brake_energy_regeneration_recuperation",
+      "label": "Brake Energy Regeneration / recuperation",
+      "car_area": "dynamics_powertrain",
+      "hint": "Regenerative braking, one-pedal feel of electrified cars.",
+      "vfc_level2": [
+        "Brake Energy Regeneration / recuperation"
+      ],
+      "n_verbatims": 28,
+      "n_by_model": {
+        "G60": 16,
+        "G70": 12
+      }
+    },
+    {
+      "id": "operate_selector_lever",
+      "label": "Operate selector lever",
+      "car_area": "dynamics_powertrain",
+      "hint": null,
+      "vfc_level2": [
+        "Operate selector lever"
+      ],
+      "n_verbatims": 27,
+      "n_by_model": {
+        "F70": 1,
+        "G60": 15,
+        "G70": 11
+      }
+    },
+    {
+      "id": "automatic_hold",
+      "label": "Automatic-hold",
+      "car_area": "dynamics_powertrain",
+      "hint": null,
+      "vfc_level2": [
+        "Automatic-hold"
+      ],
+      "n_verbatims": 25,
+      "n_by_model": {
+        "F70": 4,
+        "G60": 11,
+        "G70": 10
+      }
+    },
+    {
+      "id": "rsc_tire",
+      "label": "RSC tire",
+      "car_area": "dynamics_powertrain",
+      "hint": null,
+      "vfc_level2": [
+        "RSC tire"
+      ],
+      "n_verbatims": 22,
+      "n_by_model": {
+        "F70": 4,
+        "G60": 10,
+        "G70": 8
+      }
+    },
+    {
+      "id": "vehicle_battery",
+      "label": "Vehicle battery",
+      "car_area": "dynamics_powertrain",
+      "hint": "12 V battery and its warnings. The high-voltage battery is range_charging.",
+      "vfc_level2": [
+        "Vehicle battery"
+      ],
+      "n_verbatims": 21,
+      "n_by_model": {
+        "G60": 14,
+        "G70": 7
+      }
+    },
+    {
+      "id": "ground_clearance",
+      "label": "ground clearance",
+      "car_area": "dynamics_powertrain",
+      "hint": null,
+      "vfc_level2": [
+        "ground clearance"
+      ],
+      "n_verbatims": 19,
+      "n_by_model": {
+        "G60": 11,
+        "G70": 8
+      }
+    },
+    {
+      "id": "tire_pressure_control",
+      "label": "Tire pressure control",
+      "car_area": "dynamics_powertrain",
+      "hint": null,
+      "vfc_level2": [
+        "Tire pressure control"
+      ],
+      "n_verbatims": 17,
+      "n_by_model": {
+        "F70": 5,
+        "G60": 5,
+        "G70": 7
+      }
+    },
+    {
+      "id": "parking_brake",
+      "label": "Parking brake",
+      "car_area": "dynamics_powertrain",
+      "hint": null,
+      "vfc_level2": [
+        "Parking brake"
+      ],
+      "n_verbatims": 15,
+      "n_by_model": {
+        "F70": 2,
+        "G60": 8,
+        "G70": 5
+      }
+    },
+    {
+      "id": "self_leveling_suspension",
+      "label": "Self-leveling suspension",
+      "car_area": "dynamics_powertrain",
+      "hint": null,
+      "vfc_level2": [
+        "Self-leveling suspension"
+      ],
+      "n_verbatims": 15,
+      "n_by_model": {
+        "G60": 6,
+        "G70": 9
+      }
+    },
+    {
+      "id": "tirefit",
+      "label": "Tirefit",
+      "car_area": "dynamics_powertrain",
+      "hint": null,
+      "vfc_level2": [
+        "Tirefit"
+      ],
+      "n_verbatims": 14,
+      "n_by_model": {
+        "G60": 8,
+        "G70": 6
+      }
+    },
+    {
+      "id": "starting_engine",
+      "label": "Starting engine",
+      "car_area": "dynamics_powertrain",
+      "hint": null,
+      "vfc_level2": [
+        "Starting engine"
+      ],
+      "n_verbatims": 13,
+      "n_by_model": {
+        "G60": 6,
+        "G70": 7
+      }
+    },
+    {
+      "id": "pedals_operate",
+      "label": "Pedals, operate",
+      "car_area": "dynamics_powertrain",
+      "hint": null,
+      "vfc_level2": [
+        "Pedals, operate"
+      ],
+      "n_verbatims": 12,
+      "n_by_model": {
+        "F70": 3,
+        "G60": 6,
+        "G70": 3
+      }
+    },
+    {
+      "id": "start_engine_switch_on_drive_readiness",
+      "label": "Start engine/switch on drive readiness",
+      "car_area": "dynamics_powertrain",
+      "hint": null,
+      "vfc_level2": [
+        "Start engine/switch on drive readiness"
+      ],
+      "n_verbatims": 12,
+      "n_by_model": {
+        "G60": 6,
+        "G70": 6
+      }
+    },
+    {
+      "id": "dynamic_stability_control",
+      "label": "Dynamic Stability Control",
+      "car_area": "dynamics_powertrain",
+      "hint": null,
+      "vfc_level2": [
+        "Dynamic Stability Control",
+        "Dynamic Stability Control (DSC)"
+      ],
+      "n_verbatims": 11,
+      "n_by_model": {
+        "G60": 5,
+        "G70": 6
+      }
+    },
+    {
+      "id": "shift_paddle",
+      "label": "Shift paddle",
+      "car_area": "dynamics_powertrain",
+      "hint": null,
+      "vfc_level2": [
+        "Shift paddle"
+      ],
+      "n_verbatims": 11,
+      "n_by_model": {
+        "G60": 6,
+        "G70": 5
+      }
+    },
+    {
+      "id": "cooling",
+      "label": "Cooling",
+      "car_area": "dynamics_powertrain",
+      "hint": "Engine or drivetrain cooling (overheating, coolant). Cabin cooling is climate.",
+      "vfc_level2": [
+        "Cooling"
+      ],
+      "n_verbatims": 10,
+      "n_by_model": {
+        "G60": 4,
+        "G70": 6
+      }
+    },
+    {
+      "id": "engine_oil",
+      "label": "Engine oil",
+      "car_area": "dynamics_powertrain",
+      "hint": null,
+      "vfc_level2": [
+        "Engine oil"
+      ],
+      "n_verbatims": 10,
+      "n_by_model": {
+        "G60": 6,
+        "G70": 4
+      }
+    },
+    {
+      "id": "launch_control",
+      "label": "Launch Control",
+      "car_area": "dynamics_powertrain",
+      "hint": null,
+      "vfc_level2": [
+        "Launch Control"
+      ],
+      "n_verbatims": 9,
+      "n_by_model": {
+        "G60": 6,
+        "G70": 3
+      }
+    },
+    {
+      "id": "exhaust_system",
+      "label": "Exhaust system",
+      "car_area": "dynamics_powertrain",
+      "hint": null,
+      "vfc_level2": [
+        "Exhaust system"
+      ],
+      "n_verbatims": 7,
+      "n_by_model": {
+        "F70": 3,
+        "G60": 3,
+        "G70": 1
+      }
+    },
+    {
+      "id": "exterior_design",
+      "label": "Exterior design",
+      "car_area": "exterior_design",
+      "hint": null,
+      "vfc_level2": [
+        "Exterior design"
+      ],
+      "n_verbatims": 391,
+      "n_by_model": {
+        "F70": 56,
+        "G60": 157,
+        "G70": 178
+      }
+    },
+    {
+      "id": "exterior",
+      "label": "Exterior",
+      "car_area": "exterior_design",
+      "hint": null,
+      "vfc_level2": [
+        "Exterior"
+      ],
+      "n_verbatims": 139,
+      "n_by_model": {
+        "F70": 28,
+        "G60": 51,
+        "G70": 60
+      }
+    },
+    {
+      "id": "exterior_rearview_mirror",
+      "label": "Exterior rearview mirror",
+      "car_area": "exterior_design",
+      "hint": null,
+      "vfc_level2": [
+        "Exterior rearview mirror"
+      ],
+      "n_verbatims": 63,
+      "n_by_model": {
+        "F70": 32,
+        "G60": 14,
+        "G70": 17
+      }
+    },
+    {
+      "id": "exterior_lighting",
+      "label": "Exterior lighting",
+      "car_area": "exterior_design",
+      "hint": null,
+      "vfc_level2": [
+        "Exterior lighting"
+      ],
+      "n_verbatims": 62,
+      "n_by_model": {
+        "F70": 19,
+        "G60": 15,
+        "G70": 28
+      }
+    },
+    {
+      "id": "welcome_light_carpet",
+      "label": "Welcome Light Carpet",
+      "car_area": "exterior_design",
+      "hint": null,
+      "vfc_level2": [
+        "Welcome Light Carpet"
+      ],
+      "n_verbatims": 13,
+      "n_by_model": {
+        "G60": 7,
+        "G70": 6
+      }
+    },
+    {
+      "id": "windshield_wiper",
+      "label": "Windshield wiper",
+      "car_area": "exterior_design",
+      "hint": null,
+      "vfc_level2": [
+        "Windshield wiper"
+      ],
+      "n_verbatims": 13,
+      "n_by_model": {
+        "G60": 7,
+        "G70": 6
+      }
+    },
+    {
+      "id": "windshield",
+      "label": "Windshield",
+      "car_area": "exterior_design",
+      "hint": null,
+      "vfc_level2": [
+        "Windshield"
+      ],
+      "n_verbatims": 12,
+      "n_by_model": {
+        "G60": 5,
+        "G70": 7
+      }
+    },
+    {
+      "id": "flashing",
+      "label": "Flashing",
+      "car_area": "exterior_design",
+      "hint": "Turn signals and hazard lights.",
+      "vfc_level2": [
+        "Flashing"
+      ],
+      "n_verbatims": 11,
+      "n_by_model": {
+        "G60": 7,
+        "G70": 4
+      }
+    },
+    {
+      "id": "radiator_grille",
+      "label": "Radiator grille",
+      "car_area": "exterior_design",
+      "hint": null,
+      "vfc_level2": [
+        "Radiator grille"
+      ],
+      "n_verbatims": 10,
+      "n_by_model": {
+        "F70": 2,
+        "G60": 4,
+        "G70": 4
+      }
+    },
+    {
+      "id": "rain_sensor_mode",
+      "label": "Rain sensor mode",
+      "car_area": "exterior_design",
+      "hint": null,
+      "vfc_level2": [
+        "Rain sensor mode"
+      ],
+      "n_verbatims": 8,
+      "n_by_model": {
+        "G60": 5,
+        "G70": 3
+      }
+    },
+    {
+      "id": "roof",
+      "label": "Roof",
+      "car_area": "exterior_design",
+      "hint": null,
+      "vfc_level2": [
+        "Roof"
+      ],
+      "n_verbatims": 8,
+      "n_by_model": {
+        "G60": 5,
+        "G70": 3
+      }
+    },
+    {
+      "id": "bumper_rear",
+      "label": "Bumper, rear",
+      "car_area": "exterior_design",
+      "hint": null,
+      "vfc_level2": [
+        "Bumper, rear"
+      ],
+      "n_verbatims": 7,
+      "n_by_model": {
+        "G60": 5,
+        "G70": 2
+      }
+    },
+    {
+      "id": "hood",
+      "label": "Hood",
+      "car_area": "exterior_design",
+      "hint": null,
+      "vfc_level2": [
+        "Hood"
+      ],
+      "n_verbatims": 7,
+      "n_by_model": {
+        "G60": 5,
+        "G70": 2
+      }
+    },
+    {
+      "id": "rear_wiper",
+      "label": "Rear wiper",
+      "car_area": "exterior_design",
+      "hint": null,
+      "vfc_level2": [
+        "Rear wiper"
+      ],
+      "n_verbatims": 6,
+      "n_by_model": {
+        "G60": 6
+      }
+    },
+    {
+      "id": "bumper_front",
+      "label": "Bumper, front",
+      "car_area": "exterior_design",
+      "hint": null,
+      "vfc_level2": [
+        "Bumper, front"
+      ],
+      "n_verbatims": 5,
+      "n_by_model": {
+        "G60": 5
+      }
+    },
+    {
+      "id": "fog_light",
+      "label": "Fog light",
+      "car_area": "exterior_design",
+      "hint": null,
+      "vfc_level2": [
+        "Fog light"
+      ],
+      "n_verbatims": 5,
+      "n_by_model": {
+        "G60": 5
+      }
+    },
+    {
+      "id": "side_sill_trim_panel",
+      "label": "Side sill trim panel",
+      "car_area": "exterior_design",
+      "hint": null,
+      "vfc_level2": [
+        "Side sill trim panel"
+      ],
+      "n_verbatims": 4,
+      "n_by_model": {
+        "G60": 4
+      }
+    },
+    {
+      "id": "opening_closing_convertible_top_hardtop",
+      "label": "Opening / closing convertible top / hardtop",
+      "car_area": "exterior_design",
+      "hint": null,
+      "vfc_level2": [
+        "Opening / closing convertible top / hardtop"
+      ],
+      "n_verbatims": 1,
+      "n_by_model": {
+        "G60": 1
+      }
+    },
+    {
+      "id": "running_board",
+      "label": "Running board",
+      "car_area": "exterior_design",
+      "hint": null,
+      "vfc_level2": [
+        "Running board"
+      ],
+      "n_verbatims": 1,
+      "n_by_model": {
+        "G60": 1
+      }
+    },
+    {
+      "id": "wash_wipe_switch",
+      "label": "Wash / wipe switch",
+      "car_area": "exterior_design",
+      "hint": null,
+      "vfc_level2": [
+        "Wash / wipe switch"
+      ],
+      "n_verbatims": 1,
+      "n_by_model": {
+        "G60": 1
+      }
+    },
+    {
+      "id": "touch_screen_operation",
+      "label": "Touch screen, operation",
+      "car_area": "infotainment_hmi",
+      "hint": null,
+      "vfc_level2": [
+        "Touch screen, operation"
+      ],
+      "n_verbatims": 265,
+      "n_by_model": {
+        "F70": 137,
+        "G60": 70,
+        "G70": 58
+      }
+    },
+    {
+      "id": "connecteddrive_and_infotainment_overall_technology",
+      "label": "ConnectedDrive and Infotainment, overall technology",
+      "car_area": "infotainment_hmi",
+      "hint": null,
+      "vfc_level2": [
+        "ConnectedDrive and Infotainment, overall technology"
+      ],
+      "n_verbatims": 231,
+      "n_by_model": {
+        "F70": 119,
+        "G60": 47,
+        "G70": 65
+      }
+    },
+    {
+      "id": "audio_mode_sound",
+      "label": "Audio mode, sound",
+      "car_area": "infotainment_hmi",
+      "hint": null,
+      "vfc_level2": [
+        "Audio mode, sound"
+      ],
+      "n_verbatims": 116,
+      "n_by_model": {
+        "F70": 35,
+        "G60": 43,
+        "G70": 38
+      }
+    },
+    {
+      "id": "operating_concept_operating_system",
+      "label": "Operating concept, operating system",
+      "car_area": "infotainment_hmi",
+      "hint": null,
+      "vfc_level2": [
+        "Operating concept, operating system"
+      ],
+      "n_verbatims": 111,
+      "n_by_model": {
+        "G60": 52,
+        "G70": 59
+      }
+    },
+    {
+      "id": "owner_s_manual",
+      "label": "Owner's Manual",
+      "car_area": "infotainment_hmi",
+      "hint": "Printed or digital owner's manual, how-to information in the car.",
+      "vfc_level2": [
+        "Owner's Manual"
+      ],
+      "n_verbatims": 106,
+      "n_by_model": {
+        "F70": 64,
+        "G60": 20,
+        "G70": 22
+      }
+    },
+    {
+      "id": "navigation",
+      "label": "Navigation",
+      "car_area": "infotainment_hmi",
+      "hint": null,
+      "vfc_level2": [
+        "Navigation"
+      ],
+      "n_verbatims": 103,
+      "n_by_model": {
+        "F70": 33,
+        "G60": 38,
+        "G70": 32
+      }
+    },
+    {
+      "id": "apple_carplay",
+      "label": "Apple CarPlay",
+      "car_area": "infotainment_hmi",
+      "hint": null,
+      "vfc_level2": [
+        "Apple CarPlay"
+      ],
+      "n_verbatims": 79,
+      "n_by_model": {
+        "F70": 5,
+        "G60": 45,
+        "G70": 29
+      }
+    },
+    {
+      "id": "head_up_display",
+      "label": "Head-Up Display",
+      "car_area": "infotainment_hmi",
+      "hint": null,
+      "vfc_level2": [
+        "Head-Up Display"
+      ],
+      "n_verbatims": 65,
+      "n_by_model": {
+        "F70": 4,
+        "G60": 36,
+        "G70": 25
+      }
+    },
+    {
+      "id": "instrument_cluster",
+      "label": "Instrument cluster",
+      "car_area": "infotainment_hmi",
+      "hint": null,
+      "vfc_level2": [
+        "Instrument cluster"
+      ],
+      "n_verbatims": 60,
+      "n_by_model": {
+        "F70": 9,
+        "G60": 38,
+        "G70": 13
+      }
+    },
+    {
+      "id": "driver_profile",
+      "label": "Driver profile",
+      "car_area": "infotainment_hmi",
+      "hint": null,
+      "vfc_level2": [
+        "Driver profile"
+      ],
+      "n_verbatims": 44,
+      "n_by_model": {
+        "F70": 2,
+        "G60": 23,
+        "G70": 19
+      }
+    },
+    {
+      "id": "rear_seat_entertainment",
+      "label": "Rear seat entertainment",
+      "car_area": "infotainment_hmi",
+      "hint": null,
+      "vfc_level2": [
+        "Rear seat entertainment"
+      ],
+      "n_verbatims": 44,
+      "n_by_model": {
+        "G60": 3,
+        "G70": 41
+      }
+    },
+    {
+      "id": "radio_function",
+      "label": "Radio function",
+      "car_area": "infotainment_hmi",
+      "hint": null,
+      "vfc_level2": [
+        "Radio function"
+      ],
+      "n_verbatims": 43,
+      "n_by_model": {
+        "F70": 8,
+        "G60": 19,
+        "G70": 16
+      }
+    },
+    {
+      "id": "voice_control_speech_recognition",
+      "label": "Voice control / speech recognition",
+      "car_area": "infotainment_hmi",
+      "hint": null,
+      "vfc_level2": [
+        "Voice control / speech recognition"
+      ],
+      "n_verbatims": 32,
+      "n_by_model": {
+        "F70": 13,
+        "G60": 12,
+        "G70": 7
+      }
+    },
+    {
+      "id": "android_auto",
+      "label": "Android Auto",
+      "car_area": "infotainment_hmi",
+      "hint": null,
+      "vfc_level2": [
+        "Android Auto"
+      ],
+      "n_verbatims": 21,
+      "n_by_model": {
+        "F70": 6,
+        "G60": 8,
+        "G70": 7
+      }
+    },
+    {
+      "id": "gesture_control",
+      "label": "Gesture control",
+      "car_area": "infotainment_hmi",
+      "hint": null,
+      "vfc_level2": [
+        "Gesture control"
+      ],
+      "n_verbatims": 21,
+      "n_by_model": {
+        "G60": 13,
+        "G70": 8
+      }
+    },
+    {
+      "id": "controller_operation",
+      "label": "Controller operation",
+      "car_area": "infotainment_hmi",
+      "hint": null,
+      "vfc_level2": [
+        "Controller operation"
+      ],
+      "n_verbatims": 19,
+      "n_by_model": {
+        "F70": 4,
+        "G60": 6,
+        "G70": 9
+      }
+    },
+    {
+      "id": "multi_function_steering_wheel_operation",
+      "label": "Multi-function steering wheel operation",
+      "car_area": "infotainment_hmi",
+      "hint": null,
+      "vfc_level2": [
+        "Multi-function steering wheel operation"
+      ],
+      "n_verbatims": 19,
+      "n_by_model": {
+        "F70": 3,
+        "G60": 9,
+        "G70": 7
+      }
+    },
+    {
+      "id": "touch_command",
+      "label": "Touch Command",
+      "car_area": "infotainment_hmi",
+      "hint": "Rear-seat tablet/controls (7 Series) for comfort functions.",
+      "vfc_level2": [
+        "Touch Command"
+      ],
+      "n_verbatims": 16,
+      "n_by_model": {
+        "F70": 2,
+        "G60": 5,
+        "G70": 9
+      }
+    },
+    {
+      "id": "experience_modes",
+      "label": "Experience Modes",
+      "car_area": "infotainment_hmi",
+      "hint": "Screen and ambience themes of My Modes (artwork, sounds); not the driving behaviour.",
+      "vfc_level2": [
+        "Experience Modes"
+      ],
+      "n_verbatims": 12,
+      "n_by_model": {
+        "G60": 7,
+        "G70": 5
+      }
+    },
+    {
+      "id": "real_time_traffic_information_rtti",
+      "label": "Real Time Traffic Information (RTTI)",
+      "car_area": "infotainment_hmi",
+      "hint": null,
+      "vfc_level2": [
+        "Real Time Traffic Information (RTTI)"
+      ],
+      "n_verbatims": 10,
+      "n_by_model": {
+        "F70": 3,
+        "G60": 5,
+        "G70": 2
+      }
+    },
+    {
+      "id": "traffic_camera_information",
+      "label": "Traffic Camera Information",
+      "car_area": "infotainment_hmi",
+      "hint": null,
+      "vfc_level2": [
+        "Traffic Camera Information"
+      ],
+      "n_verbatims": 10,
+      "n_by_model": {
+        "G60": 6,
+        "G70": 4
+      }
+    },
+    {
+      "id": "cd_dvd_changer_playback",
+      "label": "CD / DVD changer, playback",
+      "car_area": "infotainment_hmi",
+      "hint": null,
+      "vfc_level2": [
+        "CD / DVD changer, playback"
+      ],
+      "n_verbatims": 9,
+      "n_by_model": {
+        "F70": 1,
+        "G60": 5,
+        "G70": 3
+      }
+    },
+    {
+      "id": "video_playback_streaming",
+      "label": "Video: playback / streaming",
+      "car_area": "infotainment_hmi",
+      "hint": null,
+      "vfc_level2": [
+        "Video: playback / streaming"
+      ],
+      "n_verbatims": 9,
+      "n_by_model": {
+        "G60": 5,
+        "G70": 4
+      }
+    },
+    {
+      "id": "map_update",
+      "label": "Map update",
+      "car_area": "infotainment_hmi",
+      "hint": null,
+      "vfc_level2": [
+        "Map update"
+      ],
+      "n_verbatims": 8,
+      "n_by_model": {
+        "F70": 2,
+        "G60": 5,
+        "G70": 1
+      }
+    },
+    {
+      "id": "display_time",
+      "label": "Display, time",
+      "car_area": "infotainment_hmi",
+      "hint": null,
+      "vfc_level2": [
+        "Display, time"
+      ],
+      "n_verbatims": 6,
+      "n_by_model": {
+        "G60": 5,
+        "G70": 1
+      }
+    },
+    {
+      "id": "light_switch_operating_unit",
+      "label": "Light switch operating unit",
+      "car_area": "infotainment_hmi",
+      "hint": null,
+      "vfc_level2": [
+        "Light switch operating unit"
+      ],
+      "n_verbatims": 6,
+      "n_by_model": {
+        "G60": 4,
+        "G70": 2
+      }
+    },
+    {
+      "id": "screen_mirroring",
+      "label": "Screen mirroring",
+      "car_area": "infotainment_hmi",
+      "hint": null,
+      "vfc_level2": [
+        "Screen mirroring"
+      ],
+      "n_verbatims": 6,
+      "n_by_model": {
+        "G60": 3,
+        "G70": 3
+      }
+    },
+    {
+      "id": "smart_poi_search",
+      "label": "Smart POI search",
+      "car_area": "infotainment_hmi",
+      "hint": null,
+      "vfc_level2": [
+        "Smart POI search"
+      ],
+      "n_verbatims": 5,
+      "n_by_model": {
+        "G60": 5
+      }
+    },
+    {
+      "id": "interior_design",
+      "label": "Interior design",
+      "car_area": "interior_comfort",
+      "hint": null,
+      "vfc_level2": [
+        "Interior design"
+      ],
+      "n_verbatims": 241,
+      "n_by_model": {
+        "F70": 29,
+        "G60": 101,
+        "G70": 111
+      }
+    },
+    {
+      "id": "interior_comfort",
+      "label": "Interior comfort",
+      "car_area": "interior_comfort",
+      "hint": null,
+      "vfc_level2": [
+        "Interior comfort"
+      ],
+      "n_verbatims": 133,
+      "n_by_model": {
+        "F70": 11,
+        "G60": 51,
+        "G70": 71
+      }
+    },
+    {
+      "id": "space_spatial_impression",
+      "label": "Space / spatial impression",
+      "car_area": "interior_comfort",
+      "hint": "Perceived roominess of the cabin (legroom, headroom).",
+      "vfc_level2": [
+        "Space / spatial impression"
+      ],
+      "n_verbatims": 97,
+      "n_by_model": {
+        "F70": 19,
+        "G60": 36,
+        "G70": 42
+      }
+    },
+    {
+      "id": "ambient_light",
+      "label": "Ambient light",
+      "car_area": "interior_comfort",
+      "hint": null,
+      "vfc_level2": [
+        "Ambient light"
+      ],
+      "n_verbatims": 86,
+      "n_by_model": {
+        "F70": 3,
+        "G60": 37,
+        "G70": 46
+      }
+    },
+    {
+      "id": "instrument_panel",
+      "label": "Instrument panel",
+      "car_area": "interior_comfort",
+      "hint": "Dashboard as an object: layout, look, materials.",
+      "vfc_level2": [
+        "Instrument panel"
+      ],
+      "n_verbatims": 67,
+      "n_by_model": {
+        "F70": 23,
+        "G60": 22,
+        "G70": 22
+      }
+    },
+    {
+      "id": "panorama_glass_roof",
+      "label": "Panorama glass roof",
+      "car_area": "interior_comfort",
+      "hint": null,
+      "vfc_level2": [
+        "Panorama glass roof"
+      ],
+      "n_verbatims": 64,
+      "n_by_model": {
+        "F70": 2,
+        "G60": 25,
+        "G70": 37
+      }
+    },
+    {
+      "id": "steering_wheel",
+      "label": "Steering wheel",
+      "car_area": "interior_comfort",
+      "hint": "The wheel itself: rim, size, material, look. Steering feel is 'Steering'.",
+      "vfc_level2": [
+        "Steering wheel"
+      ],
+      "n_verbatims": 53,
+      "n_by_model": {
+        "F70": 14,
+        "G60": 25,
+        "G70": 14
+      }
+    },
+    {
+      "id": "center_console_front",
+      "label": "Center console, front",
+      "car_area": "interior_comfort",
+      "hint": null,
+      "vfc_level2": [
+        "Center console, front"
+      ],
+      "n_verbatims": 52,
+      "n_by_model": {
+        "F70": 10,
+        "G60": 26,
+        "G70": 16
+      }
+    },
+    {
+      "id": "interior",
+      "label": "Interior",
+      "car_area": "interior_comfort",
+      "hint": null,
+      "vfc_level2": [
+        "Interior"
+      ],
+      "n_verbatims": 34,
+      "n_by_model": {
+        "F70": 7,
+        "G60": 12,
+        "G70": 15
+      }
+    },
+    {
+      "id": "vehicle_interior_lighting",
+      "label": "Vehicle interior, lighting",
+      "car_area": "interior_comfort",
+      "hint": null,
+      "vfc_level2": [
+        "Vehicle interior, lighting"
+      ],
+      "n_verbatims": 32,
+      "n_by_model": {
+        "F70": 4,
+        "G60": 17,
+        "G70": 11
+      }
+    },
+    {
+      "id": "sun_protection",
+      "label": "Sun protection",
+      "car_area": "interior_comfort",
+      "hint": null,
+      "vfc_level2": [
+        "Sun protection"
+      ],
+      "n_verbatims": 31,
+      "n_by_model": {
+        "G60": 5,
+        "G70": 26
+      }
+    },
+    {
+      "id": "interior_rearview_mirror",
+      "label": "Interior rearview mirror",
+      "car_area": "interior_comfort",
+      "hint": null,
+      "vfc_level2": [
+        "Interior rearview mirror"
+      ],
+      "n_verbatims": 19,
+      "n_by_model": {
+        "G60": 5,
+        "G70": 14
+      }
+    },
+    {
+      "id": "center_armrest_front",
+      "label": "Center armrest, front",
+      "car_area": "interior_comfort",
+      "hint": null,
+      "vfc_level2": [
+        "Center armrest, front"
+      ],
+      "n_verbatims": 12,
+      "n_by_model": {
+        "F70": 1,
+        "G60": 6,
+        "G70": 5
+      }
+    },
+    {
+      "id": "grab_handle",
+      "label": "Grab handle",
+      "car_area": "interior_comfort",
+      "hint": null,
+      "vfc_level2": [
+        "Grab handle"
+      ],
+      "n_verbatims": 12,
+      "n_by_model": {
+        "G60": 6,
+        "G70": 6
+      }
+    },
+    {
+      "id": "sun_visor_front",
+      "label": "Sun visor, front",
+      "car_area": "interior_comfort",
+      "hint": null,
+      "vfc_level2": [
+        "Sun visor, front"
+      ],
+      "n_verbatims": 10,
+      "n_by_model": {
+        "G60": 5,
+        "G70": 5
+      }
+    },
+    {
+      "id": "roof_function_centre",
+      "label": "Roof function centre",
+      "car_area": "interior_comfort",
+      "hint": "Overhead console: reading lights, SOS button, switches.",
+      "vfc_level2": [
+        "Roof function centre"
+      ],
+      "n_verbatims": 7,
+      "n_by_model": {
+        "G60": 5,
+        "G70": 2
+      }
+    },
+    {
+      "id": "caring_car",
+      "label": "Caring Car",
+      "car_area": "interior_comfort",
+      "hint": "Wellness programs (vitalize / relax).",
+      "vfc_level2": [
+        "Caring Car"
+      ],
+      "n_verbatims": 1,
+      "n_by_model": {
+        "G60": 1
+      }
+    },
+    {
+      "id": "luggage_compartment",
+      "label": "Luggage compartment",
+      "car_area": "practicality",
+      "hint": null,
+      "vfc_level2": [
+        "Luggage compartment"
+      ],
+      "n_verbatims": 78,
+      "n_by_model": {
+        "F70": 25,
+        "G60": 34,
+        "G70": 19
+      }
+    },
+    {
+      "id": "door_open_close",
+      "label": "Door, open / close",
+      "car_area": "practicality",
+      "hint": null,
+      "vfc_level2": [
+        "Door, open / close"
+      ],
+      "n_verbatims": 77,
+      "n_by_model": {
+        "F70": 15,
+        "G60": 31,
+        "G70": 31
+      }
+    },
+    {
+      "id": "trunk_lid_open_close",
+      "label": "Trunk lid, open / close",
+      "car_area": "practicality",
+      "hint": null,
+      "vfc_level2": [
+        "Trunk lid, open / close",
+        "Trunk lid"
+      ],
+      "n_verbatims": 66,
+      "n_by_model": {
+        "F70": 26,
+        "G60": 24,
+        "G70": 16
+      }
+    },
+    {
+      "id": "vehicle_key",
+      "label": "Vehicle key",
+      "car_area": "practicality",
+      "hint": null,
+      "vfc_level2": [
+        "Vehicle key"
+      ],
+      "n_verbatims": 61,
+      "n_by_model": {
+        "F70": 20,
+        "G60": 20,
+        "G70": 21
+      }
+    },
+    {
+      "id": "automatic_doors",
+      "label": "Automatic doors",
+      "car_area": "practicality",
+      "hint": null,
+      "vfc_level2": [
+        "Automatic doors"
+      ],
+      "n_verbatims": 59,
+      "n_by_model": {
+        "G60": 2,
+        "G70": 57
+      }
+    },
+    {
+      "id": "non_contact_trunk_lid_opening",
+      "label": "non-contact trunk lid opening",
+      "car_area": "practicality",
+      "hint": null,
+      "vfc_level2": [
+        "non-contact trunk lid opening"
+      ],
+      "n_verbatims": 54,
+      "n_by_model": {
+        "F70": 2,
+        "G60": 42,
+        "G70": 10
+      }
+    },
+    {
+      "id": "vehicle_lock_unlock",
+      "label": "Vehicle, lock / unlock",
+      "car_area": "practicality",
+      "hint": null,
+      "vfc_level2": [
+        "Vehicle, lock / unlock"
+      ],
+      "n_verbatims": 51,
+      "n_by_model": {
+        "F70": 7,
+        "G60": 32,
+        "G70": 12
+      }
+    },
+    {
+      "id": "comfort_access",
+      "label": "Comfort Access",
+      "car_area": "practicality",
+      "hint": null,
+      "vfc_level2": [
+        "Comfort Access"
+      ],
+      "n_verbatims": 45,
+      "n_by_model": {
+        "F70": 3,
+        "G60": 25,
+        "G70": 17
+      }
+    },
+    {
+      "id": "vehicle_access_and_exit",
+      "label": "Vehicle, access and exit",
+      "car_area": "practicality",
+      "hint": null,
+      "vfc_level2": [
+        "Vehicle, access and exit"
+      ],
+      "n_verbatims": 35,
+      "n_by_model": {
+        "F70": 12,
+        "G60": 11,
+        "G70": 12
+      }
+    },
+    {
+      "id": "garage_door_opener",
+      "label": "Garage door opener",
+      "car_area": "practicality",
+      "hint": null,
+      "vfc_level2": [
+        "Garage door opener",
+        "Interior mirror, garage door opener"
+      ],
+      "n_verbatims": 33,
+      "n_by_model": {
+        "F70": 2,
+        "G60": 17,
+        "G70": 14
+      }
+    },
+    {
+      "id": "glove_box",
+      "label": "Glove box",
+      "car_area": "practicality",
+      "hint": null,
+      "vfc_level2": [
+        "Glove box"
+      ],
+      "n_verbatims": 30,
+      "n_by_model": {
+        "F70": 6,
+        "G60": 14,
+        "G70": 10
+      }
+    },
+    {
+      "id": "storage_compartments",
+      "label": "Storage compartments",
+      "car_area": "practicality",
+      "hint": null,
+      "vfc_level2": [
+        "Storage compartments"
+      ],
+      "n_verbatims": 30,
+      "n_by_model": {
+        "F70": 1,
+        "G60": 16,
+        "G70": 13
+      }
+    },
+    {
+      "id": "cupholder",
+      "label": "Cupholder",
+      "car_area": "practicality",
+      "hint": null,
+      "vfc_level2": [
+        "Cupholder"
+      ],
+      "n_verbatims": 29,
+      "n_by_model": {
+        "F70": 3,
+        "G60": 14,
+        "G70": 12
+      }
+    },
+    {
+      "id": "door_front",
+      "label": "Door, front",
+      "car_area": "practicality",
+      "hint": null,
+      "vfc_level2": [
+        "Door, front"
+      ],
+      "n_verbatims": 26,
+      "n_by_model": {
+        "F70": 12,
+        "G60": 7,
+        "G70": 7
+      }
+    },
+    {
+      "id": "side_window_open_close",
+      "label": "Side window, open / close",
+      "car_area": "practicality",
+      "hint": null,
+      "vfc_level2": [
+        "Side window, open / close"
+      ],
+      "n_verbatims": 21,
+      "n_by_model": {
+        "F70": 3,
+        "G60": 8,
+        "G70": 10
+      }
+    },
+    {
+      "id": "accessories_parts",
+      "label": "Accessories / Parts",
+      "car_area": "practicality",
+      "hint": "BMW accessories and spare parts (roof rack, cargo net, tray tables).",
+      "vfc_level2": [
+        "Accessories / Parts"
+      ],
+      "n_verbatims": 20,
+      "n_by_model": {
+        "G60": 8,
+        "G70": 12
+      }
+    },
+    {
+      "id": "outer_door_handle_front",
+      "label": "Outer door handle, front",
+      "car_area": "practicality",
+      "hint": null,
+      "vfc_level2": [
+        "Outer door handle, front"
+      ],
+      "n_verbatims": 14,
+      "n_by_model": {
+        "F70": 2,
+        "G60": 6,
+        "G70": 6
+      }
+    },
+    {
+      "id": "remote_engine_start_vehicle_key",
+      "label": "Remote Engine Start (Vehicle Key )",
+      "car_area": "practicality",
+      "hint": null,
+      "vfc_level2": [
+        "Remote Engine Start (Vehicle Key )"
+      ],
+      "n_verbatims": 14,
+      "n_by_model": {
+        "G60": 6,
+        "G70": 8
+      }
+    },
+    {
+      "id": "frunk",
+      "label": "Frunk",
+      "car_area": "practicality",
+      "hint": null,
+      "vfc_level2": [
+        "Frunk"
+      ],
+      "n_verbatims": 13,
+      "n_by_model": {
+        "G60": 8,
+        "G70": 5
+      }
+    },
+    {
+      "id": "towing_eye",
+      "label": "Towing eye",
+      "car_area": "practicality",
+      "hint": null,
+      "vfc_level2": [
+        "Towing eye"
+      ],
+      "n_verbatims": 11,
+      "n_by_model": {
+        "G60": 5,
+        "G70": 6
+      }
+    },
+    {
+      "id": "12_v_connection",
+      "label": "12 V connection",
+      "car_area": "practicality",
+      "hint": null,
+      "vfc_level2": [
+        "12 V connection"
+      ],
+      "n_verbatims": 10,
+      "n_by_model": {
+        "G60": 5,
+        "G70": 5
+      }
+    },
+    {
+      "id": "hood_open_close",
+      "label": "Hood, open / close",
+      "car_area": "practicality",
+      "hint": null,
+      "vfc_level2": [
+        "Hood, open / close"
+      ],
+      "n_verbatims": 10,
+      "n_by_model": {
+        "G60": 5,
+        "G70": 5
+      }
+    },
+    {
+      "id": "washer_fluid_top_up",
+      "label": "Washer fluid, top up",
+      "car_area": "practicality",
+      "hint": null,
+      "vfc_level2": [
+        "Washer fluid, top up"
+      ],
+      "n_verbatims": 9,
+      "n_by_model": {
+        "G60": 6,
+        "G70": 3
+      }
+    },
+    {
+      "id": "through_loading_facility",
+      "label": "Through-loading facility",
+      "car_area": "practicality",
+      "hint": null,
+      "vfc_level2": [
+        "Through-loading facility"
+      ],
+      "n_verbatims": 7,
+      "n_by_model": {
+        "G60": 5,
+        "G70": 2
+      }
+    },
+    {
+      "id": "trailer_use",
+      "label": "Trailer, use",
+      "car_area": "practicality",
+      "hint": null,
+      "vfc_level2": [
+        "Trailer, use"
+      ],
+      "n_verbatims": 6,
+      "n_by_model": {
+        "G60": 5,
+        "G70": 1
+      }
+    },
+    {
+      "id": "trunk_light",
+      "label": "Trunk light",
+      "car_area": "practicality",
+      "hint": null,
+      "vfc_level2": [
+        "Trunk light"
+      ],
+      "n_verbatims": 6,
+      "n_by_model": {
+        "G60": 5,
+        "G70": 1
+      }
+    },
+    {
+      "id": "horns",
+      "label": "Horns",
+      "car_area": "practicality",
+      "hint": null,
+      "vfc_level2": [
+        "Horns"
+      ],
+      "n_verbatims": 5,
+      "n_by_model": {
+        "G60": 2,
+        "G70": 3
+      }
+    },
+    {
+      "id": "outer_door_handle_rear",
+      "label": "Outer door handle, rear",
+      "car_area": "practicality",
+      "hint": null,
+      "vfc_level2": [
+        "Outer door handle, rear"
+      ],
+      "n_verbatims": 4,
+      "n_by_model": {
+        "G60": 3,
+        "G70": 1
+      }
+    },
+    {
+      "id": "body_equipment_overall_technology",
+      "label": "Body equipment, overall technology",
+      "car_area": "quality_materials",
+      "hint": "General equipment level and overall build/technology of the body.",
+      "vfc_level2": [
+        "Body equipment, overall technology"
+      ],
+      "n_verbatims": 482,
+      "n_by_model": {
+        "F70": 98,
+        "G60": 211,
+        "G70": 173
+      }
+    },
+    {
+      "id": "interior_acoustics",
+      "label": "Interior acoustics",
+      "car_area": "quality_materials",
+      "hint": "Cabin quietness and noise insulation.",
+      "vfc_level2": [
+        "Interior acoustics"
+      ],
+      "n_verbatims": 63,
+      "n_by_model": {
+        "F70": 4,
+        "G60": 24,
+        "G70": 35
+      }
+    },
+    {
+      "id": "door_finisher_panel_front",
+      "label": "Door, finisher panel, front",
+      "car_area": "quality_materials",
+      "hint": null,
+      "vfc_level2": [
+        "Door, finisher panel, front"
+      ],
+      "n_verbatims": 23,
+      "n_by_model": {
+        "G60": 13,
+        "G70": 10
+      }
+    },
+    {
+      "id": "upholstery_interior_trim",
+      "label": "Upholstery / interior trim",
+      "car_area": "quality_materials",
+      "hint": null,
+      "vfc_level2": [
+        "Upholstery / interior trim"
+      ],
+      "n_verbatims": 22,
+      "n_by_model": {
+        "F70": 6,
+        "G60": 9,
+        "G70": 7
+      }
+    },
+    {
+      "id": "floor_mat",
+      "label": "Floor mat",
+      "car_area": "quality_materials",
+      "hint": null,
+      "vfc_level2": [
+        "Floor mat"
+      ],
+      "n_verbatims": 14,
+      "n_by_model": {
+        "F70": 2,
+        "G60": 6,
+        "G70": 6
+      }
+    },
+    {
+      "id": "electric_range",
+      "label": "Electric Range",
+      "car_area": "range_charging",
+      "hint": null,
+      "vfc_level2": [
+        "Electric Range"
+      ],
+      "n_verbatims": 166,
+      "n_by_model": {
+        "F70": 17,
+        "G60": 95,
+        "G70": 54
+      }
+    },
+    {
+      "id": "public_charging_external_providers",
+      "label": "Public charging / external providers",
+      "car_area": "range_charging",
+      "hint": null,
+      "vfc_level2": [
+        "Public charging / external providers"
+      ],
+      "n_verbatims": 77,
+      "n_by_model": {
+        "G60": 49,
+        "G70": 28
+      }
+    },
+    {
+      "id": "charge_high_voltage_battery",
+      "label": "Charge high-voltage battery",
+      "car_area": "range_charging",
+      "hint": null,
+      "vfc_level2": [
+        "Charge high-voltage battery"
+      ],
+      "n_verbatims": 57,
+      "n_by_model": {
+        "G60": 35,
+        "G70": 22
+      }
+    },
+    {
+      "id": "high_voltage_battery",
+      "label": "High voltage battery",
+      "car_area": "range_charging",
+      "hint": null,
+      "vfc_level2": [
+        "High voltage battery"
+      ],
+      "n_verbatims": 40,
+      "n_by_model": {
+        "F70": 9,
+        "G60": 19,
+        "G70": 12
+      }
+    },
+    {
+      "id": "wallbox_charging_home_charging",
+      "label": "Wallbox, charging / home charging",
+      "car_area": "range_charging",
+      "hint": null,
+      "vfc_level2": [
+        "Wallbox, charging / home charging"
+      ],
+      "n_verbatims": 34,
+      "n_by_model": {
+        "G60": 19,
+        "G70": 15
+      }
+    },
+    {
+      "id": "opening_closing_charging_socket_cover",
+      "label": "Opening/closing charging socket cover",
+      "car_area": "range_charging",
+      "hint": null,
+      "vfc_level2": [
+        "Opening/closing charging socket cover"
+      ],
+      "n_verbatims": 23,
+      "n_by_model": {
+        "G60": 17,
+        "G70": 6
+      }
+    },
+    {
+      "id": "fuel_filler_flap_open_close",
+      "label": "Fuel filler flap , open / close",
+      "car_area": "range_charging",
+      "hint": null,
+      "vfc_level2": [
+        "Fuel filler flap , open / close"
+      ],
+      "n_verbatims": 17,
+      "n_by_model": {
+        "G60": 6,
+        "G70": 11
+      }
+    },
+    {
+      "id": "high_voltage_battery_preconditioning",
+      "label": "High voltage battery, preconditioning",
+      "car_area": "range_charging",
+      "hint": null,
+      "vfc_level2": [
+        "High voltage battery, preconditioning"
+      ],
+      "n_verbatims": 16,
+      "n_by_model": {
+        "G60": 11,
+        "G70": 5
+      }
+    },
+    {
+      "id": "charging_cable",
+      "label": "Charging cable",
+      "car_area": "range_charging",
+      "hint": null,
+      "vfc_level2": [
+        "Charging cable"
+      ],
+      "n_verbatims": 15,
+      "n_by_model": {
+        "G60": 7,
+        "G70": 8
+      }
+    },
+    {
+      "id": "fuel_tank",
+      "label": "Fuel tank",
+      "car_area": "range_charging",
+      "hint": null,
+      "vfc_level2": [
+        "Fuel tank"
+      ],
+      "n_verbatims": 14,
+      "n_by_model": {
+        "F70": 2,
+        "G60": 6,
+        "G70": 6
+      }
+    },
+    {
+      "id": "high_voltage_charging_power_socket",
+      "label": "High-voltage charging power socket",
+      "car_area": "range_charging",
+      "hint": null,
+      "vfc_level2": [
+        "High-voltage charging power socket"
+      ],
+      "n_verbatims": 13,
+      "n_by_model": {
+        "F70": 1,
+        "G60": 5,
+        "G70": 7
+      }
+    },
+    {
+      "id": "route_optimized_for_charging",
+      "label": "Route optimized for charging",
+      "car_area": "range_charging",
+      "hint": null,
+      "vfc_level2": [
+        "Route optimized for charging"
+      ],
+      "n_verbatims": 12,
+      "n_by_model": {
+        "F70": 1,
+        "G60": 6,
+        "G70": 5
+      }
+    },
+    {
+      "id": "bidirectional_charging",
+      "label": "Bidirectional charging",
+      "car_area": "range_charging",
+      "hint": null,
+      "vfc_level2": [
+        "Bidirectional charging"
+      ],
+      "n_verbatims": 1,
+      "n_by_model": {
+        "G60": 1
+      }
+    },
+    {
+      "id": "seats",
+      "label": "Seats",
+      "car_area": "seats",
+      "hint": null,
+      "vfc_level2": [
+        "Seats"
+      ],
+      "n_verbatims": 289,
+      "n_by_model": {
+        "F70": 96,
+        "G60": 94,
+        "G70": 99
+      }
+    },
+    {
+      "id": "seating_ventilate_heat",
+      "label": "Seating, ventilate / heat",
+      "car_area": "seats",
+      "hint": null,
+      "vfc_level2": [
+        "Seating, ventilate / heat"
+      ],
+      "n_verbatims": 60,
+      "n_by_model": {
+        "F70": 11,
+        "G60": 22,
+        "G70": 27
+      }
+    },
+    {
+      "id": "seat_massage",
+      "label": "Seat massage",
+      "car_area": "seats",
+      "hint": null,
+      "vfc_level2": [
+        "Seat massage"
+      ],
+      "n_verbatims": 48,
+      "n_by_model": {
+        "F70": 1,
+        "G60": 12,
+        "G70": 35
+      }
+    },
+    {
+      "id": "seat_memory",
+      "label": "Seat memory",
+      "car_area": "seats",
+      "hint": null,
+      "vfc_level2": [
+        "Seat memory"
+      ],
+      "n_verbatims": 25,
+      "n_by_model": {
+        "G60": 12,
+        "G70": 13
+      }
+    },
+    {
+      "id": "headrest_adjust",
+      "label": "Headrest, adjust",
+      "car_area": "seats",
+      "hint": null,
+      "vfc_level2": [
+        "Headrest, adjust"
+      ],
+      "n_verbatims": 18,
+      "n_by_model": {
+        "F70": 1,
+        "G60": 6,
+        "G70": 11
+      }
+    },
+    {
+      "id": "adjustment_of_lower_lumbar_support",
+      "label": "Adjustment of lower lumbar support",
+      "car_area": "seats",
+      "hint": null,
+      "vfc_level2": [
+        "Adjustment of lower lumbar support"
+      ],
+      "n_verbatims": 17,
+      "n_by_model": {
+        "F70": 3,
+        "G60": 9,
+        "G70": 5
+      }
+    },
+    {
+      "id": "child_restraint_seat_use",
+      "label": "Child restraint seat, use",
+      "car_area": "seats",
+      "hint": null,
+      "vfc_level2": [
+        "Child restraint seat, use",
+        "Child restraint seat"
+      ],
+      "n_verbatims": 7,
+      "n_by_model": {
+        "G60": 4,
+        "G70": 3
+      }
+    },
+    {
+      "id": "headrests_rear",
+      "label": "Headrests, rear",
+      "car_area": "seats",
+      "hint": null,
+      "vfc_level2": [
+        "Headrests, rear"
+      ],
+      "n_verbatims": 4,
+      "n_by_model": {
+        "F70": 1,
+        "G70": 3
+      }
+    }
+  ],
+  "fallback_topic": "other",
+  "aspect_groups": [
+    {
+      "id": "function",
+      "description": "Does the feature exist and do its job (incl. missing equipment)."
+    },
+    {
+      "id": "usability",
+      "description": "How easy it is to operate; ergonomics; can't switch it off."
+    },
+    {
+      "id": "reliability",
+      "description": "Defects, faults, things that stop working."
+    },
+    {
+      "id": "performance",
+      "description": "Power, speed, responsiveness, strength of an effect."
+    },
+    {
+      "id": "efficiency_range",
+      "description": "Consumption, efficiency, electric range, charging infrastructure."
+    },
+    {
+      "id": "design",
+      "description": "Look and styling."
+    },
+    {
+      "id": "comfort",
+      "description": "Physical comfort."
+    },
+    {
+      "id": "space",
+      "description": "Size, room, storage, view."
+    },
+    {
+      "id": "quality",
+      "description": "Materials, workmanship, damage, leaks, rattles, smells."
+    },
+    {
+      "id": "sound",
+      "description": "Noise and sound."
+    },
+    {
+      "id": "price",
+      "description": "Price-performance, standard vs. paid option."
+    }
+  ],
+  "vfc_level2_to_topic": {
+    "Air conditioning control panel": "air_conditioning_control_panel",
+    "Air conditioning, overall technology": "air_conditioning_overall_technology",
+    "Air conditioning, setting": "air_conditioning_setting",
+    "Auxiliary heater function": "auxiliary_heater_function",
+    "Blower function": "blower_function",
+    "Heated rear window": "heated_rear_window",
+    "Heated steering wheel": "heated_steering_wheel",
+    "Panel heating": "panel_heating",
+    "Vehicle, climatization": "vehicle_climatization",
+    "Apps (in-car)": "apps_in_car",
+    "Apps (smartphone)": "apps_smartphone",
+    "BMW ConnectedDrive upgrades/ MINI CONNECTED upgrades": "bmw_connecteddrive_upgrades_mini_connected_upgrades",
+    "BMW Online / MINI Online": "bmw_online_mini_online",
+    "ConnectedDrive services (smartphone) technology overall": "connecteddrive_services_smartphone_technology_overall",
+    "Customer Account (My BMW / MINI Portal)": "customer_account_my_bmw_mini_portal",
+    "Digital Key": "digital_key",
+    "Display key": "display_key",
+    "Driver's Guide App": "driver_s_guide_app",
+    "Intelligent Personal Assistant": "intelligent_personal_assistant",
+    "Intelligent Personal Assistant, activation word": "intelligent_personal_assistant_activation_word",
+    "Interior camera": "interior_camera",
+    "Manage / pair mobile device (Bluetooth)": "manage_pair_mobile_device_bluetooth",
+    "Mobile device, wireless charging": "mobile_device_wireless_charging",
+    "My BMW / MINI Portal": "my_bmw_mini_portal",
+    "My BMW App / MINI App": "my_bmw_app_mini_app",
+    "Personal eSIM": "personal_esim",
+    "Priorities for telephones": "priorities_for_telephones",
+    "Remote 3D View (My BMW App / MINI App)": "remote_3d_view_my_bmw_app_mini_app",
+    "Remote Engine Start (My BMW App / MINI App)": "remote_engine_start_my_bmw_app_mini_app",
+    "Remote interior camera (My BMW App / MINI App)": "remote_interior_camera_my_bmw_app_mini_app",
+    "Remote Services & Remote Keyless Entry (My BMW App/MINI App)": "remote_services_remote_keyless_entry_my_bmw_app_mini_app",
+    "Remote Software Upgrade/RSU": "remote_software_upgrade_rsu",
+    "Teleservices": "teleservices",
+    "USB port": "usb_port",
+    "WiFi hotspot": "wifi_hotspot",
+    "Wi-Fi connection": "wifi_hotspot",
+    "(Active) cruise control": "active_cruise_control",
+    "Airbags": "airbags",
+    "All-round view": "all_round_view",
+    "Anti-theft alarm system": "anti_theft_alarm_system",
+    "Back-up Assistant": "back_up_assistant",
+    "Blind spot monitoring": "blind_spot_monitoring",
+    "Child safety latch": "child_safety_latch",
+    "Cross Traffic Warning Rear with Brake Intervention": "cross_traffic_warning_rear_with_brake_intervention",
+    "Drive Recorder": "drive_recorder",
+    "Driver assistance, automated driving, overall technology": "driver_assistance_automated_driving_overall_technology",
+    "Emergency request": "emergency_request",
+    "Emergency Stop Assistant": "emergency_stop_assistant",
+    "Fatigue Alert": "fatigue_alert",
+    "Front collision warning": "front_collision_warning",
+    "High-beam assistant": "high_beam_assistant",
+    "Highway assistant": "highway_assistant",
+    "Impression of safety": "impression_of_safety",
+    "Intersection Warning with Brake Intervention": "intersection_warning_with_brake_intervention",
+    "Lane Change Assistant": "lane_change_assistant",
+    "Lane departure warning": "lane_departure_warning",
+    "Night Vision": "night_vision",
+    "Park Distance Control (PDC)": "park_distance_control_pdc",
+    "Parking Assistant": "parking_assistant",
+    "Rear view camera": "rear_view_camera",
+    "Rear-end collision warning": "rear_end_collision_warning",
+    "Remote controlled parking": "remote_controlled_parking",
+    "Seat belts": "seat_belts",
+    "Side View": "side_view",
+    "Speed Limit Assistant": "speed_limit_assistant",
+    "Steering and lane guide assist": "steering_and_lane_guide_assist",
+    "Surround View": "surround_view",
+    "Traffic Jam Assistant": "traffic_jam_assistant",
+    "Traffic Light And Sign Warning": "traffic_light_and_sign_warning",
+    "Vehicle safety, overall technology": "vehicle_safety_overall_technology",
+    "Automatic engine start-stop function (MSA)": "automatic_engine_start_stop_function_msa",
+    "Automatic-hold": "automatic_hold",
+    "Brake Energy Regeneration / recuperation": "brake_energy_regeneration_recuperation",
+    "Braking": "braking",
+    "Cooling": "cooling",
+    "Cushioning / damping vehicle": "cushioning_damping_vehicle",
+    "Drive, driving dynamics and chassis, overall technology": "drive_driving_dynamics_and_chassis_overall_technology",
+    "Drivetrain": "drivetrain",
+    "Dynamic Stability Control": "dynamic_stability_control",
+    "Engine acoustics / engine sound": "engine_acoustics_engine_sound",
+    "Engine oil": "engine_oil",
+    "Exhaust system": "exhaust_system",
+    "ground clearance": "ground_clearance",
+    "Handling / Riding": "handling_riding",
+    "Launch Control": "launch_control",
+    "My Modes / driving experience": "my_modes_driving_experience",
+    "Operate selector lever": "operate_selector_lever",
+    "Parking brake": "parking_brake",
+    "Pedals, operate": "pedals_operate",
+    "Resting state after door opening": "resting_state_after_door_opening",
+    "RSC tire": "rsc_tire",
+    "Self-leveling suspension": "self_leveling_suspension",
+    "Shift paddle": "shift_paddle",
+    "Start engine/switch on drive readiness": "start_engine_switch_on_drive_readiness",
+    "Starting engine": "starting_engine",
+    "Steering": "steering",
+    "Tire pressure control": "tire_pressure_control",
+    "Tirefit": "tirefit",
+    "Transmission": "transmission",
+    "Vehicle battery": "vehicle_battery",
+    "Wheels / tires": "wheels_tires",
+    "Dynamic Stability Control (DSC)": "dynamic_stability_control",
+    "Bumper, front": "bumper_front",
+    "Bumper, rear": "bumper_rear",
+    "Exterior": "exterior",
+    "Exterior design": "exterior_design",
+    "Exterior lighting": "exterior_lighting",
+    "Exterior rearview mirror": "exterior_rearview_mirror",
+    "Flashing": "flashing",
+    "Fog light": "fog_light",
+    "Hood": "hood",
+    "Opening / closing convertible top / hardtop": "opening_closing_convertible_top_hardtop",
+    "Radiator grille": "radiator_grille",
+    "Rain sensor mode": "rain_sensor_mode",
+    "Rear wiper": "rear_wiper",
+    "Roof": "roof",
+    "Running board": "running_board",
+    "Side sill trim panel": "side_sill_trim_panel",
+    "Wash / wipe switch": "wash_wipe_switch",
+    "Welcome Light Carpet": "welcome_light_carpet",
+    "Windshield": "windshield",
+    "Windshield wiper": "windshield_wiper",
+    "Android Auto": "android_auto",
+    "Apple CarPlay": "apple_carplay",
+    "Audio mode, sound": "audio_mode_sound",
+    "CD / DVD changer, playback": "cd_dvd_changer_playback",
+    "ConnectedDrive and Infotainment, overall technology": "connecteddrive_and_infotainment_overall_technology",
+    "Controller operation": "controller_operation",
+    "Display, time": "display_time",
+    "Driver profile": "driver_profile",
+    "Experience Modes": "experience_modes",
+    "Gesture control": "gesture_control",
+    "Head-Up Display": "head_up_display",
+    "Instrument cluster": "instrument_cluster",
+    "Light switch operating unit": "light_switch_operating_unit",
+    "Map update": "map_update",
+    "Multi-function steering wheel operation": "multi_function_steering_wheel_operation",
+    "Navigation": "navigation",
+    "Operating concept, operating system": "operating_concept_operating_system",
+    "Owner's Manual": "owner_s_manual",
+    "Radio function": "radio_function",
+    "Real Time Traffic Information (RTTI)": "real_time_traffic_information_rtti",
+    "Rear seat entertainment": "rear_seat_entertainment",
+    "Screen mirroring": "screen_mirroring",
+    "Smart POI search": "smart_poi_search",
+    "Touch Command": "touch_command",
+    "Touch screen, operation": "touch_screen_operation",
+    "Traffic Camera Information": "traffic_camera_information",
+    "Video: playback / streaming": "video_playback_streaming",
+    "Voice control / speech recognition": "voice_control_speech_recognition",
+    "Ambient light": "ambient_light",
+    "Caring Car": "caring_car",
+    "Center armrest, front": "center_armrest_front",
+    "Center console, front": "center_console_front",
+    "Grab handle": "grab_handle",
+    "Instrument panel": "instrument_panel",
+    "Interior": "interior",
+    "Interior comfort": "interior_comfort",
+    "Interior design": "interior_design",
+    "Interior rearview mirror": "interior_rearview_mirror",
+    "Panorama glass roof": "panorama_glass_roof",
+    "Roof function centre": "roof_function_centre",
+    "Space / spatial impression": "space_spatial_impression",
+    "Steering wheel": "steering_wheel",
+    "Sun protection": "sun_protection",
+    "Sun visor, front": "sun_visor_front",
+    "Vehicle interior, lighting": "vehicle_interior_lighting",
+    "12 V connection": "12_v_connection",
+    "Accessories / Parts": "accessories_parts",
+    "Automatic doors": "automatic_doors",
+    "Comfort Access": "comfort_access",
+    "Cupholder": "cupholder",
+    "Door, front": "door_front",
+    "Door, open / close": "door_open_close",
+    "Frunk": "frunk",
+    "Garage door opener": "garage_door_opener",
+    "Glove box": "glove_box",
+    "Hood, open / close": "hood_open_close",
+    "Horns": "horns",
+    "Luggage compartment": "luggage_compartment",
+    "non-contact trunk lid opening": "non_contact_trunk_lid_opening",
+    "Outer door handle, front": "outer_door_handle_front",
+    "Outer door handle, rear": "outer_door_handle_rear",
+    "Remote Engine Start (Vehicle Key )": "remote_engine_start_vehicle_key",
+    "Side window, open / close": "side_window_open_close",
+    "Storage compartments": "storage_compartments",
+    "Through-loading facility": "through_loading_facility",
+    "Towing eye": "towing_eye",
+    "Trailer, use": "trailer_use",
+    "Trunk lid, open / close": "trunk_lid_open_close",
+    "Trunk light": "trunk_light",
+    "Vehicle key": "vehicle_key",
+    "Vehicle, access and exit": "vehicle_access_and_exit",
+    "Vehicle, lock / unlock": "vehicle_lock_unlock",
+    "Washer fluid, top up": "washer_fluid_top_up",
+    "Interior mirror, garage door opener": "garage_door_opener",
+    "Trunk lid": "trunk_lid_open_close",
+    "Body equipment, overall technology": "body_equipment_overall_technology",
+    "Door, finisher panel, front": "door_finisher_panel_front",
+    "Floor mat": "floor_mat",
+    "Interior acoustics": "interior_acoustics",
+    "Upholstery / interior trim": "upholstery_interior_trim",
+    "Bidirectional charging": "bidirectional_charging",
+    "Charge high-voltage battery": "charge_high_voltage_battery",
+    "Charging cable": "charging_cable",
+    "Electric Range": "electric_range",
+    "Fuel filler flap , open / close": "fuel_filler_flap_open_close",
+    "Fuel tank": "fuel_tank",
+    "High voltage battery": "high_voltage_battery",
+    "High voltage battery, preconditioning": "high_voltage_battery_preconditioning",
+    "High-voltage charging power socket": "high_voltage_charging_power_socket",
+    "Opening/closing charging socket cover": "opening_closing_charging_socket_cover",
+    "Public charging / external providers": "public_charging_external_providers",
+    "Route optimized for charging": "route_optimized_for_charging",
+    "Wallbox, charging / home charging": "wallbox_charging_home_charging",
+    "Adjustment of lower lumbar support": "adjustment_of_lower_lumbar_support",
+    "Child restraint seat, use": "child_restraint_seat_use",
+    "Headrest, adjust": "headrest_adjust",
+    "Headrests, rear": "headrests_rear",
+    "Seat massage": "seat_massage",
+    "Seat memory": "seat_memory",
+    "Seating, ventilate / heat": "seating_ventilate_heat",
+    "Seats": "seats",
+    "Child restraint seat": "child_restraint_seat_use",
+    "General enquiry: customer feedback": null,
+    "no_class_found": null
+  },
+  "vfc_level3_to_aspect_group": {
+    "Like: function": "function",
+    "Customer request: function": "function",
+    "Vehicle equipment: not available": "function",
+    "Like: vehicle equipment": "function",
+    "too few": "function",
+    "Information / accuracy insufficient": "function",
+    "Customer request: compatibility": "function",
+    "Not user-friendly": "usability",
+    "Like: usability": "usability",
+    "Customer request: usability": "usability",
+    "Ergonomics do not appeal": "usability",
+    "Installation and set-up: difficult": "usability",
+    "Operating force not OK": "usability",
+    "Permanent switch-off not possible": "usability",
+    "Switch off not possible": "usability",
+    "Accidental triggering": "usability",
+    "Malfunction": "reliability",
+    "Connection fault": "reliability",
+    "Blank / frozen screen": "reliability",
+    "Battery discharge": "reliability",
+    "Communication fault": "reliability",
+    "Locking, detent: fault": "reliability",
+    "Fitting fault": "reliability",
+    "Installation: fault": "reliability",
+    "Opening, closing: not possible / not complete": "reliability",
+    "Warning / notification active": "reliability",
+    "Reception quality not OK": "reliability",
+    "Capacity loss": "reliability",
+    "Like: performance": "performance",
+    "Drive power/driving performance not OK": "performance",
+    "Effect, power not OK": "performance",
+    "Like: responsiveness": "performance",
+    "Response characteristics: too sluggish": "performance",
+    "Response characteristics not OK": "performance",
+    "Response characteristics: too fast": "performance",
+    "Response characteristics: too jerky/too abrupt": "performance",
+    "Too slow": "performance",
+    "Shift characteristics not OK": "performance",
+    "Drivability not OK": "performance",
+    "Customer request: performance": "performance",
+    "Pulls to one side": "performance",
+    "Light intensity not OK": "performance",
+    "Like: Efficiency": "efficiency_range",
+    "Fuel / power consumption too high": "efficiency_range",
+    "Range, not OK": "efficiency_range",
+    "Like: Range": "efficiency_range",
+    "Information / Accuracy insufficient (electric range)": "efficiency_range",
+    "Charging infrastructure inadequate": "efficiency_range",
+    "Look / design appeals": "design",
+    "Customer request: design": "design",
+    "Likes comfort": "comfort",
+    "Not comfortable": "comfort",
+    "Customer request: comfort": "comfort",
+    "Like: odor": "comfort",
+    "insufficient storage space": "space",
+    "Size not user friendly": "space",
+    "Like: Space / spatial impression": "space",
+    "Likes size": "space",
+    "Like: storage space": "space",
+    "Customer request: space / spatial impression": "space",
+    "Customer request: size": "space",
+    "View/restricted panoramic view": "space",
+    "Like: view/panoramic view": "space",
+    "Damage": "quality",
+    "Workmanship appeals": "quality",
+    "Workmanship does not appeal": "quality",
+    "Customer request: material quality": "quality",
+    "Dirty contamination": "quality",
+    "Leak": "quality",
+    "Leak: water ingress/condensation": "quality",
+    "Leak: air": "quality",
+    "Condensation": "quality",
+    "Cavity sealant: wax residue": "quality",
+    "Stiff movement": "quality",
+    "Odor/smoke": "quality",
+    "Vibration, oscillation": "quality",
+    "Excessive opening": "quality",
+    "Noise": "sound",
+    "Wind noise": "sound",
+    "Like: sound": "sound",
+    "Customer request: sound": "sound",
+    "Like: price-performance ratio": "price",
+    "Dislike: price-performance ratio": "price",
+    "Vehicle equipment: not standard / too costly": "price"
+  }
+}

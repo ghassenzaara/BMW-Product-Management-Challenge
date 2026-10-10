@@ -1,0 +1,203 @@
+attribute,model,series,share_i_hate_it,share_a_failure,share_unsatisfactory,share_satisfactory,share_excellent,share_delightful,share_i_love_it,top2_box,bottom3_box,mean_score_7
+Overall exterior styling,G60,5 Series,0.005,0.007,0.007,0.176,0.167,0.263,0.375,0.638,0.019,5.782
+Overall exterior styling,G70,7 Series,0.005,0.011,0.009,0.14,0.308,0.281,0.246,0.527,0.025,5.562
+Size/ proportions,G60,5 Series,0.007,0.012,0.012,0.118,0.289,0.174,0.388,0.562,0.031,5.744
+Size/ proportions,G70,7 Series,0.01,0.013,0.015,0.107,0.294,0.194,0.367,0.561,0.038,5.712
+Appearance of tires/ wheels,G60,5 Series,0.007,0.005,0.034,0.088,0.18,0.246,0.44,0.686,0.046,5.927
+Appearance of tires/ wheels,G70,7 Series,0.013,0.009,0.01,0.196,0.348,0.262,0.162,0.424,0.032,5.291
+Exterior door handles,G60,5 Series,0.005,0.003,0.031,0.215,0.283,0.175,0.288,0.463,0.039,5.445
+Exterior door handles,G70,7 Series,0.004,0.005,0.02,0.141,0.311,0.28,0.239,0.519,0.029,5.546
+Headlight/ taillight design,G60,5 Series,0.012,0.007,0.002,0.142,0.222,0.21,0.405,0.615,0.021,5.805
+Headlight/ taillight design,G70,7 Series,0.006,0.008,0.024,0.143,0.265,0.204,0.35,0.554,0.038,5.665
+Sound of doors/ trunk/ hatch shutting,G60,5 Series,0.003,0.013,0.003,0.264,0.156,0.183,0.378,0.561,0.019,5.618
+Sound of doors/ trunk/ hatch shutting,G70,7 Series,0.057,0.005,0.018,0.226,0.204,0.153,0.337,0.49,0.08,5.322
+Overall driving performance,G60,5 Series,0.004,0.011,0.002,0.034,0.301,0.17,0.478,0.648,0.017,6.039
+Overall driving performance,G70,7 Series,0.012,0.013,0.01,0.01,0.313,0.288,0.354,0.642,0.035,5.879
+Ground clearance,G60,5 Series,0.005,0.031,0.022,0.253,0.344,0.142,0.203,0.345,0.058,5.138
+Ground clearance,G70,7 Series,0.014,0.012,0.008,0.189,0.356,0.238,0.183,0.421,0.034,5.307
+Riding comfort,G60,5 Series,0.009,0.012,0.003,0.056,0.236,0.204,0.48,0.684,0.024,6.03
+Riding comfort,G70,7 Series,0.002,0.005,0.006,0.012,0.226,0.248,0.501,0.749,0.013,6.203
+Turning radius,G60,5 Series,0.008,0.006,0.003,0.128,0.229,0.274,0.352,0.626,0.017,5.794
+Turning radius,G70,7 Series,0.014,0.006,0.007,0.275,0.229,0.196,0.273,0.469,0.027,5.379
+Handling/Maneuverability,G60,5 Series,0.008,0.003,0.01,0.085,0.195,0.194,0.505,0.699,0.021,6.058
+Handling/Maneuverability,G70,7 Series,0.011,0.005,0.009,0.173,0.251,0.23,0.321,0.551,0.025,5.622
+If applicable: 4WD/AWD performance,G60,5 Series,0.013,0.015,0.006,0.105,0.308,0.171,0.382,0.553,0.034,5.721
+If applicable: 4WD/AWD performance,G70,7 Series,0.008,0.009,0.006,0.082,0.506,0.131,0.258,0.389,0.023,5.494
+Off-Road capability,G60,5 Series,0.01,0.009,0.16,0.355,0.297,0.067,0.102,0.169,0.179,4.529
+Off-Road capability,G70,7 Series,0.018,0.006,0.012,0.632,0.063,0.156,0.113,0.269,0.036,4.636
+Overall power and pickup,G60,5 Series,0.006,0.004,0.011,0.092,0.251,0.18,0.456,0.636,0.021,5.942
+Overall power and pickup,G70,7 Series,0.011,0.005,0.008,0.115,0.285,0.207,0.369,0.576,0.024,5.755
+Acceleration from stop,G60,5 Series,0.006,0.014,0.004,0.061,0.236,0.197,0.482,0.679,0.024,6.026
+Acceleration from stop,G70,7 Series,0.008,0.008,0.008,0.102,0.231,0.202,0.441,0.643,0.024,5.91
+Passing capability,G60,5 Series,0.006,0.002,0.009,0.071,0.29,0.22,0.402,0.622,0.017,5.905
+Passing capability,G70,7 Series,0.01,0.003,0.007,0.014,0.33,0.235,0.401,0.636,0.02,5.96
+Overall interior styling/ aesthetics,G60,5 Series,0.007,0.002,0.048,0.22,0.191,0.114,0.418,0.532,0.057,5.6
+Overall interior styling/ aesthetics,G70,7 Series,0.011,0.015,0.003,0.183,0.291,0.197,0.3,0.497,0.029,5.519
+Interior colors,G60,5 Series,0.007,0.007,0.012,0.096,0.225,0.129,0.524,0.653,0.026,6.008
+Interior colors,G70,7 Series,0.01,0.003,0.007,0.122,0.225,0.274,0.359,0.633,0.02,5.807
+Interior trim and finish,G60,5 Series,0.011,0.015,0.002,0.166,0.163,0.174,0.469,0.643,0.028,5.853
+Interior trim and finish,G70,7 Series,0.007,0.009,0.012,0.158,0.211,0.206,0.397,0.603,0.028,5.763
+Interior lighting,G60,5 Series,0.012,0.012,0.006,0.127,0.21,0.119,0.514,0.633,0.03,5.924
+Interior lighting,G70,7 Series,0.006,0.008,0.004,0.103,0.328,0.21,0.341,0.551,0.018,5.733
+Overall interior workmanship,G60,5 Series,0.008,0.005,0.006,0.108,0.346,0.173,0.354,0.527,0.019,5.714
+Overall interior workmanship,G70,7 Series,0.013,0.003,0.013,0.104,0.285,0.131,0.451,0.582,0.029,5.842
+Quality of seat materials,G60,5 Series,0.009,0.012,0.008,0.126,0.341,0.179,0.325,0.504,0.029,5.615
+Quality of seat materials,G70,7 Series,0.003,0.012,0.026,0.031,0.351,0.213,0.364,0.577,0.041,5.81
+Quality of interior materials,G60,5 Series,0.003,0.005,0.013,0.191,0.27,0.175,0.343,0.518,0.021,5.617
+Quality of interior materials,G70,7 Series,0.009,0.011,0.012,0.108,0.228,0.113,0.519,0.632,0.032,5.95
+Interior door handles,G60,5 Series,0.043,0.004,0.018,0.244,0.198,0.18,0.313,0.493,0.065,5.342
+Interior door handles,G70,7 Series,0.008,0.008,0.037,0.112,0.222,0.285,0.328,0.613,0.053,5.699
+Overall comfort of the seats,G60,5 Series,0.017,0.012,0.011,0.13,0.164,0.335,0.331,0.666,0.04,5.741
+Overall comfort of the seats,G70,7 Series,0.006,0.013,0.012,0.055,0.253,0.136,0.525,0.661,0.031,6.044
+Comfort of front seat,G60,5 Series,0.011,0.053,0.006,0.121,0.156,0.302,0.351,0.653,0.07,5.668
+Comfort of front seat,G70,7 Series,0.007,0.003,0.012,0.059,0.343,0.11,0.466,0.576,0.022,5.922
+Comfort of 2nd row seat,G60,5 Series,0.017,0.008,0.024,0.286,0.194,0.247,0.224,0.471,0.049,5.269
+Comfort of 2nd row seat,G70,7 Series,0.007,0.011,0.014,0.01,0.222,0.138,0.598,0.736,0.032,6.235
+Overall interior design / layout,G60,5 Series,0.003,0.013,0.018,0.147,0.265,0.196,0.358,0.554,0.034,5.678
+Overall interior design / layout,G70,7 Series,0.003,0.012,0.012,0.201,0.293,0.129,0.35,0.479,0.027,5.556
+Ease of front seat entry,G60,5 Series,0.005,0.013,0.003,0.196,0.24,0.228,0.315,0.543,0.021,5.597
+Ease of front seat entry,G70,7 Series,0.008,0.009,0.006,0.094,0.298,0.131,0.454,0.585,0.023,5.874
+Front seat roominess,G60,5 Series,0.005,0.007,0.004,0.099,0.202,0.358,0.325,0.683,0.016,5.86
+Front seat roominess,G70,7 Series,0.012,0.003,0.009,0.008,0.202,0.245,0.521,0.766,0.024,6.204
+Ease of 2nd row seat entry,G60,5 Series,0.005,0.004,0.005,0.246,0.282,0.222,0.236,0.458,0.014,5.406
+Ease of 2nd row seat entry,G70,7 Series,0.01,0.012,0.012,0.035,0.274,0.193,0.464,0.657,0.034,5.986
+2nd row seat roominess,G60,5 Series,0.007,0.003,0.014,0.283,0.22,0.22,0.253,0.473,0.024,5.378
+2nd row seat roominess,G70,7 Series,0.003,0.015,0.014,0.029,0.16,0.265,0.514,0.779,0.032,6.179
+Passenger seating capacity,G60,5 Series,0.005,0.009,0.007,0.202,0.268,0.247,0.262,0.509,0.021,5.508
+Passenger seating capacity,G70,7 Series,0.002,0.015,0.013,0.153,0.249,0.176,0.392,0.568,0.03,5.728
+Interior roominess,G60,5 Series,0.008,0.01,0.008,0.118,0.334,0.243,0.279,0.522,0.026,5.605
+Interior roominess,G70,7 Series,0.007,0.013,0.008,0.018,0.358,0.18,0.416,0.596,0.028,5.911
+Interior storage,G60,5 Series,0.007,0.006,0.092,0.225,0.284,0.163,0.223,0.386,0.105,5.154
+Interior storage,G70,7 Series,0.006,0.006,0.045,0.252,0.251,0.168,0.272,0.44,0.057,5.328
+Trunk lid/ tailgate and liftgate operations,G60,5 Series,0.004,0.006,0.02,0.183,0.194,0.147,0.446,0.593,0.03,5.782
+Trunk lid/ tailgate and liftgate operations,G70,7 Series,0.01,0.003,0.009,0.168,0.23,0.215,0.365,0.58,0.022,5.71
+Ease of loading/unloading cargo,G60,5 Series,0.011,0.004,0.019,0.17,0.311,0.206,0.279,0.485,0.034,5.5
+Ease of loading/unloading cargo,G70,7 Series,0.01,0.085,0.013,0.114,0.247,0.276,0.255,0.531,0.108,5.351
+Cargo capacity/usefulness,G60,5 Series,0.003,0.013,0.024,0.179,0.281,0.245,0.255,0.5,0.04,5.477
+Cargo capacity/usefulness,G70,7 Series,0.01,0.064,0.022,0.137,0.205,0.325,0.237,0.562,0.096,5.386
+Instrument panel (IP),G60,5 Series,0.018,0.045,0.017,0.189,0.242,0.145,0.344,0.489,0.08,5.403
+Instrument panel (IP),G70,7 Series,0.076,0.071,0.022,0.163,0.295,0.171,0.202,0.373,0.169,4.851
+Cupholders,G60,5 Series,0.008,0.003,0.036,0.218,0.263,0.193,0.279,0.472,0.047,5.42
+Cupholders,G70,7 Series,0.056,0.007,0.066,0.318,0.23,0.152,0.171,0.323,0.129,4.799
+Provides a sense of wellbeing,G60,5 Series,0.003,0.004,0.005,0.088,0.363,0.091,0.446,0.537,0.012,5.861
+Provides a sense of wellbeing,G70,7 Series,0.003,0.01,0.01,0.08,0.34,0.223,0.334,0.557,0.023,5.749
+Overall interior versatility/seat stowaway,G60,5 Series,0.015,0.011,0.02,0.192,0.212,0.303,0.247,0.55,0.046,5.472
+Overall interior versatility/seat stowaway,G70,7 Series,0.003,0.003,0.007,0.191,0.206,0.226,0.364,0.59,0.013,5.728
+Driver seat adjustability,G60,5 Series,0.023,0.007,0.012,0.138,0.265,0.232,0.323,0.555,0.042,5.603
+Driver seat adjustability,G70,7 Series,0.006,0.014,0.003,0.232,0.141,0.141,0.463,0.604,0.023,5.763
+Passenger seat adjustability,G60,5 Series,0.006,0.009,0.006,0.177,0.348,0.243,0.211,0.454,0.021,5.425
+Passenger seat adjustability,G70,7 Series,0.007,0.012,0.01,0.249,0.148,0.151,0.423,0.574,0.029,5.664
+Overall performance of climate control system,G60,5 Series,0.017,0.029,0.01,0.235,0.352,0.16,0.197,0.357,0.056,5.144
+Overall performance of climate control system,G70,7 Series,0.124,0.016,0.04,0.278,0.155,0.132,0.255,0.387,0.18,4.74
+Heater performance,G60,5 Series,0.009,0.009,0.04,0.247,0.282,0.141,0.272,0.413,0.058,5.295
+Heater performance,G70,7 Series,0.042,0.005,0.004,0.346,0.147,0.184,0.272,0.456,0.051,5.191
+Air conditioner performance,G60,5 Series,0.026,0.004,0.037,0.296,0.243,0.114,0.28,0.394,0.067,5.188
+Air conditioner performance,G70,7 Series,0.153,0.008,0.049,0.319,0.124,0.163,0.184,0.347,0.21,4.478
+Operation of heater/ AC controls,G60,5 Series,0.042,0.018,0.09,0.288,0.273,0.084,0.205,0.289,0.15,4.804
+Operation of heater/ AC controls,G70,7 Series,0.108,0.017,0.072,0.434,0.048,0.069,0.252,0.321,0.197,4.512
+Overall performance of sound system,G60,5 Series,0.015,0.011,0.014,0.204,0.255,0.179,0.322,0.501,0.04,5.498
+Overall performance of sound system,G70,7 Series,0.012,0.059,0.005,0.256,0.309,0.116,0.243,0.359,0.076,5.111
+Design and integration of speakers,G60,5 Series,0.015,0.014,0.01,0.125,0.273,0.263,0.3,0.563,0.039,5.616
+Design and integration of speakers,G70,7 Series,0.067,0.013,0.016,0.282,0.226,0.149,0.247,0.396,0.096,5.022
+Audio clarity,G60,5 Series,0.013,0.01,0.017,0.152,0.244,0.181,0.383,0.564,0.04,5.679
+Audio clarity,G70,7 Series,0.067,0.006,0.013,0.265,0.284,0.096,0.269,0.365,0.086,5.057
+Bass performance,G60,5 Series,0.014,0.007,0.016,0.177,0.237,0.221,0.328,0.549,0.037,5.591
+Bass performance,G70,7 Series,0.074,0.013,0.014,0.249,0.307,0.105,0.238,0.343,0.101,4.969
+Placement/ ease of reading and using controls,G60,5 Series,0.044,0.009,0.043,0.221,0.257,0.224,0.202,0.426,0.096,5.118
+Placement/ ease of reading and using controls,G70,7 Series,0.1,0.003,0.141,0.284,0.174,0.114,0.184,0.298,0.244,4.507
+Intuitiveness of controls,G60,5 Series,0.014,0.008,0.058,0.227,0.271,0.221,0.201,0.422,0.08,5.2
+Intuitiveness of controls,G70,7 Series,0.105,0.014,0.145,0.303,0.184,0.086,0.163,0.249,0.264,4.357
+Overall noise/vibration/harshness,G60,5 Series,0.013,0.008,0.011,0.168,0.216,0.253,0.331,0.584,0.032,5.649
+Overall noise/vibration/harshness,G70,7 Series,0.012,0.011,0.015,0.044,0.322,0.269,0.327,0.596,0.038,5.768
+Overall vehicle sound,G60,5 Series,0.003,0.041,0.013,0.126,0.258,0.256,0.303,0.559,0.057,5.575
+Overall vehicle sound,G70,7 Series,0.013,0.015,0.009,0.063,0.352,0.227,0.321,0.548,0.037,5.691
+Active noise cancellation,G60,5 Series,0.003,0.003,0.06,0.284,0.179,0.204,0.267,0.471,0.066,5.313
+Active noise cancellation,G70,7 Series,0.005,0.013,0.006,0.31,0.201,0.22,0.245,0.465,0.024,5.329
+Freedom from squeaks and rattles,G60,5 Series,0.008,0.046,0.026,0.151,0.202,0.218,0.349,0.567,0.08,5.543
+Freedom from squeaks and rattles,G70,7 Series,0.011,0.006,0.008,0.047,0.298,0.252,0.378,0.63,0.025,5.883
+Sound of engine,G60,5 Series,0.006,0.005,0.02,0.207,0.177,0.297,0.288,0.585,0.031,5.587
+Sound of engine,G70,7 Series,0.006,0.011,0.007,0.067,0.271,0.249,0.389,0.638,0.024,5.889
+Freedom from wind and road noise,G60,5 Series,0.003,0.015,0.041,0.132,0.252,0.299,0.258,0.557,0.059,5.544
+Freedom from wind and road noise,G70,7 Series,0.004,0.005,0.046,0.038,0.266,0.293,0.348,0.641,0.055,5.828
+Smoothness of transmission,G60,5 Series,0.006,0.009,0.015,0.22,0.155,0.202,0.393,0.595,0.03,5.687
+Smoothness of transmission,G70,7 Series,0.005,0.008,0.008,0.081,0.284,0.166,0.448,0.614,0.021,5.921
+Overall impression of durability/reliability,G60,5 Series,0.013,0.003,0.019,0.139,0.166,0.166,0.494,0.66,0.035,5.916
+Overall impression of durability/reliability,G70,7 Series,0.064,0.012,0.003,0.114,0.251,0.179,0.377,0.556,0.079,5.521
+Solid vehicle construction,G60,5 Series,0.009,0.002,0.005,0.119,0.291,0.16,0.414,0.574,0.016,5.817
+Solid vehicle construction,G70,7 Series,0.066,0.009,0.016,0.077,0.201,0.216,0.415,0.631,0.091,5.646
+Freedom from electrical problems,G60,5 Series,0.007,0.004,0.021,0.208,0.351,0.107,0.302,0.409,0.032,5.421
+Freedom from electrical problems,G70,7 Series,0.067,0.068,0.006,0.163,0.202,0.163,0.331,0.494,0.141,5.178
+Overall safety of the vehicle,G60,5 Series,0.003,0.01,0.005,0.126,0.275,0.191,0.39,0.581,0.018,5.793
+Overall safety of the vehicle,G70,7 Series,0.048,0.006,0.007,0.074,0.309,0.131,0.425,0.556,0.061,5.683
+Front visibility,G60,5 Series,0.008,0.007,0.013,0.14,0.206,0.21,0.416,0.626,0.028,5.823
+Front visibility,G70,7 Series,0.067,0.007,0.003,0.097,0.231,0.112,0.483,0.595,0.077,5.686
+Rear visibility,G60,5 Series,0.006,0.013,0.042,0.175,0.194,0.193,0.377,0.57,0.061,5.625
+Rear visibility,G70,7 Series,0.011,0.003,0.014,0.347,0.245,0.101,0.279,0.38,0.028,5.231
+Braking,G60,5 Series,0.005,0.01,0.006,0.172,0.257,0.198,0.352,0.55,0.021,5.668
+Braking,G70,7 Series,0.054,0.009,0.009,0.117,0.362,0.141,0.308,0.449,0.072,5.379
+Warranty coverage,G60,5 Series,0.006,0.005,0.01,0.34,0.193,0.15,0.296,0.446,0.021,5.343
+Warranty coverage,G70,7 Series,0.079,0.006,0.014,0.44,0.2,0.109,0.152,0.261,0.099,4.611
+Headlight function/ brightness,G60,5 Series,0.01,0.006,0.013,0.104,0.164,0.291,0.412,0.703,0.029,5.927
+Headlight function/ brightness,G70,7 Series,0.068,0.011,0.017,0.081,0.21,0.257,0.356,0.613,0.096,5.549
+Technical innovations,G60,5 Series,0.011,0.007,0.006,0.199,0.3,0.215,0.262,0.477,0.024,5.463
+Technical innovations,G70,7 Series,0.062,0.077,0.017,0.052,0.31,0.168,0.314,0.482,0.156,5.231
+Level of standard equipment,G60,5 Series,0.015,0.004,0.006,0.216,0.376,0.103,0.28,0.383,0.025,5.363
+Level of standard equipment,G70,7 Series,0.053,0.012,0.028,0.164,0.217,0.094,0.432,0.526,0.093,5.49
+Overall value for money,G60,5 Series,0.009,0.006,0.033,0.288,0.288,0.108,0.268,0.376,0.048,5.236
+Overall value for money,G70,7 Series,0.056,0.004,0.014,0.346,0.309,0.133,0.138,0.271,0.074,4.799
+Price/deal offered,G60,5 Series,0.01,0.012,0.035,0.381,0.199,0.162,0.201,0.363,0.057,5.037
+Price/deal offered,G70,7 Series,0.119,0.008,0.036,0.396,0.298,0.069,0.074,0.143,0.163,4.249
+Future trade-in or resale value,G60,5 Series,0.01,0.03,0.094,0.319,0.188,0.158,0.201,0.359,0.134,4.923
+Future trade-in or resale value,G70,7 Series,0.12,0.111,0.106,0.407,0.124,0.062,0.07,0.132,0.337,3.77
+Gas or electric mileage (fuel economy),G60,5 Series,0.005,0.03,0.035,0.183,0.267,0.119,0.361,0.48,0.07,5.478
+Gas or electric mileage (fuel economy),G70,7 Series,0.052,0.013,0.008,0.329,0.277,0.06,0.261,0.321,0.073,4.99
+Economical to own (cost of ownership),G60,5 Series,0.005,0.011,0.052,0.345,0.306,0.093,0.188,0.281,0.068,4.967
+Economical to own (cost of ownership),G70,7 Series,0.148,0.013,0.084,0.445,0.147,0.053,0.11,0.163,0.245,4.029
+Affordable to buy,G60,5 Series,0.005,0.007,0.068,0.453,0.27,0.06,0.137,0.197,0.08,4.704
+Affordable to buy,G70,7 Series,0.164,0.004,0.064,0.536,0.169,0.014,0.049,0.063,0.232,3.78
+Overall brand image,G60,5 Series,0.015,0.01,0.003,0.131,0.144,0.319,0.378,0.697,0.028,5.848
+Overall brand image,G70,7 Series,0.053,0.013,0.005,0.102,0.205,0.149,0.473,0.622,0.071,5.732
+Reputation/prestige of manufacturer,G60,5 Series,0.003,0.007,0.003,0.117,0.165,0.18,0.525,0.705,0.013,6.074
+Reputation/prestige of manufacturer,G70,7 Series,0.05,0.009,0.008,0.024,0.254,0.201,0.454,0.655,0.067,5.842
+Overall vehicle image,G60,5 Series,0.012,0.003,0.002,0.135,0.228,0.17,0.45,0.62,0.017,5.874
+Overall vehicle image,G70,7 Series,0.055,0.003,0.014,0.046,0.322,0.117,0.443,0.56,0.072,5.7
+Overall driver assist features,G60,5 Series,0.007,0.003,0.007,0.165,0.358,0.125,0.335,0.46,0.017,5.579
+Overall driver assist features,G70,7 Series,0.055,0.012,0.015,0.3,0.092,0.157,0.369,0.526,0.082,5.309
+"If applicable: Backup system (camera, sensors, etc.)",G60,5 Series,0.003,0.003,0.005,0.108,0.297,0.229,0.355,0.584,0.011,5.8
+"If applicable: Backup system (camera, sensors, etc.)",G70,7 Series,0.072,0.004,0.005,0.119,0.292,0.125,0.383,0.508,0.081,5.462
+"Safety monitoring features (blid spot warning, lane departure warning, etc)",G60,5 Series,0.003,0.01,0.003,0.154,0.259,0.217,0.354,0.571,0.016,5.723
+"Safety monitoring features (blid spot warning, lane departure warning, etc)",G70,7 Series,0.064,0.011,0.006,0.297,0.104,0.127,0.391,0.518,0.081,5.311
+"Adaptive driving assists (lane keeping, cruise, braking)",G60,5 Series,0.005,0.006,0.007,0.198,0.172,0.2,0.412,0.612,0.018,5.774
+"Adaptive driving assists (lane keeping, cruise, braking)",G70,7 Series,0.064,0.011,0.005,0.248,0.174,0.133,0.365,0.498,0.08,5.316
+Overall driver-vehicle interaction (HMI),G60,5 Series,0.005,0.009,0.024,0.156,0.355,0.163,0.288,0.451,0.038,5.488
+Overall driver-vehicle interaction (HMI),G70,7 Series,0.063,0.007,0.02,0.318,0.225,0.05,0.317,0.367,0.09,5.053
+If applicable: Navigation system,G60,5 Series,0.007,0.003,0.019,0.239,0.202,0.217,0.313,0.53,0.029,5.529
+If applicable: Navigation system,G70,7 Series,0.109,0.016,0.007,0.269,0.211,0.159,0.229,0.388,0.132,4.85
+Bluetooth/ smartphone pairing,G60,5 Series,0.009,0.003,0.016,0.248,0.158,0.215,0.351,0.566,0.028,5.592
+Bluetooth/ smartphone pairing,G70,7 Series,0.077,0.072,0.019,0.206,0.165,0.123,0.338,0.461,0.168,5.031
+WiFi hotspot in vehicle,G60,5 Series,0.012,0.06,0.062,0.29,0.193,0.148,0.235,0.383,0.134,4.976
+WiFi hotspot in vehicle,G70,7 Series,0.088,0.094,0.013,0.261,0.265,0.132,0.147,0.279,0.195,4.505
+Mirroring of smartphone content on vehicle display,G60,5 Series,0.007,0.005,0.04,0.201,0.248,0.189,0.31,0.499,0.052,5.485
+Mirroring of smartphone content on vehicle display,G70,7 Series,0.075,0.006,0.029,0.384,0.173,0.117,0.216,0.333,0.11,4.789
+Place for phone,G60,5 Series,0.006,0.006,0.034,0.233,0.191,0.244,0.286,0.53,0.046,5.473
+Place for phone,G70,7 Series,0.06,0.025,0.084,0.257,0.308,0.017,0.249,0.266,0.169,4.775
+Phone charging,G60,5 Series,0.013,0.064,0.025,0.188,0.146,0.181,0.383,0.564,0.102,5.465
+Phone charging,G70,7 Series,0.066,0.015,0.103,0.201,0.23,0.066,0.319,0.385,0.184,4.988
+Ease of reading and using screen interface,G60,5 Series,0.02,0.013,0.047,0.244,0.178,0.288,0.21,0.498,0.08,5.251
+Ease of reading and using screen interface,G70,7 Series,0.05,0.006,0.137,0.206,0.249,0.117,0.235,0.352,0.193,4.889
+Head-up Display,G60,5 Series,0.005,0.012,0.005,0.228,0.151,0.162,0.437,0.599,0.022,5.742
+Head-up Display,G70,7 Series,0.009,0.091,0.01,0.147,0.228,0.081,0.434,0.515,0.11,5.473
+Position/ integration of displays in dashboard,G60,5 Series,0.039,0.013,0.035,0.19,0.297,0.24,0.186,0.426,0.087,5.157
+Position/ integration of displays in dashboard,G70,7 Series,0.054,0.005,0.04,0.31,0.229,0.107,0.255,0.362,0.099,4.996
+Menu structure of infotainment system,G60,5 Series,0.05,0.017,0.059,0.261,0.256,0.205,0.152,0.357,0.126,4.879
+Menu structure of infotainment system,G70,7 Series,0.078,0.074,0.058,0.297,0.174,0.117,0.202,0.319,0.21,4.574
+Vehicle's Mobile App,G60,5 Series,0.006,0.012,0.014,0.156,0.275,0.19,0.347,0.537,0.032,5.64
+Vehicle's Mobile App,G70,7 Series,0.066,0.013,0.026,0.293,0.209,0.136,0.257,0.393,0.105,5.002
+Overall environmental friendliness,G60,5 Series,0.002,0.012,0.015,0.3,0.164,0.157,0.35,0.507,0.029,5.483
+Overall environmental friendliness,G70,7 Series,0.058,0.015,0.005,0.345,0.2,0.129,0.248,0.377,0.078,4.993
+"If applicable: Flat tire preparedness (spare, run flat, etc.)",G60,5 Series,0.026,0.06,0.096,0.32,0.145,0.228,0.125,0.353,0.182,4.682
+"If applicable: Flat tire preparedness (spare, run flat, etc.)",G70,7 Series,0.169,0.097,0.055,0.225,0.185,0.014,0.255,0.269,0.321,4.222
+If applicable: Sunroof/ moonroof,G60,5 Series,0.013,0.003,0.014,0.373,0.206,0.132,0.259,0.391,0.03,5.188
+If applicable: Sunroof/ moonroof,G70,7 Series,0.007,0.013,0.034,0.434,0.192,0.015,0.305,0.32,0.054,5.056
+If applicable: Ease of customization,G60,5 Series,0.002,0.007,0.067,0.289,0.198,0.225,0.212,0.437,0.076,5.197
+If applicable: Ease of customization,G70,7 Series,0.179,0.006,0.117,0.23,0.192,0.016,0.26,0.276,0.302,4.338

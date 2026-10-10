@@ -1,0 +1,539 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "series": {
+      "type": "string",
+      "enum": [
+        "G60",
+        "F70",
+        "G70"
+      ]
+    },
+    "relatedSeries": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "G60",
+          "F70",
+          "G70"
+        ]
+      }
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "global",
+        "RoW",
+        "CN"
+      ]
+    },
+    "ownerId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "coOwnerIds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "watcherIds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "observed",
+        "new",
+        "investigating",
+        "awaiting_answers",
+        "ready",
+        "decided"
+      ]
+    },
+    "outcome": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "confirmed",
+            "referred",
+            "innovation_pool",
+            "parked",
+            "merged",
+            "rejected"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "outcomeNote": {
+      "type": "string"
+    },
+    "markets": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "EU",
+          "US",
+          "CN",
+          "RoW",
+          "unknown"
+        ]
+      }
+    },
+    "carArea": {
+      "type": "string",
+      "enum": [
+        "exterior_design",
+        "interior_comfort",
+        "seats",
+        "climate",
+        "infotainment_hmi",
+        "connectivity_digital",
+        "driver_assistance",
+        "dynamics_powertrain",
+        "range_charging",
+        "practicality",
+        "quality_materials"
+      ]
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "new_feature",
+        "fix_improve",
+        "performance_target",
+        "quality_perception",
+        "market_variant",
+        "brand_differentiator",
+        "regression"
+      ]
+    },
+    "changeDepth": {
+      "type": "string",
+      "enum": [
+        "trim_option",
+        "part_module",
+        "platform_powertrain",
+        "software_ota"
+      ]
+    },
+    "featureName": {
+      "type": "string"
+    },
+    "bodyMd": {
+      "type": "string"
+    },
+    "bodyVersion": {
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    },
+    "signalIds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "figures": {
+      "type": "object",
+      "properties": {
+        "perMarket": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "market": {
+                "type": "string",
+                "enum": [
+                  "EU",
+                  "US",
+                  "CN",
+                  "RoW",
+                  "unknown"
+                ]
+              },
+              "customers": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "complaints": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "wishes": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "likes": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "studyLabel": {
+                "type": "string"
+              },
+              "studyScore": {
+                "type": "string"
+              },
+              "salesShare2030": {
+                "type": "number"
+              },
+              "sentiment": {
+                "type": "number",
+                "minimum": -1,
+                "maximum": 1
+              }
+            },
+            "required": [
+              "market",
+              "customers",
+              "complaints",
+              "wishes",
+              "likes",
+              "sentiment"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "equipmentToday": {
+          "type": "string"
+        },
+        "competitorOffer": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "trend": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "perMarket",
+        "equipmentToday",
+        "competitorOffer",
+        "trend"
+      ],
+      "additionalProperties": false
+    },
+    "marketConflict": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "note": {
+              "type": "string"
+            },
+            "markets": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "EU",
+                  "US",
+                  "CN",
+                  "RoW",
+                  "unknown"
+                ]
+              }
+            }
+          },
+          "required": [
+            "note",
+            "markets"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "brandFit": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "reason": {
+          "type": "string"
+        },
+        "confirmedBy": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "value",
+        "reason",
+        "confirmedBy"
+      ],
+      "additionalProperties": false
+    },
+    "factors": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "enum": [
+          "customers",
+          "severity",
+          "satisfaction_gap",
+          "competitor_gap",
+          "market_volume",
+          "regression",
+          "trend",
+          "brand_fit"
+        ]
+      },
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "required": [
+        "customers",
+        "severity",
+        "satisfaction_gap",
+        "competitor_gap",
+        "market_volume",
+        "regression",
+        "trend",
+        "brand_fit"
+      ]
+    },
+    "evidenceLevel": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low",
+        "assumption"
+      ]
+    },
+    "context": {
+      "type": "object",
+      "properties": {
+        "preset": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "brand",
+                  "baseline",
+                  "past_decision",
+                  "study",
+                  "sales",
+                  "competitor",
+                  "note",
+                  "meeting",
+                  "answer",
+                  "diff"
+                ]
+              },
+              "label": {
+                "type": "string"
+              },
+              "detail": {
+                "type": "string"
+              },
+              "ref": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "label",
+              "detail"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "pmInputs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "brand",
+                  "baseline",
+                  "past_decision",
+                  "study",
+                  "sales",
+                  "competitor",
+                  "note",
+                  "meeting",
+                  "answer",
+                  "diff"
+                ]
+              },
+              "label": {
+                "type": "string"
+              },
+              "detail": {
+                "type": "string"
+              },
+              "ref": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "label",
+              "detail"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "preset",
+        "pmInputs"
+      ],
+      "additionalProperties": false
+    },
+    "originCaseId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "mergedInto": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "requirementIds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "manualRank": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "manualRankReason": {
+      "type": "string"
+    },
+    "newSignalCount": {
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "createdBy": {
+      "type": "string"
+    },
+    "updatedAt": {
+      "type": "string"
+    },
+    "synthetic": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "id",
+    "title",
+    "summary",
+    "series",
+    "relatedSeries",
+    "scope",
+    "ownerId",
+    "coOwnerIds",
+    "watcherIds",
+    "state",
+    "outcome",
+    "markets",
+    "carArea",
+    "type",
+    "changeDepth",
+    "featureName",
+    "bodyMd",
+    "bodyVersion",
+    "signalIds",
+    "figures",
+    "marketConflict",
+    "brandFit",
+    "factors",
+    "evidenceLevel",
+    "context",
+    "originCaseId",
+    "mergedInto",
+    "requirementIds",
+    "manualRank",
+    "newSignalCount",
+    "createdAt",
+    "createdBy",
+    "updatedAt",
+    "synthetic"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,186 @@
+attribute,market,model,series,mean_score_10
+Overall product satisfaction,China,G68,5 Series,8.771
+Overall product satisfaction,China,G70,7 Series,9.636
+Overall product satisfaction,EU,F70,1 Series,8.463
+Overall product satisfaction,EU,G60,5 Series,8.319
+Overall product satisfaction,EU,G70,7 Series,7.983
+Exterior styling,China,G68,5 Series,8.186
+Exterior styling,China,G70,7 Series,8.788
+Exterior styling,EU,F70,1 Series,9.005
+Exterior styling,EU,G60,5 Series,9.828
+Exterior styling,EU,G70,7 Series,8.379
+Interior styling,China,G68,5 Series,8.687
+Interior styling,China,G70,7 Series,8.57
+Interior styling,EU,F70,1 Series,8.897
+Interior styling,EU,G60,5 Series,8.545
+Interior styling,EU,G70,7 Series,8.92
+Quality of interior and materials used,China,G68,5 Series,8.445
+Quality of interior and materials used,China,G70,7 Series,8.434
+Quality of interior and materials used,EU,F70,1 Series,8.65
+Quality of interior and materials used,EU,G60,5 Series,7.751
+Quality of interior and materials used,EU,G70,7 Series,9.113
+Level of equipment,China,G68,5 Series,7.486
+Level of equipment,China,G70,7 Series,9.816
+Level of equipment,EU,F70,1 Series,8.26
+Level of equipment,EU,G60,5 Series,7.769
+Level of equipment,EU,G70,7 Series,9.237
+Safety,China,G68,5 Series,8.169
+Safety,China,G70,7 Series,8.975
+Safety,EU,F70,1 Series,9.033
+Safety,EU,G60,5 Series,9.154
+Safety,EU,G70,7 Series,9.279
+Freedom from faults/ squeaks/ rattles,China,G68,5 Series,8.485
+Freedom from faults/ squeaks/ rattles,China,G70,7 Series,8.445
+Freedom from faults/ squeaks/ rattles,EU,F70,1 Series,8.863
+Freedom from faults/ squeaks/ rattles,EU,G60,5 Series,8.411
+Freedom from faults/ squeaks/ rattles,EU,G70,7 Series,8.614
+Value for money,China,G68,5 Series,7.92
+Value for money,China,G70,7 Series,8.287
+Value for money,EU,F70,1 Series,7.823
+Value for money,EU,G60,5 Series,7.36
+Value for money,EU,G70,7 Series,6.468
+Reliability,China,G68,5 Series,8.838
+Reliability,China,G70,7 Series,8.218
+Reliability,EU,F70,1 Series,9.398
+Reliability,EU,G60,5 Series,9.251
+Reliability,EU,G70,7 Series,9.674
+All round visibility,China,G68,5 Series,8.695
+All round visibility,China,G70,7 Series,8.431
+All round visibility,EU,F70,1 Series,8.89
+All round visibility,EU,G60,5 Series,8.643
+All round visibility,EU,G70,7 Series,8.298
+Easy to read and use instruments/ controls/ displays,China,G68,5 Series,8.339
+Easy to read and use instruments/ controls/ displays,China,G70,7 Series,8.434
+Easy to read and use instruments/ controls/ displays,EU,F70,1 Series,8.412
+Easy to read and use instruments/ controls/ displays,EU,G60,5 Series,8.067
+Easy to read and use instruments/ controls/ displays,EU,G70,7 Series,8.193
+Smartphone integration/ connectivity,China,G68,5 Series,8.142
+Smartphone integration/ connectivity,China,G70,7 Series,8.426
+Smartphone integration/ connectivity,EU,F70,1 Series,8.591
+Smartphone integration/ connectivity,EU,G60,5 Series,8.461
+Smartphone integration/ connectivity,EU,G70,7 Series,8.356
+Features of information and entertainment system including in-car apps,China,G68,5 Series,8.371
+Features of information and entertainment system including in-car apps,China,G70,7 Series,8.208
+Features of information and entertainment system including in-car apps,EU,F70,1 Series,8.235
+Features of information and entertainment system including in-car apps,EU,G60,5 Series,8.192
+Features of information and entertainment system including in-car apps,EU,G70,7 Series,8.29
+Easy to use information and entertainment system including in-car apps,China,G68,5 Series,8.351
+Easy to use information and entertainment system including in-car apps,China,G70,7 Series,8.1
+Easy to use information and entertainment system including in-car apps,EU,F70,1 Series,8.164
+Easy to use information and entertainment system including in-car apps,EU,G60,5 Series,8.257
+Easy to use information and entertainment system including in-car apps,EU,G70,7 Series,7.986
+Integrated navigation system,China,G68,5 Series,8.517
+Integrated navigation system,China,G70,7 Series,8.178
+Integrated navigation system,EU,F70,1 Series,8.303
+Integrated navigation system,EU,G60,5 Series,8.59
+Integrated navigation system,EU,G70,7 Series,8.822
+Overall seating comfort,China,G68,5 Series,8.674
+Overall seating comfort,China,G70,7 Series,8.722
+Overall seating comfort,EU,F70,1 Series,8.981
+Overall seating comfort,EU,G60,5 Series,8.814
+Overall seating comfort,EU,G70,7 Series,9.295
+Interior storage for small items,China,G68,5 Series,8.532
+Interior storage for small items,China,G70,7 Series,8.408
+Interior storage for small items,EU,F70,1 Series,8.103
+Interior storage for small items,EU,G60,5 Series,7.723
+Interior storage for small items,EU,G70,7 Series,7.96
+Acceleration,China,G68,5 Series,8.602
+Acceleration,China,G70,7 Series,8.827
+Acceleration,EU,F70,1 Series,8.211
+Acceleration,EU,G60,5 Series,8.846
+Acceleration,EU,G70,7 Series,8.943
+Roadholding,China,G68,5 Series,8.915
+Roadholding,China,G70,7 Series,8.597
+Roadholding,EU,F70,1 Series,8.293
+Roadholding,EU,G60,5 Series,8.154
+Roadholding,EU,G70,7 Series,8.936
+Fuel economy/ energy efficiency,China,G68,5 Series,8.426
+Fuel economy/ energy efficiency,China,G70,7 Series,8.184
+Fuel economy/ energy efficiency,EU,F70,1 Series,9.304
+Fuel economy/ energy efficiency,EU,G60,5 Series,7.446
+Fuel economy/ energy efficiency,EU,G70,7 Series,7.675
+Braking,China,G68,5 Series,7.376
+Braking,China,G70,7 Series,7.818
+Braking,EU,F70,1 Series,8.89
+Braking,EU,G60,5 Series,8.25
+Braking,EU,G70,7 Series,9.603
+Sportiness,China,G68,5 Series,8.861
+Sportiness,China,G70,7 Series,8.642
+Sportiness,EU,F70,1 Series,9.341
+Sportiness,EU,G60,5 Series,7.636
+Sportiness,EU,G70,7 Series,6.971
+Prestige/ manufacturer reputation,China,G68,5 Series,8.905
+Prestige/ manufacturer reputation,China,G70,7 Series,9.165
+Prestige/ manufacturer reputation,EU,F70,1 Series,9.209
+Prestige/ manufacturer reputation,EU,G60,5 Series,8.949
+Prestige/ manufacturer reputation,EU,G70,7 Series,9.226
+Manoeuvrability,China,G68,5 Series,8.482
+Manoeuvrability,China,G70,7 Series,8.379
+Manoeuvrability,EU,F70,1 Series,8.871
+Manoeuvrability,EU,G60,5 Series,8.731
+Manoeuvrability,EU,G70,7 Series,8.968
+Quality of ride,China,G68,5 Series,8.445
+Quality of ride,China,G70,7 Series,8.623
+Quality of ride,EU,F70,1 Series,9.196
+Quality of ride,EU,G60,5 Series,9.948
+Quality of ride,EU,G70,7 Series,9.516
+Front interior roominess,China,G68,5 Series,7.772
+Front interior roominess,China,G70,7 Series,7.687
+Front interior roominess,EU,F70,1 Series,9.199
+Front interior roominess,EU,G60,5 Series,8.881
+Front interior roominess,EU,G70,7 Series,9.688
+Rear interior roominess,China,G68,5 Series,8.706
+Rear interior roominess,China,G70,7 Series,7.519
+Rear interior roominess,EU,F70,1 Series,8.587
+Rear interior roominess,EU,G60,5 Series,7.463
+Rear interior roominess,EU,G70,7 Series,9.406
+Ease of loading/ unloading luggage,China,G68,5 Series,7.251
+Ease of loading/ unloading luggage,China,G70,7 Series,7.458
+Ease of loading/ unloading luggage,EU,F70,1 Series,7.503
+Ease of loading/ unloading luggage,EU,G60,5 Series,7.242
+Ease of loading/ unloading luggage,EU,G70,7 Series,8.667
+Luggage capacity,China,G68,5 Series,8.734
+Luggage capacity,China,G70,7 Series,7.656
+Luggage capacity,EU,F70,1 Series,7.07
+Luggage capacity,EU,G60,5 Series,7.539
+Luggage capacity,EU,G70,7 Series,7.407
+Ease of entry into and out of car,China,G68,5 Series,8.512
+Ease of entry into and out of car,China,G70,7 Series,8.708
+Ease of entry into and out of car,EU,F70,1 Series,8.763
+Ease of entry into and out of car,EU,G60,5 Series,7.915
+Ease of entry into and out of car,EU,G70,7 Series,9.249
+Environm. friendliness,China,G68,5 Series,7.493
+Environm. friendliness,China,G70,7 Series,7.44
+Environm. friendliness,EU,F70,1 Series,7.554
+Environm. friendliness,EU,G60,5 Series,7.595
+Environm. friendliness,EU,G70,7 Series,7.513
+Heating/ ventilation/ air conditioning ,China,G68,5 Series,7.577
+Heating/ ventilation/ air conditioning ,China,G70,7 Series,8.822
+Heating/ ventilation/ air conditioning ,EU,F70,1 Series,7.305
+Heating/ ventilation/ air conditioning ,EU,G60,5 Series,7.466
+Heating/ ventilation/ air conditioning ,EU,G70,7 Series,8.796
+Overall build quality,China,G68,5 Series,8.805
+Overall build quality,China,G70,7 Series,9.36
+Overall build quality,EU,F70,1 Series,7.95
+Overall build quality,EU,G60,5 Series,7.672
+Overall build quality,EU,G70,7 Series,8.779
+Quietness when driving,China,G68,5 Series,7.517
+Quietness when driving,China,G70,7 Series,9.386
+Quietness when driving,EU,F70,1 Series,7.619
+Quietness when driving,EU,G60,5 Series,7.795
+Quietness when driving,EU,G70,7 Series,9.779
+Driving position,China,G68,5 Series,8.691
+Driving position,China,G70,7 Series,8.797
+Driving position,EU,F70,1 Series,9.176
+Driving position,EU,G60,5 Series,9.168
+Driving position,EU,G70,7 Series,9.126
+Connected services,China,G68,5 Series,7.348
+Connected services,China,G70,7 Series,7.317
+Connected services,EU,F70,1 Series,7.356
+Connected services,EU,G60,5 Series,7.37
+Connected services,EU,G70,7 Series,7.862
+Interior versatility,China,G68,5 Series,8.351
+Interior versatility,China,G70,7 Series,8.042
+Interior versatility,EU,F70,1 Series,8.572
+Interior versatility,EU,G60,5 Series,8.139
+Interior versatility,EU,G70,7 Series,8.323

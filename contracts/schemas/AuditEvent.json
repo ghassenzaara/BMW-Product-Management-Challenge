@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "seq": {
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    },
+    "at": {
+      "type": "string"
+    },
+    "actorId": {
+      "type": "string"
+    },
+    "actorType": {
+      "type": "string",
+      "enum": [
+        "human",
+        "ai"
+      ]
+    },
+    "action": {
+      "type": "string"
+    },
+    "objectType": {
+      "type": "string",
+      "enum": [
+        "case",
+        "requirement",
+        "signal",
+        "referral",
+        "question",
+        "plan",
+        "profile",
+        "workspace"
+      ]
+    },
+    "objectId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "before": {},
+    "after": {},
+    "rationale": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "seq",
+    "at",
+    "actorId",
+    "actorType",
+    "action",
+    "objectType",
+    "objectId"
+  ],
+  "additionalProperties": false
+}

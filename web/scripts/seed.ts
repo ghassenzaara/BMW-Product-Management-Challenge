@@ -1,0 +1,556 @@
+/**
+ * Builds the synthetic world for the mock backend.
+ *
+ *   npm run seed
+ *
+ * Reads the real processed BMW data (docs/02-data/processed/*.csv) and the
+ * hand-written content in src/mock/authored/, and writes
+ * src/mock/fixtures/seed.json. Every record is validated against the Zod
+ * contract; the script fails on any invalid record.
+ */
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { parse } from "csv-parse/sync";
+import {
+  Dataset,
+  type AgentRun,
+  type AuditEvent,
+  type Case,
+  type CaseState,
+  type CarArea,
+  type ChatMessage,
+  type Market,
+  type MarketFigure,
+  type Proposal,
+  type Requirement,
+  type RequirementStatus,
+  type Series,
+  type Signal,
+  type SignalCluster,
+} from "../src/contracts";
+import { users, workspaces, weightProfiles, brandProfile } from "../src/mock/authored/people";
+import { caseSpecs } from "../src/mock/authored/cases";
+import type { StudyRef, VerbatimSelector } from "../src/mock/authored/types";
+import {
+  NOW,
+  alerts,
+  chatSeeds,
+  comments,
+  innovation,
+  notifications,
+  plans,
+  quarantine,
+  questions,
+  referrals,
+  requirementSpecs,
+  unclusteredSelectors,
+} from "../src/mock/authored/world";
+import { webSpecToSignal } from "../src/mock/convert";
+
+const here = dirname(fileURLToPath(import.meta.url));
+const dataDir = resolve(here, "../../docs/02-data/processed");
+const outFile = resolve(here, "../src/mock/fixtures/seed.json");
+
+// ---------- Load real data ----------
+type Row = Record<string, string>;
+const readCsv = (name: string): Row[] => parse(readFileSync(resolve(dataDir, name), "utf8"), { columns: true, skip_empty_lines: true });
+
+const verbatims = readCsv("feedback_verbatims.csv");
+const verbatimById = new Map(verbatims.map((r) => [r.id, r]));
+const studyCnEu = readCsv("study_cn_eu_2025.csv");
+const studyUs = readCsv("study_us_2025.csv");
+const sales = readCsv("sales_volumes.csv");
+
+const EU_COUNTRIES = new Set(["GB", "SE", "FR", "DK", "FI", "NO", "ES", "LV", "DE", "IT", "NL", "BE", "AT", "CH", "PL", "PT", "IE"]);
+function marketOf(country: string): Market {
+  if (country === "US") return "US";
+  if (country === "CN") return "CN";
+  if (EU_COUNTRIES.has(country)) return "EU";
+  return country ? "RoW" : "unknown";
+}
+
+function salesKey(series: Series) {
+  return series === "G60" ? "G60_G68" : series;
+}
+function share2030(series: Series, market: Market): number {
+  const rows = sales.filter((r) => r.model === salesKey(series));
+  const total = rows.reduce((s, r) => s + Number(r.volume_2030), 0);
+  const row = rows.find((r) => r.market_code === market);
+  return row && total ? Number(row.volume_2030) / total : 0;
+}
+
+// ---------- Helpers ----------
+const usedVerbatims = new Set<string>();
+
+function classify(types: string): { kind: Signal["kind"]; severity: Signal["severity"] } {
+  if (types.includes("Defect")) return { kind: "complaint", severity: "defect" };
+  if (types.includes("Difficult to Use")) return { kind: "complaint", severity: "difficult_to_use" };
+  if (types.includes("Wants")) return { kind: "wish", severity: "wish" };
+  if (types.includes("Likes")) return { kind: "like", severity: "none" };
+  return { kind: "complaint", severity: "none" };
+}
+
+function summarize(text: string) {
+  const clean = text.replace(/\s+/g, " ").trim();
+  const words = clean.split(" ");
+  return words.length <= 20 ? clean : words.slice(0, 20).join(" ") + "…";
+}
+
+function selectVerbatims(sel: VerbatimSelector): Row[] {
+  const topic = sel.topic ? new RegExp(sel.topic, "i") : null;
+  const text = sel.text ? new RegExp(sel.text, "i") : null;
+  const pinned = (sel.pin ?? []).map((id) => verbatimById.get(id)).filter((r): r is Row => !!r);
+  const matches = verbatims.filter(
+    (r) =>
+      r.model === sel.model &&
+      (!topic || topic.test(r.topics)) &&
+      (!text || text.test(r.text)) &&
+      (!sel.types || sel.types.some((t) => r.feedback_types.includes(t))) &&
+      (!sel.engine || r.engine === sel.engine),
+  );
+  const out: Row[] = [];
+  for (const r of [...pinned, ...matches]) {
+    if (out.length >= sel.limit) break;
+    if (usedVerbatims.has(r.id) || out.some((o) => o.id === r.id)) continue;
+    out.push(r);
+  }
+  out.forEach((r) => usedVerbatims.add(r.id));
+  return out;
+}
+
+function verbatimSignal(r: Row, caseId: string | null, carArea: CarArea, featureHint: string): Signal {
+  const { kind, severity } = classify(r.feedback_types);
+  const source = r.source.replace("Source ", "");
+  return {
+    id: r.id,
+    kind,
+    severity,
+    agent: "bmw_data",
+    sourceType: "bmw_feedback",
+    sourceName: `BMW customer feedback · Source ${source}`,
+    trust: "A",
+    recordRef: `feedback_verbatims.csv#${r.id}`,
+    publishedAt: "2025",
+    fetchedAt: "2026-09-01T06:00:00Z",
+    series: r.model as Series,
+    vehicleRole: "current",
+    powertrain: (["ICE", "PHEV", "BEV"].includes(r.engine) ? r.engine : "unknown") as Signal["powertrain"],
+    market: marketOf(r.country),
+    marketBasis: "stated",
+    country: r.country,
+    carArea,
+    featureHint: featureHint || r.topics.split("|")[0].split(" : ")[0],
+    summary: summarize(r.text),
+    quote: r.text.trim(),
+    language: "en",
+    audience: source === "C" || source === "D" ? "owner" : "owner",
+    caseId,
+    status: caseId ? "clustered" : "unclustered",
+    synthetic: false,
+  };
+}
+
+function studySignal(ref: StudyRef, id: string, caseId: string, series: Series, carArea: CarArea, featureHint: string): Signal | null {
+  const base = {
+    agent: "bmw_data" as const,
+    sourceType: "bmw_study" as const,
+    trust: "A" as const,
+    publishedAt: "2025",
+    fetchedAt: "2026-09-01T06:00:00Z",
+    series,
+    vehicleRole: "current" as const,
+    powertrain: "unknown" as const,
+    marketBasis: "stated" as const,
+    carArea,
+    featureHint,
+    language: "en",
+    audience: "owner" as const,
+    caseId,
+    status: "clustered" as const,
+    synthetic: false,
+  };
+  if (ref.market === "US") {
+    const row = studyUs.find((r) => r.attribute === ref.attribute && r.model === ref.model);
+    if (!row || !row.top2_box) return null;
+    const top2 = Math.round(Number(row.top2_box) * 100);
+    const bottom3 = Math.round(Number(row.bottom3_box) * 100);
+    const low = top2 < 45 || bottom3 >= 12;
+    const text = `US study 2025 · ${ref.attribute} (${ref.model}): top-2 ${top2}%, bottom-3 ${bottom3}%`;
+    return {
+      ...base,
+      id,
+      kind: low ? "complaint" : "like",
+      severity: low ? "difficult_to_use" : "none",
+      sourceName: "BMW customer study 2025 · US",
+      recordRef: `study_us_2025.csv#${ref.attribute}|${ref.model}`,
+      market: "US",
+      summary: text,
+      quote: text,
+    };
+  }
+  const market = ref.market === "EU" ? "EU" : "China";
+  const row = studyCnEu.find((r) => r.attribute === ref.attribute && r.model === ref.model && r.market === market);
+  if (!row) return null;
+  const score = Number(row.mean_score_10);
+  const low = score < 8;
+  const text = `${market} study 2025 · ${ref.attribute.trim()} (${ref.model}): ${score.toFixed(2)} / 10`;
+  return {
+    ...base,
+    id,
+    kind: low ? "complaint" : "like",
+    severity: low ? "difficult_to_use" : "none",
+    sourceName: `BMW customer study 2025 · ${market}`,
+    recordRef: `study_cn_eu_2025.csv#${ref.attribute.trim()}|${market}|${ref.model}`,
+    market: ref.market === "EU" ? "EU" : "CN",
+    summary: text,
+    quote: text,
+  };
+}
+
+function addDays(iso: string, days: number) {
+  return new Date(new Date(iso).getTime() + days * 86400000).toISOString();
+}
+function between(a: string, b: string, f: number) {
+  const ta = new Date(a).getTime();
+  const tb = new Date(b).getTime();
+  return new Date(ta + (tb - ta) * f).toISOString();
+}
+
+// ---------- Build signals and cases ----------
+const signals = new Map<string, Signal>();
+const cases: Case[] = [];
+
+for (const spec of caseSpecs) {
+  const caseSignals: Signal[] = [];
+  for (const sel of spec.verbatims) {
+    for (const r of selectVerbatims(sel)) caseSignals.push(verbatimSignal(r, spec.id, spec.carArea, spec.featureName));
+  }
+  spec.study.forEach((ref, i) => {
+    const s = studySignal(ref, `SIG-${spec.id}-S${i}`, spec.id, spec.series, spec.carArea, spec.featureName);
+    if (s) caseSignals.push(s);
+    else console.warn(`  study row not found: ${ref.attribute} / ${ref.model} / ${ref.market}`);
+  });
+  spec.web.forEach((w, i) =>
+    caseSignals.push(
+      webSpecToSignal(w, {
+        id: `SIG-${spec.id}-W${i}`,
+        series: spec.series,
+        carArea: spec.carArea,
+        featureHint: spec.featureName,
+        caseId: spec.id,
+        fetchedAt: addDays(w.publishedAt.length > 7 ? `${w.publishedAt}T00:00:00Z` : "2026-09-01T00:00:00Z", 2),
+      }),
+    ),
+  );
+  caseSignals.forEach((s) => signals.set(s.id, s));
+
+  // Per-market figures from the signals (customer evidence only; study rows add the score label).
+  const markets = new Set<Market>(spec.markets ?? []);
+  caseSignals.forEach((s) => s.market !== "unknown" && markets.add(s.market));
+  const perMarket: MarketFigure[] = [...markets].map((m) => {
+    const inMarket = caseSignals.filter((s) => s.market === m && s.sourceType !== "bmw_study" && s.kind !== "competitor_fact");
+    const complaints = inMarket.filter((s) => s.kind === "complaint").length;
+    const wishes = inMarket.filter((s) => s.kind === "wish").length;
+    const likes = inMarket.filter((s) => s.kind === "like").length;
+    const study = caseSignals.find((s) => s.market === m && s.sourceType === "bmw_study");
+    const total = complaints + wishes + likes;
+    const sentiment = total ? Math.max(-1, Math.min(1, (likes - complaints - 0.5 * wishes) / total)) : study?.kind === "like" ? 0.5 : study ? -0.5 : 0;
+    return {
+      market: m,
+      customers: inMarket.length,
+      complaints,
+      wishes,
+      likes,
+      studyLabel: study ? study.summary.split(" · ")[1]?.split(" (")[0] : undefined,
+      studyScore: study ? study.summary.split(": ").slice(-1)[0] : undefined,
+      salesShare2030: m === "unknown" ? undefined : Math.round(share2030(spec.series, m) * 1000) / 1000,
+      sentiment: Math.round(sentiment * 100) / 100,
+    };
+  });
+
+  const customerCount = caseSignals.filter((s) => s.sourceType !== "bmw_study" && s.kind !== "competitor_fact" && s.kind !== "trend").length;
+  const customers = spec.factors.customers ?? Math.min(1, Math.log10(1 + customerCount) / Math.log10(1 + 60));
+  const marketVolume =
+    spec.factors.market_volume ?? Math.min(1, [...markets].filter((m) => m !== "unknown").reduce((s, m) => s + share2030(spec.series, m), 0));
+
+  const { verbatims: _v, study: _s, web: _w, equipmentToday, competitorOffer, trend, powertrainHint: _p, ...rest } = spec;
+  const updatedAt = spec.updatedAt ?? between(spec.createdAt, NOW, 0.8);
+  cases.push({
+    ...rest,
+    relatedSeries: spec.relatedSeries ?? [],
+    coOwnerIds: spec.coOwnerIds ?? [],
+    watcherIds: spec.watcherIds ?? [],
+    markets: [...markets],
+    signalIds: caseSignals.map((s) => s.id),
+    figures: { perMarket, equipmentToday, competitorOffer, trend },
+    factors: {
+      ...spec.factors,
+      customers: Math.round(customers * 100) / 100,
+      market_volume: Math.round(marketVolume * 100) / 100,
+    },
+    originCaseId: spec.originCaseId ?? null,
+    mergedInto: spec.mergedInto ?? null,
+    requirementIds: [],
+    manualRank: null,
+    newSignalCount: spec.newSignalCount ?? 0,
+    bodyVersion: 1,
+    updatedAt,
+    synthetic: true,
+  });
+}
+
+// Unclustered signals for the radar.
+const topicArea: [RegExp, CarArea][] = [
+  [/Head-Up|Instrument|Touch|Operating|Driver profile|Navigation/i, "infotainment_hmi"],
+  [/Highway|Parking|cruise/i, "driver_assistance"],
+  [/Ambient|Interior/i, "interior_comfort"],
+  [/Exterior/i, "exterior_design"],
+  [/Software|App|eSIM|Connected/i, "connectivity_digital"],
+  [/Seats/i, "seats"],
+];
+for (const sel of unclusteredSelectors) {
+  for (const r of selectVerbatims(sel)) {
+    const area = topicArea.find(([re]) => re.test(r.topics))?.[1] ?? "interior_comfort";
+    const s = verbatimSignal(r, null, area, "");
+    signals.set(s.id, s);
+  }
+}
+
+// ---------- Requirements ----------
+const requirements: Requirement[] = requirementSpecs.map((r) => ({
+  ...r,
+  updatedAt: r.updatedAt ?? r.createdAt,
+  manualRank: null,
+  synthetic: true,
+}));
+for (const r of requirements) cases.find((c) => c.id === r.caseId)?.requirementIds.push(r.id);
+
+// ---------- Clusters (theme map) ----------
+const clusters: SignalCluster[] = [];
+for (const c of cases) {
+  const sigs = c.signalIds.map((id) => signals.get(id)!).filter(Boolean);
+  const marketsCount: Record<string, number> = {};
+  sigs.forEach((s) => (marketsCount[s.market] = (marketsCount[s.market] ?? 0) + 1));
+  const sent = c.figures.perMarket.length ? c.figures.perMarket.reduce((s, m) => s + m.sentiment, 0) / c.figures.perMarket.length : 0;
+  clusters.push({
+    id: `CL-${c.id}`,
+    label: c.featureName,
+    series: c.series,
+    carArea: c.carArea,
+    size: sigs.length,
+    sentiment: Math.round(sent * 100) / 100,
+    markets: marketsCount,
+    caseId: c.id,
+    signalIds: c.signalIds,
+  });
+}
+const unclustered = [...signals.values()].filter((s) => s.status === "unclustered");
+const byHint = new Map<string, Signal[]>();
+unclustered.forEach((s) => byHint.set(`${s.series}|${s.featureHint}`, [...(byHint.get(`${s.series}|${s.featureHint}`) ?? []), s]));
+let clusterNo = 1;
+for (const [key, sigs] of byHint) {
+  const [series, hint] = key.split("|");
+  const likes = sigs.filter((s) => s.kind === "like").length;
+  const marketsCount: Record<string, number> = {};
+  sigs.forEach((s) => (marketsCount[s.market] = (marketsCount[s.market] ?? 0) + 1));
+  clusters.push({
+    id: `CL-U-${String(clusterNo++).padStart(3, "0")}`,
+    label: hint,
+    series: series as Series,
+    carArea: sigs[0].carArea,
+    size: sigs.length,
+    sentiment: Math.round(((likes - (sigs.length - likes)) / sigs.length) * 100) / 100,
+    markets: marketsCount,
+    caseId: null,
+    signalIds: sigs.map((s) => s.id),
+  });
+}
+
+// ---------- Agent runs ----------
+const agentRuns: AgentRun[] = [];
+const runAgents = ["competitor", "customer_public", "trends", "innovation_scout"] as const;
+for (let d = 6; d >= 0; d--) {
+  runAgents.forEach((agent, i) => {
+    const start = addDays("2026-10-04T21:00:00Z", 6 - d).replace(/T21/, `T2${i}`);
+    const valid = [6, 14, 3, 1][i] + ((d * 7 + i * 3) % 5);
+    agentRuns.push({
+      id: `RUN-${agent}-${String(7 - d).padStart(2, "0")}`,
+      agent,
+      series: "G60",
+      startedAt: start,
+      endedAt: addDays(start, 0.01),
+      status: d === 2 && agent === "customer_public" ? "partial" : "ok",
+      valid,
+      rejected: (d + i) % 3,
+      newSignals: Math.max(0, valid - 4),
+      llmCostUsd: Math.round((0.4 + valid * 0.07) * 100) / 100,
+      note: d === 2 && agent === "customer_public" ? "dongchedi.com returned 403 for 12 pages (login wall)" : undefined,
+    });
+  });
+}
+agentRuns.unshift({
+  id: "RUN-bmw_data-import",
+  agent: "bmw_data",
+  series: "G60",
+  startedAt: "2026-09-01T06:00:00Z",
+  endedAt: "2026-09-01T06:04:00Z",
+  status: "ok",
+  valid: 10128,
+  rejected: 0,
+  newSignals: 10128,
+  llmCostUsd: 0,
+  note: "One-time import of feedback, study, sales and option lists (seed).",
+});
+
+// ---------- Proposals (one pending AI suggestion for the hero case) ----------
+const hero = cases.find((c) => c.id === "CASE-G60-0001")!;
+const heroAfter = hero.bodyMd.replace(
+  "3. Software-only: 'favourites' widget pinned to the home screen (OTA)",
+  "3. Software-only: 'favourites' widget pinned to the home screen (OTA)\n\n> Engineering (08.10.): 8 buttons fit the current centre stack; 6 if haptic feedback is added.",
+);
+const proposals: Proposal[] = [
+  {
+    id: "P-0001",
+    objectType: "case",
+    objectId: hero.id,
+    source: "meeting_note",
+    kind: "body",
+    summary: "Add the engineering answer (8 buttons, 6 with haptics) to 'Options considered'",
+    changes: [{ field: "bodyMd", before: hero.bodyMd, after: heroAfter }],
+    questionId: "Q-0001",
+    citations: ["Q-0001"],
+    status: "pending",
+    createdAt: "2026-10-08T10:01:00Z",
+  },
+];
+
+// ---------- Chat messages ----------
+const messages: ChatMessage[] = chatSeeds.map((m, i) => ({ ...m, id: `MSG-${String(i + 1).padStart(4, "0")}`, proposalIds: m.proposalIds ?? [] }));
+
+// ---------- Audit history ----------
+type Draft = Omit<AuditEvent, "seq">;
+const audit: Draft[] = [];
+const ai = (actorId: string): Pick<Draft, "actorId" | "actorType"> => ({ actorId, actorType: "ai" });
+const human = (actorId: string): Pick<Draft, "actorId" | "actorType"> => ({ actorId, actorType: "human" });
+
+audit.push({ at: "2026-09-01T06:04:00Z", ...ai("agent:importer"), action: "data.imported", objectType: "signal", objectId: "RUN-bmw_data-import", rationale: "Seed: feedback, study, sales, option lists" });
+audit.push({ at: brandProfile.updatedAt, ...human("u-katrin"), action: "brand_profile.updated", objectType: "profile", objectId: "brand-profile", before: { version: 2 }, after: { version: 3 }, rationale: "Added 'honest sportiness' and the 'don't fight every attribute' rule" });
+
+const statePath: CaseState[] = ["new", "investigating", "awaiting_answers", "ready"];
+for (const c of cases) {
+  const isAgent = c.createdBy.startsWith("agent:");
+  audit.push({ at: c.createdAt, ...(isAgent ? ai(c.createdBy) : human(c.createdBy)), action: "case.created", objectType: "case", objectId: c.id, after: { title: c.title, signals: c.signalIds.length }, rationale: isAgent ? "Open threshold reached" : "Opened by hand" });
+  if (isAgent) audit.push({ at: addDays(c.createdAt, 0.01), ...ai("agent:scorer"), action: "case.scored", objectType: "case", objectId: c.id, after: c.factors });
+  if (c.state === "observed") continue;
+  const target = c.state === "decided" ? statePath.length : statePath.indexOf(c.state) + 1;
+  const end = c.updatedAt;
+  for (let i = 1; i < target; i++) {
+    audit.push({
+      at: between(c.createdAt, end, i / (target + 1)),
+      ...human(c.ownerId),
+      action: "case.state_changed",
+      objectType: "case",
+      objectId: c.id,
+      before: { state: statePath[i - 1] },
+      after: { state: statePath[i] },
+      rationale: ["Evidence looks relevant", "Open questions sent", "Answers in, ready to decide"][i - 1],
+    });
+  }
+  if (c.state === "decided") {
+    audit.push({ at: end, ...human(c.ownerId), action: "case.decided", objectType: "case", objectId: c.id, before: { state: "ready" }, after: { state: "decided", outcome: c.outcome }, rationale: c.outcomeNote ?? "Decided" });
+  }
+}
+
+const reqPath: RequirementStatus[] = ["draft", "in_discussion", "pm_approved", "signed_off", "planned", "exported"];
+for (const r of requirements) {
+  audit.push({ at: r.createdAt, ...ai("agent:requirement_writer"), action: "requirement.drafted", objectType: "requirement", objectId: r.id, after: { title: r.title }, rationale: `Generated from confirmed ${r.caseId}` });
+  const idx = reqPath.indexOf(r.status);
+  for (let i = 1; i <= idx; i++) {
+    const actor = reqPath[i] === "signed_off" ? "u-katrin" : r.ownerId;
+    audit.push({
+      at: between(r.createdAt, r.updatedAt, i / (idx + 1)),
+      ...human(actor),
+      action: "requirement.status_changed",
+      objectType: "requirement",
+      objectId: r.id,
+      before: { status: reqPath[i - 1] },
+      after: { status: reqPath[i] },
+      rationale: ["Discussed with engineering", "Targets agreed", "Fits the product line plan", "Added to vehicle plan", "Exported"][i - 1],
+    });
+  }
+}
+audit.push({ at: "2026-09-25T10:00:00Z", ...human("u-lena"), action: "requirement.edited", objectType: "requirement", objectId: "REQ-G60-0004", before: { metrics: [{ id: "m1", target: "≥ 90%" }] }, after: { metrics: [{ id: "m1", target: "≥ 95%" }] }, rationale: "Quality baseline is 72%; 90% would not remove the complaints" });
+
+for (const q of questions.filter((q) => q.status === "answered")) {
+  audit.push({ at: q.answeredAt!, ...human(q.askedBy), action: "question.answered", objectType: "question", objectId: q.id, after: { answer: q.answer }, rationale: `Answer from ${q.answerSource}` });
+}
+for (const a of alerts) {
+  audit.push({ at: a.createdAt, ...ai("agent:monitor"), action: "alert.raised", objectType: a.requirementId ? "requirement" : "case", objectId: a.requirementId ?? a.caseId!, after: { verdict: a.verdict, title: a.title } });
+  if (a.status !== "open") audit.push({ at: addDays(a.createdAt, 0.2), ...human(a.ownerId), action: `alert.${a.status}`, objectType: "case", objectId: a.caseId!, rationale: a.resolution });
+}
+for (const r of referrals) {
+  audit.push({ at: r.createdAt, ...human(r.fromUserId), action: `${r.kind}.created`, objectType: "case", objectId: r.caseId, after: { to: r.toUserId }, rationale: r.note });
+  if (r.status === "accepted") audit.push({ at: r.decidedAt!, ...human(r.toUserId), action: "referral.accepted", objectType: "case", objectId: r.caseId, after: { linkedCaseId: r.linkedCaseId }, rationale: "Shared module" });
+}
+for (const p of proposals) {
+  audit.push({ at: p.createdAt, ...ai("agent:note_extractor"), action: "proposal.created", objectType: p.objectType, objectId: p.objectId, rationale: p.summary });
+}
+
+const sortedAudit: AuditEvent[] = audit
+  .sort((a, b) => a.at.localeCompare(b.at))
+  .map((e, i) => ({ ...e, seq: i + 1 }));
+
+// ---------- Validate and write ----------
+const dataset = {
+  generatedAt: NOW,
+  users,
+  workspaces,
+  weightProfiles,
+  brandProfile,
+  signals: [...signals.values()],
+  clusters,
+  agentRuns,
+  quarantine,
+  cases,
+  questions,
+  meetingNotes: [],
+  proposals,
+  requirements,
+  referrals,
+  innovation,
+  plans,
+  messages,
+  comments,
+  notifications,
+  alerts,
+  audit: sortedAudit,
+};
+
+const parsed = Dataset.safeParse(dataset);
+if (!parsed.success) {
+  console.error("Seed failed contract validation:");
+  for (const issue of parsed.error.issues.slice(0, 30)) console.error(" -", issue.path.join("."), issue.message);
+  process.exit(1);
+}
+
+// Referential checks the schema cannot express.
+const caseIds = new Set(cases.map((c) => c.id));
+const problems: string[] = [];
+for (const s of signals.values()) if (s.caseId && !caseIds.has(s.caseId)) problems.push(`signal ${s.id} → unknown case ${s.caseId}`);
+for (const a of alerts) for (const id of a.signalIds) if (!signals.has(id)) problems.push(`alert ${a.id} → unknown signal ${id}`);
+for (const r of referrals) if (!caseIds.has(r.caseId)) problems.push(`referral ${r.id} → unknown case`);
+for (const m of innovation) if (!caseIds.has(m.caseId)) problems.push(`innovation → unknown case ${m.caseId}`);
+for (const q of questions) if (q.objectType === "case" && !caseIds.has(q.objectId)) problems.push(`question ${q.id} → unknown case`);
+for (const c of cases) if (c.signalIds.length === 0 && c.state !== "observed") problems.push(`case ${c.id} has no signals`);
+if (problems.length) {
+  console.error("Referential problems:\n - " + problems.join("\n - "));
+  process.exit(1);
+}
+
+mkdirSync(dirname(outFile), { recursive: true });
+writeFileSync(outFile, JSON.stringify(parsed.data, null, 1));
+const real = [...signals.values()].filter((s) => !s.synthetic).length;
+console.log(
+  `seed.json written: ${cases.length} cases, ${signals.size} signals (${real} real BMW records, ${signals.size - real} synthetic), ${requirements.length} requirements, ${sortedAudit.length} audit events`,
+);

@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    },
+    "updatedAt": {
+      "type": "string"
+    },
+    "updatedBy": {
+      "type": "string",
+      "minLength": 1
+    },
+    "pillars": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "description"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "doNot": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notesMd": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "version",
+    "updatedAt",
+    "updatedBy",
+    "pillars",
+    "doNot",
+    "notesMd"
+  ],
+  "additionalProperties": false
+}

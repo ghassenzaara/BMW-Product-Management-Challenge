@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "profileId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "score": {
+      "type": "number"
+    },
+    "rank": {
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    },
+    "contributions": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "enum": [
+          "customers",
+          "severity",
+          "satisfaction_gap",
+          "competitor_gap",
+          "market_volume",
+          "regression",
+          "trend",
+          "brand_fit"
+        ]
+      },
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "required": [
+        "customers",
+        "severity",
+        "satisfaction_gap",
+        "competitor_gap",
+        "market_volume",
+        "regression",
+        "trend",
+        "brand_fit"
+      ]
+    }
+  },
+  "required": [
+    "caseId",
+    "profileId",
+    "score",
+    "rank",
+    "contributions"
+  ],
+  "additionalProperties": false
+}

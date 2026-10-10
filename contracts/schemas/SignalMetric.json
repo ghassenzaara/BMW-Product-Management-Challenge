@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "value": {
+      "type": "number"
+    },
+    "unit": {
+      "type": "string"
+    },
+    "cycle": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "value",
+    "unit"
+  ],
+  "additionalProperties": false
+}

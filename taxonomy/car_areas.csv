@@ -1,0 +1,12 @@
+car_area,label,description
+exterior_design,"Exterior, design & lighting","Look of the car from outside, body panels, mirrors, exterior lights, glass and wipers."
+interior_comfort,Interior & comfort,"Cabin look and feel, dashboard, console, ambient light, roominess, glass roof, sun protection."
+seats,Seats,"Seat comfort, adjustment, heating/ventilation, massage, memory, headrests, child seats."
+climate,Climate,"Heating, air conditioning, blower, climate controls, heated surfaces."
+infotainment_hmi,Infotainment & HMI,"Screens, operating concept, iDrive, navigation, audio, smartphone mirroring, voice control, displays."
+connectivity_digital,Connectivity & digital (incl. AI assistant),"My BMW App, remote functions, digital key, eSIM/Wi-Fi, OTA upgrades, in-car apps, the intelligent personal assistant, phone pairing and charging."
+driver_assistance,Driver assistance & safety,"ADAS, parking aids, cameras, warnings, automated driving, airbags, belts, perceived safety."
+dynamics_powertrain,Driving dynamics & powertrain,"Engine/motor, acceleration, handling, ride, brakes, steering, transmission, drive modes, tires, start-stop."
+range_charging,"Range, charging & refuelling","Electric range, charging (public, home, cable, socket), high-voltage battery, fuel tank."
+practicality,Practicality & access,"Luggage, storage, doors, tailgate, frunk, keys and access, towing, everyday handling."
+quality_materials,Quality & materials,"Materials, trim, workmanship, cabin quietness, overall build of the body."

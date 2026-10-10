@@ -1,0 +1,4580 @@
+openapi: 3.1.0
+info:
+  title: Requirement Studio API
+  version: 0.1.0
+  description: "Contract between the UI and the backend. Source of truth: web/src/contracts (Zod). Regenerate with `npm run export-contract` in web/. Reference implementation (mock): web/src/mock."
+servers:
+  - url: /api
+    description: Mock backend (Next.js route handlers)
+security:
+  - userHeader: []
+paths:
+  /me:
+    get:
+      operationId: me
+      summary: Current user, workspace and active weight profile
+      tags:
+        - identity
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: "#/components/schemas/User"
+                  workspace:
+                    $ref: "#/components/schemas/Workspace"
+                  weightProfile:
+                    $ref: "#/components/schemas/WeightProfile"
+                required:
+                  - user
+                  - workspace
+                  - weightProfile
+                additionalProperties: false
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /users:
+    get:
+      operationId: users
+      summary: All users
+      tags:
+        - identity
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /workspace:
+    put:
+      operationId: updateWorkspace
+      summary: Update my workspace (weights, filters, watchlist, project type)
+      tags:
+        - identity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                series:
+                  type: string
+                  enum:
+                    - G60
+                    - F70
+                    - G70
+                region:
+                  type: string
+                  enum:
+                    - global
+                    - RoW
+                    - CN
+                projectType:
+                  type: string
+                  enum:
+                    - new_gen
+                    - lci
+                weightProfileId:
+                  type: string
+                  minLength: 1
+                sourceFilter:
+                  $ref: "#/components/schemas/SourceFilter"
+                watchlist:
+                  $ref: "#/components/schemas/Watchlist"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Workspace"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /search:
+    get:
+      operationId: search
+      summary: Global search
+      tags:
+        - identity
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                      enum:
+                        - case
+                        - requirement
+                        - signal
+                        - user
+                    id:
+                      type: string
+                    title:
+                      type: string
+                    subtitle:
+                      type: string
+                    href:
+                      type: string
+                  required:
+                    - type
+                    - id
+                    - title
+                    - subtitle
+                    - href
+                  additionalProperties: false
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /signals:
+    get:
+      operationId: signals
+      summary: List signals (findings)
+      tags:
+        - signals
+      parameters:
+        - name: series
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - G60
+              - F70
+              - G70
+        - name: caseId
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: agent
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - bmw_data
+              - competitor
+              - customer_public
+              - trends
+              - innovation_scout
+        - name: market
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - EU
+              - US
+              - CN
+              - RoW
+              - unknown
+        - name: kind
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - complaint
+              - wish
+              - like
+              - competitor_fact
+              - trend
+              - innovation
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - new
+              - clustered
+              - unclustered
+              - quarantined
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: -9007199254740991
+            maximum: 9007199254740991
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Signal"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /clusters:
+    get:
+      operationId: clusters
+      summary: Signal clusters for the theme map
+      tags:
+        - signals
+      parameters:
+        - name: series
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - G60
+              - F70
+              - G70
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SignalCluster"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /agent-runs:
+    get:
+      operationId: agentRuns
+      summary: Recent agent runs
+      tags:
+        - signals
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AgentRun"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /agent-runs/refresh:
+    post:
+      operationId: refresh
+      summary: Run the fetch loop once for a series
+      tags:
+        - signals
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                series:
+                  type: string
+                  enum:
+                    - G60
+                    - F70
+                    - G70
+              required:
+                - series
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  run:
+                    $ref: "#/components/schemas/AgentRun"
+                  signals:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Signal"
+                  notifications:
+                    type: number
+                required:
+                  - run
+                  - signals
+                  - notifications
+                additionalProperties: false
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /quarantine:
+    get:
+      operationId: quarantine
+      summary: Rejected signals with reason
+      tags:
+        - signals
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/QuarantineItem"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /cases:
+    get:
+      operationId: cases
+      summary: List cases
+      tags:
+        - cases
+      parameters:
+        - name: series
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - G60
+              - F70
+              - G70
+        - name: ownerId
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: state
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - observed
+              - new
+              - investigating
+              - awaiting_answers
+              - ready
+              - decided
+        - name: scope
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - global
+              - RoW
+              - CN
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Case"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+    post:
+      operationId: createCase
+      summary: Start a case from signals
+      tags:
+        - cases
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  minLength: 3
+                series:
+                  type: string
+                  enum:
+                    - G60
+                    - F70
+                    - G70
+                scope:
+                  type: string
+                  enum:
+                    - global
+                    - RoW
+                    - CN
+                carArea:
+                  type: string
+                  enum:
+                    - exterior_design
+                    - interior_comfort
+                    - seats
+                    - climate
+                    - infotainment_hmi
+                    - connectivity_digital
+                    - driver_assistance
+                    - dynamics_powertrain
+                    - range_charging
+                    - practicality
+                    - quality_materials
+                type:
+                  type: string
+                  enum:
+                    - new_feature
+                    - fix_improve
+                    - performance_target
+                    - quality_perception
+                    - market_variant
+                    - brand_differentiator
+                    - regression
+                changeDepth:
+                  type: string
+                  enum:
+                    - trim_option
+                    - part_module
+                    - platform_powertrain
+                    - software_ota
+                summary:
+                  type: string
+                signalIds:
+                  minItems: 1
+                  type: array
+                  items:
+                    type: string
+                rationale:
+                  type: string
+                  minLength: 1
+              required:
+                - title
+                - series
+                - scope
+                - carArea
+                - type
+                - changeDepth
+                - summary
+                - signalIds
+                - rationale
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Case"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /cases/{id}:
+    get:
+      operationId: caseBundle
+      summary: Case with signals, questions, requirements, referrals
+      tags:
+        - cases
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  case:
+                    $ref: "#/components/schemas/Case"
+                  signals:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Signal"
+                  questions:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/OpenQuestion"
+                  requirements:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Requirement"
+                  referrals:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Referral"
+                  alerts:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Alert"
+                  meetingNotes:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/MeetingNote"
+                  proposals:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Proposal"
+                  linkedCases:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Case"
+                required:
+                  - case
+                  - signals
+                  - questions
+                  - requirements
+                  - referrals
+                  - alerts
+                  - meetingNotes
+                  - proposals
+                  - linkedCases
+                additionalProperties: false
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+    patch:
+      operationId: patchCase
+      summary: Edit case fields or body
+      tags:
+        - cases
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                patch:
+                  type: object
+                  properties:
+                    title:
+                      type: string
+                    summary:
+                      type: string
+                    bodyMd:
+                      type: string
+                    scope:
+                      type: string
+                      enum:
+                        - global
+                        - RoW
+                        - CN
+                    markets:
+                      type: array
+                      items:
+                        type: string
+                        enum:
+                          - EU
+                          - US
+                          - CN
+                          - RoW
+                          - unknown
+                    carArea:
+                      type: string
+                      enum:
+                        - exterior_design
+                        - interior_comfort
+                        - seats
+                        - climate
+                        - infotainment_hmi
+                        - connectivity_digital
+                        - driver_assistance
+                        - dynamics_powertrain
+                        - range_charging
+                        - practicality
+                        - quality_materials
+                    type:
+                      type: string
+                      enum:
+                        - new_feature
+                        - fix_improve
+                        - performance_target
+                        - quality_perception
+                        - market_variant
+                        - brand_differentiator
+                        - regression
+                    changeDepth:
+                      type: string
+                      enum:
+                        - trim_option
+                        - part_module
+                        - platform_powertrain
+                        - software_ota
+                    featureName:
+                      type: string
+                    coOwnerIds:
+                      type: array
+                      items:
+                        type: string
+                        minLength: 1
+                    watcherIds:
+                      type: array
+                      items:
+                        type: string
+                        minLength: 1
+                    manualRank:
+                      anyOf:
+                        - type: integer
+                          minimum: -9007199254740991
+                          maximum: 9007199254740991
+                        - type: "null"
+                    manualRankReason:
+                      type: string
+                    brandFit:
+                      type: object
+                      properties:
+                        value:
+                          type: number
+                          minimum: 0
+                          maximum: 1
+                        reason:
+                          type: string
+                        confirmedBy:
+                          anyOf:
+                            - type: string
+                              minLength: 1
+                            - type: "null"
+                      required:
+                        - value
+                        - reason
+                        - confirmedBy
+                rationale:
+                  type: string
+              required:
+                - patch
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Case"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /cases/{id}/transition:
+    post:
+      operationId: transitionCase
+      summary: Move a case (state or outcome)
+      tags:
+        - cases
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  enum:
+                    - open
+                    - start
+                    - await
+                    - ready
+                    - reopen
+                    - confirm
+                    - refer
+                    - innovation
+                    - park
+                    - merge
+                    - reject
+                rationale:
+                  type: string
+                  minLength: 1
+                toUserId:
+                  type: string
+                mergeIntoId:
+                  type: string
+                horizon:
+                  type: string
+                  enum:
+                    - next_gen
+                    - gen_after
+                    - new_product
+                escalate:
+                  type: boolean
+              required:
+                - action
+                - rationale
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Case"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /cases/{id}/questions:
+    post:
+      operationId: createQuestion
+      summary: Add an open question
+      tags:
+        - cases
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                addressee:
+                  type: string
+                  enum:
+                    - engineering
+                    - finance
+                    - design
+                    - quality
+                    - market_pm
+                    - purchasing
+                    - other
+                contact:
+                  type: string
+                question:
+                  type: string
+                  minLength: 3
+                why:
+                  type: string
+                dueDate:
+                  type: string
+                fieldsAffected:
+                  type: array
+                  items:
+                    type: string
+              required:
+                - addressee
+                - question
+                - why
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenQuestion"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /cases/{id}/meeting-notes:
+    post:
+      operationId: addMeetingNote
+      summary: Paste meeting notes; AI proposes answers and field updates
+      tags:
+        - cases
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                date:
+                  type: string
+                attendees:
+                  type: array
+                  items:
+                    type: string
+                text:
+                  type: string
+                  minLength: 10
+              required:
+                - title
+                - date
+                - attendees
+                - text
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  note:
+                    $ref: "#/components/schemas/MeetingNote"
+                  proposals:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Proposal"
+                required:
+                  - note
+                  - proposals
+                additionalProperties: false
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /cases/{id}/requirements/generate:
+    post:
+      operationId: generateRequirements
+      summary: Draft requirement(s) from a confirmed case
+      tags:
+        - cases
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Requirement"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /cases/{id}/export.md:
+    get:
+      operationId: exportCaseMd
+      summary: Case as markdown with YAML front matter
+      tags:
+        - cases
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  filename:
+                    type: string
+                  content:
+                    type: string
+                required:
+                  - filename
+                  - content
+                additionalProperties: false
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /questions:
+    get:
+      operationId: questions
+      summary: Open questions (mine by default)
+      tags:
+        - questions
+      parameters:
+        - name: all
+          in: query
+          required: false
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OpenQuestion"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /questions/{id}:
+    patch:
+      operationId: patchQuestion
+      summary: Edit or answer a question
+      tags:
+        - questions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                addressee:
+                  type: string
+                  enum:
+                    - engineering
+                    - finance
+                    - design
+                    - quality
+                    - market_pm
+                    - purchasing
+                    - other
+                contact:
+                  type: string
+                question:
+                  type: string
+                why:
+                  type: string
+                status:
+                  type: string
+                  enum:
+                    - open
+                    - answered
+                    - dropped
+                answer:
+                  type: string
+                dueDate:
+                  type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenQuestion"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /requirements:
+    get:
+      operationId: requirements
+      summary: List requirements
+      tags:
+        - requirements
+      parameters:
+        - name: series
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - G60
+              - F70
+              - G70
+        - name: caseId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Requirement"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /requirements/{id}:
+    get:
+      operationId: requirementBundle
+      summary: Requirement with its case and evidence
+      tags:
+        - requirements
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requirement:
+                    $ref: "#/components/schemas/Requirement"
+                  case:
+                    $ref: "#/components/schemas/Case"
+                  signals:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Signal"
+                  questions:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/OpenQuestion"
+                  variants:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Requirement"
+                  alerts:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Alert"
+                  proposals:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Proposal"
+                  plannedFeature:
+                    anyOf:
+                      - $ref: "#/components/schemas/PlannedFeature"
+                      - type: "null"
+                required:
+                  - requirement
+                  - case
+                  - signals
+                  - questions
+                  - variants
+                  - alerts
+                  - proposals
+                  - plannedFeature
+                additionalProperties: false
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+    patch:
+      operationId: patchRequirement
+      summary: Edit a requirement
+      tags:
+        - requirements
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                patch:
+                  type: object
+                  properties:
+                    title:
+                      type: string
+                    description:
+                      type: string
+                    marketScope:
+                      type: string
+                      enum:
+                        - global
+                        - RoW
+                        - CN
+                    releaseTarget:
+                      type: string
+                      enum:
+                        - next_gen
+                        - lci
+                        - ota
+                    carArea:
+                      type: string
+                      enum:
+                        - exterior_design
+                        - interior_comfort
+                        - seats
+                        - climate
+                        - infotainment_hmi
+                        - connectivity_digital
+                        - driver_assistance
+                        - dynamics_powertrain
+                        - range_charging
+                        - practicality
+                        - quality_materials
+                    changeDepth:
+                      type: string
+                      enum:
+                        - trim_option
+                        - part_module
+                        - platform_powertrain
+                        - software_ota
+                    metrics:
+                      type: array
+                      items:
+                        $ref: "#/components/schemas/Metric"
+                    acceptanceCriteria:
+                      type: array
+                      items:
+                        type: string
+                    assumptions:
+                      type: array
+                      items:
+                        type: string
+                    evidenceLevel:
+                      type: string
+                      enum:
+                        - high
+                        - medium
+                        - low
+                        - assumption
+                    cost:
+                      type: object
+                      properties:
+                        size:
+                          type: string
+                          enum:
+                            - S
+                            - M
+                            - L
+                        eurBand:
+                          type: string
+                        source:
+                          type: string
+                          enum:
+                            - option_price
+                            - ai_estimate
+                            - pm
+                            - finance
+                        note:
+                          type: string
+                      required:
+                        - size
+                        - eurBand
+                        - source
+                        - note
+                    manualRank:
+                      anyOf:
+                        - type: integer
+                          minimum: -9007199254740991
+                          maximum: 9007199254740991
+                        - type: "null"
+                rationale:
+                  type: string
+                  minLength: 1
+              required:
+                - patch
+                - rationale
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Requirement"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /requirements/{id}/transition:
+    post:
+      operationId: transitionRequirement
+      summary: Move a requirement
+      tags:
+        - requirements
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  enum:
+                    - discuss
+                    - approve
+                    - send_back
+                    - sign_off
+                    - plan
+                    - export
+                    - reject
+                    - restore
+                rationale:
+                  type: string
+                  minLength: 1
+              required:
+                - action
+                - rationale
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Requirement"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /scores:
+    get:
+      operationId: scores
+      summary: Ranked cases and requirements for a weight profile
+      tags:
+        - scoring
+      parameters:
+        - name: profileId
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: series
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - G60
+              - F70
+              - G70
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profileId:
+                    type: string
+                  weights:
+                    type: object
+                    propertyNames:
+                      type: string
+                      enum:
+                        - customers
+                        - severity
+                        - satisfaction_gap
+                        - competitor_gap
+                        - market_volume
+                        - regression
+                        - trend
+                        - brand_fit
+                    additionalProperties:
+                      type: number
+                    required:
+                      - customers
+                      - severity
+                      - satisfaction_gap
+                      - competitor_gap
+                      - market_volume
+                      - regression
+                      - trend
+                      - brand_fit
+                  cases:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ScoredCase"
+                  requirements:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        requirementId:
+                          type: string
+                        score:
+                          type: number
+                        rank:
+                          type: integer
+                          minimum: -9007199254740991
+                          maximum: 9007199254740991
+                      required:
+                        - requirementId
+                        - score
+                        - rank
+                      additionalProperties: false
+                required:
+                  - profileId
+                  - weights
+                  - cases
+                  - requirements
+                additionalProperties: false
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /scores/preview:
+    post:
+      operationId: previewScores
+      summary: What-if ranking for unsaved weights
+      tags:
+        - scoring
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                weights:
+                  type: object
+                  propertyNames:
+                    type: string
+                    enum:
+                      - customers
+                      - severity
+                      - satisfaction_gap
+                      - competitor_gap
+                      - market_volume
+                      - regression
+                      - trend
+                      - brand_fit
+                  additionalProperties:
+                    type: number
+                series:
+                  type: string
+                  enum:
+                    - G60
+                    - F70
+                    - G70
+              required:
+                - weights
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profileId:
+                    type: string
+                  weights:
+                    type: object
+                    propertyNames:
+                      type: string
+                      enum:
+                        - customers
+                        - severity
+                        - satisfaction_gap
+                        - competitor_gap
+                        - market_volume
+                        - regression
+                        - trend
+                        - brand_fit
+                    additionalProperties:
+                      type: number
+                    required:
+                      - customers
+                      - severity
+                      - satisfaction_gap
+                      - competitor_gap
+                      - market_volume
+                      - regression
+                      - trend
+                      - brand_fit
+                  cases:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ScoredCase"
+                  requirements:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        requirementId:
+                          type: string
+                        score:
+                          type: number
+                        rank:
+                          type: integer
+                          minimum: -9007199254740991
+                          maximum: 9007199254740991
+                      required:
+                        - requirementId
+                        - score
+                        - rank
+                      additionalProperties: false
+                required:
+                  - profileId
+                  - weights
+                  - cases
+                  - requirements
+                additionalProperties: false
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /weight-profiles:
+    get:
+      operationId: weightProfiles
+      summary: Weight profiles
+      tags:
+        - scoring
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WeightProfile"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+    post:
+      operationId: createWeightProfile
+      summary: Create a weight profile
+      tags:
+        - scoring
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                weights:
+                  type: object
+                  propertyNames:
+                    type: string
+                    enum:
+                      - customers
+                      - severity
+                      - satisfaction_gap
+                      - competitor_gap
+                      - market_volume
+                      - regression
+                      - trend
+                      - brand_fit
+                  additionalProperties:
+                    type: number
+                    minimum: 0
+                    maximum: 1
+                  required:
+                    - customers
+                    - severity
+                    - satisfaction_gap
+                    - competitor_gap
+                    - market_volume
+                    - regression
+                    - trend
+                    - brand_fit
+                costMultiplier:
+                  type: object
+                  propertyNames:
+                    type: string
+                    enum:
+                      - S
+                      - M
+                      - L
+                  additionalProperties:
+                    type: number
+                  required:
+                    - S
+                    - M
+                    - L
+              required:
+                - name
+                - description
+                - weights
+                - costMultiplier
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WeightProfile"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /weight-profiles/{id}:
+    put:
+      operationId: saveWeightProfile
+      summary: Save a weight profile
+      tags:
+        - scoring
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                ownerId:
+                  anyOf:
+                    - type: string
+                      minLength: 1
+                    - type: "null"
+                isDefault:
+                  type: boolean
+                weights:
+                  type: object
+                  propertyNames:
+                    type: string
+                    enum:
+                      - customers
+                      - severity
+                      - satisfaction_gap
+                      - competitor_gap
+                      - market_volume
+                      - regression
+                      - trend
+                      - brand_fit
+                  additionalProperties:
+                    type: number
+                    minimum: 0
+                    maximum: 1
+                  required:
+                    - customers
+                    - severity
+                    - satisfaction_gap
+                    - competitor_gap
+                    - market_volume
+                    - regression
+                    - trend
+                    - brand_fit
+                costMultiplier:
+                  type: object
+                  propertyNames:
+                    type: string
+                    enum:
+                      - S
+                      - M
+                      - L
+                  additionalProperties:
+                    type: number
+                  required:
+                    - S
+                    - M
+                    - L
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WeightProfile"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /brand-profile:
+    get:
+      operationId: brandProfile
+      summary: Current BMW brand profile
+      tags:
+        - scoring
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BrandProfile"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+    put:
+      operationId: saveBrandProfile
+      summary: New brand profile version (head only)
+      tags:
+        - scoring
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pillars:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/BrandPillar"
+                doNot:
+                  type: array
+                  items:
+                    type: string
+                notesMd:
+                  type: string
+              required:
+                - pillars
+                - doNot
+                - notesMd
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BrandProfile"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /referrals:
+    get:
+      operationId: referrals
+      summary: "Referrals and escalations involving me (head: all)"
+      tags:
+        - routing
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Referral"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /referrals/{id}/decide:
+    post:
+      operationId: decideReferral
+      summary: Accept, decline, escalate or resolve
+      tags:
+        - routing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                decision:
+                  type: string
+                  enum:
+                    - accept
+                    - decline
+                    - escalate
+                    - resolve
+                rationale:
+                  type: string
+                  minLength: 1
+                resolution:
+                  type: string
+                  enum:
+                    - one_market
+                    - variant
+                    - keep_both
+                    - take_over
+                    - return
+              required:
+                - decision
+                - rationale
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Referral"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /innovation:
+    get:
+      operationId: innovation
+      summary: Innovation pool
+      tags:
+        - routing
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    meta:
+                      $ref: "#/components/schemas/InnovationMeta"
+                    case:
+                      $ref: "#/components/schemas/Case"
+                  required:
+                    - meta
+                    - case
+                  additionalProperties: false
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /innovation/{caseId}/vote:
+    post:
+      operationId: voteInnovation
+      summary: Toggle my vote
+      tags:
+        - routing
+      parameters:
+        - name: caseId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InnovationMeta"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /innovation/{caseId}/pull:
+    post:
+      operationId: pullInnovation
+      summary: Pull an innovation item into my series as a linked case
+      tags:
+        - routing
+      parameters:
+        - name: caseId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                series:
+                  type: string
+                  enum:
+                    - G60
+                    - F70
+                    - G70
+                rationale:
+                  type: string
+                  minLength: 1
+              required:
+                - series
+                - rationale
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Case"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /plans/{series}:
+    get:
+      operationId: plan
+      summary: Successor vehicle plan
+      tags:
+        - plan
+      parameters:
+        - name: series
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VehiclePlan"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /plans/{series}/features/{featureId}:
+    patch:
+      operationId: patchPlanFeature
+      summary: Edit a planned feature
+      tags:
+        - plan
+      parameters:
+        - name: series
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: featureId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                patch:
+                  type: object
+                  properties:
+                    action:
+                      type: string
+                      enum:
+                        - keep
+                        - new
+                        - improve
+                        - remove
+                    note:
+                      type: string
+                    release:
+                      type: string
+                      enum:
+                        - next_gen
+                        - lci
+                        - ota
+                    protected:
+                      type: boolean
+                rationale:
+                  type: string
+                  minLength: 1
+              required:
+                - patch
+                - rationale
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VehiclePlan"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /exports:
+    post:
+      operationId: exportRequirements
+      summary: Export approved requirements (Codebeamer CSV or JSON)
+      tags:
+        - plan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                series:
+                  type: string
+                  enum:
+                    - G60
+                    - F70
+                    - G70
+                format:
+                  type: string
+                  enum:
+                    - codebeamer_csv
+                    - json
+                requirementIds:
+                  type: array
+                  items:
+                    type: string
+              required:
+                - series
+                - format
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  filename:
+                    type: string
+                  mime:
+                    type: string
+                  content:
+                    type: string
+                  count:
+                    type: integer
+                    minimum: -9007199254740991
+                    maximum: 9007199254740991
+                required:
+                  - filename
+                  - mime
+                  - content
+                  - count
+                additionalProperties: false
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /threads/{type}/{id}/messages:
+    get:
+      operationId: messages
+      summary: AI chat thread of a case or requirement
+      tags:
+        - conversation
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChatMessage"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+    post:
+      operationId: postMessage
+      summary: Ask the AI; returns its answer and any proposals
+      tags:
+        - conversation
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  minLength: 1
+              required:
+                - content
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ChatMessage"
+                  proposals:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Proposal"
+                required:
+                  - messages
+                  - proposals
+                additionalProperties: false
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /proposals/{id}/decide:
+    post:
+      operationId: decideProposal
+      summary: Accept or reject an AI proposal
+      tags:
+        - conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                decision:
+                  type: string
+                  enum:
+                    - accept
+                    - reject
+                rationale:
+                  type: string
+              required:
+                - decision
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Proposal"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /comments:
+    get:
+      operationId: comments
+      summary: Comments on an object
+      tags:
+        - conversation
+      parameters:
+        - name: objectType
+          in: query
+          required: true
+          schema:
+            type: string
+            enum:
+              - case
+              - requirement
+        - name: objectId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Comment"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+    post:
+      operationId: addComment
+      summary: Comment with @mentions
+      tags:
+        - conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                objectType:
+                  type: string
+                  enum:
+                    - case
+                    - requirement
+                objectId:
+                  type: string
+                body:
+                  type: string
+                  minLength: 1
+              required:
+                - objectType
+                - objectId
+                - body
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comment"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /notifications:
+    get:
+      operationId: notifications
+      summary: My notifications
+      tags:
+        - inbox
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /notifications/read:
+    post:
+      operationId: readNotifications
+      summary: Mark as read (all if ids omitted)
+      tags:
+        - inbox
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    const: true
+                required:
+                  - ok
+                additionalProperties: false
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /alerts:
+    get:
+      operationId: alerts
+      summary: Monitoring alerts
+      tags:
+        - inbox
+      parameters:
+        - name: all
+          in: query
+          required: false
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Alert"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /alerts/{id}/resolve:
+    post:
+      operationId: resolveAlert
+      summary: Dismiss or send to rework
+      tags:
+        - inbox
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum:
+                    - dismissed
+                    - rework
+                rationale:
+                  type: string
+                  minLength: 1
+              required:
+                - status
+                - rationale
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Alert"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /audit:
+    get:
+      operationId: audit
+      summary: Append-only audit log
+      tags:
+        - oversight
+      parameters:
+        - name: objectId
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: actorType
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - human
+              - ai
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: -9007199254740991
+            maximum: 9007199254740991
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuditEvent"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /portfolio:
+    get:
+      operationId: portfolio
+      summary: Portfolio overview for the head of product line
+      tags:
+        - oversight
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  series:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        series:
+                          type: string
+                          enum:
+                            - G60
+                            - F70
+                            - G70
+                        name:
+                          type: string
+                        ownerIds:
+                          type: array
+                          items:
+                            type: string
+                        casesByState:
+                          type: object
+                          propertyNames:
+                            type: string
+                            enum:
+                              - observed
+                              - new
+                              - investigating
+                              - awaiting_answers
+                              - ready
+                              - decided
+                          additionalProperties:
+                            type: number
+                          required:
+                            - observed
+                            - new
+                            - investigating
+                            - awaiting_answers
+                            - ready
+                            - decided
+                        casesByOutcome:
+                          type: object
+                          propertyNames:
+                            type: string
+                          additionalProperties:
+                            type: number
+                        requirementsByStatus:
+                          type: object
+                          propertyNames:
+                            type: string
+                            enum:
+                              - draft
+                              - in_discussion
+                              - pm_approved
+                              - signed_off
+                              - planned
+                              - exported
+                              - rejected
+                          additionalProperties:
+                            type: number
+                          required:
+                            - draft
+                            - in_discussion
+                            - pm_approved
+                            - signed_off
+                            - planned
+                            - exported
+                            - rejected
+                        topRequirements:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                              title:
+                                type: string
+                              score:
+                                type: number
+                              status:
+                                type: string
+                                enum:
+                                  - draft
+                                  - in_discussion
+                                  - pm_approved
+                                  - signed_off
+                                  - planned
+                                  - exported
+                                  - rejected
+                            required:
+                              - id
+                              - title
+                              - score
+                              - status
+                            additionalProperties: false
+                        staleCases:
+                          type: number
+                        conflicts:
+                          type: number
+                        openAlerts:
+                          type: number
+                        volume2030:
+                          type: object
+                          propertyNames:
+                            type: string
+                          additionalProperties:
+                            type: number
+                      required:
+                        - series
+                        - name
+                        - ownerIds
+                        - casesByState
+                        - casesByOutcome
+                        - requirementsByStatus
+                        - topRequirements
+                        - staleCases
+                        - conflicts
+                        - openAlerts
+                        - volume2030
+                      additionalProperties: false
+                  workload:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        userId:
+                          type: string
+                        activeCases:
+                          type: number
+                        openQuestions:
+                          type: number
+                        pendingReferrals:
+                          type: number
+                        awaitingSignOff:
+                          type: number
+                      required:
+                        - userId
+                        - activeCases
+                        - openQuestions
+                        - pendingReferrals
+                        - awaitingSignOff
+                      additionalProperties: false
+                required:
+                  - series
+                  - workload
+                additionalProperties: false
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /admin/reset:
+    post:
+      operationId: reset
+      summary: Reset the mock store to the seed
+      tags:
+        - oversight
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    const: true
+                required:
+                  - ok
+                additionalProperties: false
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+components:
+  securitySchemes:
+    userHeader:
+      type: apiKey
+      in: header
+      name: x-user-id
+      description: "Mock auth: the acting user's id. The real backend uses a bearer token."
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+        name:
+          type: string
+        initials:
+          type: string
+        role:
+          type: string
+          enum:
+            - vehicle_pm
+            - attribute_pm
+            - head
+        title:
+          type: string
+        series:
+          type: array
+          items:
+            type: string
+            enum:
+              - G60
+              - F70
+              - G70
+        region:
+          type: string
+          enum:
+            - global
+            - RoW
+            - CN
+        attributeScope:
+          type: string
+        color:
+          type: string
+        synthetic:
+          type: boolean
+      required:
+        - id
+        - name
+        - initials
+        - role
+        - title
+        - series
+        - region
+        - color
+        - synthetic
+      additionalProperties: false
+    Workspace:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+        userId:
+          type: string
+          minLength: 1
+        series:
+          type: string
+          enum:
+            - G60
+            - F70
+            - G70
+        region:
+          type: string
+          enum:
+            - global
+            - RoW
+            - CN
+        projectType:
+          type: string
+          enum:
+            - new_gen
+            - lci
+        weightProfileId:
+          type: string
+          minLength: 1
+        sourceFilter:
+          $ref: "#/components/schemas/SourceFilter"
+        watchlist:
+          $ref: "#/components/schemas/Watchlist"
+      required:
+        - id
+        - userId
+        - series
+        - region
+        - projectType
+        - weightProfileId
+        - sourceFilter
+        - watchlist
+      additionalProperties: false
+    SourceFilter:
+      type: object
+      properties:
+        excludeSocial:
+          type: boolean
+        ownersOnly:
+          type: boolean
+        minTrust:
+          type: string
+          enum:
+            - A
+            - B
+            - C
+            - D
+            - E
+      required:
+        - excludeSocial
+        - ownersOnly
+        - minTrust
+      additionalProperties: false
+    Watchlist:
+      type: object
+      properties:
+        competitors:
+          type: array
+          items:
+            type: string
+        topics:
+          type: array
+          items:
+            type: string
+        domains:
+          type: array
+          items:
+            type: string
+        languages:
+          type: array
+          items:
+            type: string
+      required:
+        - competitors
+        - topics
+        - domains
+        - languages
+      additionalProperties: false
+    WeightProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+        name:
+          type: string
+        description:
+          type: string
+        ownerId:
+          anyOf:
+            - type: string
+              minLength: 1
+            - type: "null"
+        isDefault:
+          type: boolean
+        weights:
+          type: object
+          propertyNames:
+            type: string
+            enum:
+              - customers
+              - severity
+              - satisfaction_gap
+              - competitor_gap
+              - market_volume
+              - regression
+              - trend
+              - brand_fit
+          additionalProperties:
+            type: number
+            minimum: 0
+            maximum: 1
+          required:
+            - customers
+            - severity
+            - satisfaction_gap
+            - competitor_gap
+            - market_volume
+            - regression
+            - trend
+            - brand_fit
+        costMultiplier:
+          type: object
+          propertyNames:
+            type: string
+            enum:
+              - S
+              - M
+              - L
+          additionalProperties:
+            type: number
+          required:
+            - S
+            - M
+            - L
+      required:
+        - id
+        - name
+        - description
+        - ownerId
+        - isDefault
+        - weights
+        - costMultiplier
+      additionalProperties: false
+    Signal:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+        kind:
+          type: string
+          enum:
+            - complaint
+            - wish
+            - like
+            - competitor_fact
+            - trend
+            - innovation
+        severity:
+          type: string
+          enum:
+            - defect
+            - difficult_to_use
+            - wish
+            - none
+        agent:
+          type: string
+          enum:
+            - bmw_data
+            - competitor
+            - customer_public
+            - trends
+            - innovation_scout
+        sourceType:
+          type: string
+          enum:
+            - bmw_feedback
+            - bmw_study
+            - bmw_sales
+            - option_list
+            - review
+            - video
+            - forum
+            - social
+            - news
+            - competitor_official
+            - trend_report
+            - trade_fair
+        sourceName:
+          type: string
+        trust:
+          type: string
+          enum:
+            - A
+            - B
+            - C
+            - D
+            - E
+        url:
+          type: string
+        recordRef:
+          type: string
+        publishedAt:
+          type: string
+        fetchedAt:
+          type: string
+        series:
+          type: string
+          enum:
+            - G60
+            - F70
+            - G70
+        vehicleRole:
+          type: string
+          enum:
+            - current
+            - predecessor
+            - competitor
+            - unknown
+        competitor:
+          type: string
+        powertrain:
+          type: string
+          enum:
+            - ICE
+            - PHEV
+            - BEV
+            - unknown
+        market:
+          type: string
+          enum:
+            - EU
+            - US
+            - CN
+            - RoW
+            - unknown
+        marketBasis:
+          type: string
+          enum:
+            - stated
+            - inferred
+            - unknown
+        country:
+          type: string
+        carArea:
+          type: string
+          enum:
+            - exterior_design
+            - interior_comfort
+            - seats
+            - climate
+            - infotainment_hmi
+            - connectivity_digital
+            - driver_assistance
+            - dynamics_powertrain
+            - range_charging
+            - practicality
+            - quality_materials
+        featureHint:
+          type: string
+        summary:
+          type: string
+        quote:
+          type: string
+        quoteEn:
+          type: string
+        language:
+          type: string
+        audience:
+          type: string
+          enum:
+            - owner
+            - reviewer
+            - public
+        reach:
+          type: number
+        reachUnit:
+          type: string
+          enum:
+            - views
+            - upvotes
+            - likes
+            - none
+        metric:
+          $ref: "#/components/schemas/SignalMetric"
+        caseId:
+          anyOf:
+            - type: string
+              minLength: 1
+            - type: "null"
+        status:
+          type: string
+          enum:
+            - new
+            - clustered
+            - unclustered
+            - quarantined
+        synthetic:
+          type: boolean
+      required:
+        - id
+        - kind
+        - severity
+        - agent
+        - sourceType
+        - sourceName
+        - trust
+        - publishedAt
+        - fetchedAt
+        - series
+        - vehicleRole
+        - powertrain
+        - market
+        - marketBasis
+        - carArea
+        - featureHint
+        - summary
+        - quote
+        - language
+        - audience
+        - caseId
+        - status
+        - synthetic
+      additionalProperties: false
+    SignalMetric:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: number
+        unit:
+          type: string
+        cycle:
+          type: string
+      required:
+        - name
+        - value
+        - unit
+      additionalProperties: false
+    SignalCluster:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+        label:
+          type: string
+        series:
+          type: string
+          enum:
+            - G60
+            - F70
+            - G70
+        carArea:
+          type: string
+          enum:
+            - exterior_design
+            - interior_comfort
+            - seats
+            - climate
+            - infotainment_hmi
+            - connectivity_digital
+            - driver_assistance
+            - dynamics_powertrain
+            - range_charging
+            - practicality
+            - quality_materials
+        size:
+          type: integer
+          minimum: -9007199254740991
+          maximum: 9007199254740991
+        sentiment:
+          type: number
+          minimum: -1
+          maximum: 1
+        markets:
+          type: object
+          propertyNames:
+            type: string
+          additionalProperties:
+            type: number
+        caseId:
+          anyOf:
+            - type: string
+              minLength: 1
+            - type: "null"
+        signalIds:
+          type: array
+          items:
+            type: string
+            minLength: 1
+      required:
+        - id
+        - label
+        - series
+        - carArea
+        - size
+        - sentiment
+        - markets
+        - caseId
+        - signalIds
+      additionalProperties: false
+    AgentRun:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+        agent:
+          type: string
+          enum:
+            - bmw_data
+            - competitor
+            - customer_public
+            - trends
+            - innovation_scout
+        series:
+          type: string
+          enum:
+            - G60
+            - F70
+            - G70
+        startedAt:
+          type: string
+        endedAt:
+          type: string
+        status:
+          type: string
+          enum:
+            - ok
+            - partial
+            - failed
+        valid:
+          type: integer
+          minimum: -9007199254740991
+          maximum: 9007199254740991
+        rejected:
+          type: integer
+          minimum: -9007199254740991
+          maximum: 9007199254740991
+        newSignals:
+          type: integer
+          minimum: -9007199254740991
+          maximum: 9007199254740991
+        llmCostUsd:
+          type: number
+        note:
+          type: string
+      required:
+        - id
+        - agent
+        - series
+        - startedAt
+        - endedAt
+        - status
+        - valid
+        - rejected
+        - newSignals
+        - llmCostUsd
+      additionalProperties: false
+    QuarantineItem:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+        agent:
+          type: string
+          enum:
+            - bmw_data
+            - competitor
+            - customer_public
+            - trends
+            - innovation_scout
+        sourceName:
+          type: string
+        snippet:
+          type: string
+        reason:
+          type: string
+        at:
+          type: string
+      required:
+        - id
+        - agent
+        - sourceName
+        - snippet
+        - reason
+        - at
+      additionalProperties: false
+    Case:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+        title:
+          type: string
+        summary:
+          type: string
+        series:
+          type: string
+          enum:
+            - G60
+            - F70
+            - G70
+        relatedSeries:
+          type: array
+          items:
+            type: string
+            enum:
+              - G60
+              - F70
+              - G70
+        scope:
+          type: string
+          enum:
+            - global
+            - RoW
+            - CN
+        ownerId:
+          type: string
+          minLength: 1
+        coOwnerIds:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        watcherIds:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        state:
+          type: string
+          enum:
+            - observed
+            - new
+            - investigating
+            - awaiting_answers
+            - ready
+            - decided
+        outcome:
+          anyOf:
+            - type: string
+              enum:
+                - confirmed
+                - referred
+                - innovation_pool
+                - parked
+                - merged
+                - rejected
+            - type: "null"
+        outcomeNote:
+          type: string
+        markets:
+          type: array
+          items:
+            type: string
+            enum:
+              - EU
+              - US
+              - CN
+              - RoW
+              - unknown
+        carArea:
+          type: string
+          enum:
+            - exterior_design
+            - interior_comfort
+            - seats
+            - climate
+            - infotainment_hmi
+            - connectivity_digital
+            - driver_assistance
+            - dynamics_powertrain
+            - range_charging
+            - practicality
+            - quality_materials
+        type:
+          type: string
+          enum:
+            - new_feature
+            - fix_improve
+            - performance_target
+            - quality_perception
+            - market_variant
+            - brand_differentiator
+            - regression
+        changeDepth:
+          type: string
+          enum:
+            - trim_option
+            - part_module
+            - platform_powertrain
+            - software_ota
+        featureName:
+          type: string
+        bodyMd:
+          type: string
+        bodyVersion:
+          type: integer
+          minimum: -9007199254740991
+          maximum: 9007199254740991
+        signalIds:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        figures:
+          type: object
+          properties:
+            perMarket:
+              type: array
+              items:
+                $ref: "#/components/schemas/MarketFigure"
+            equipmentToday:
+              type: string
+            competitorOffer:
+              type: array
+              items:
+                type: string
+            trend:
+              type: string
+          required:
+            - perMarket
+            - equipmentToday
+            - competitorOffer
+            - trend
+          additionalProperties: false
+        marketConflict:
+          anyOf:
+            - type: object
+              properties:
+                note:
+                  type: string
+                markets:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - EU
+                      - US
+                      - CN
+                      - RoW
+                      - unknown
+              required:
+                - note
+                - markets
+              additionalProperties: false
+            - type: "null"
+        brandFit:
+          type: object
+          properties:
+            value:
+              type: number
+              minimum: 0
+              maximum: 1
+            reason:
+              type: string
+            confirmedBy:
+              anyOf:
+                - type: string
+                  minLength: 1
+                - type: "null"
+          required:
+            - value
+            - reason
+            - confirmedBy
+          additionalProperties: false
+        factors:
+          type: object
+          propertyNames:
+            type: string
+            enum:
+              - customers
+              - severity
+              - satisfaction_gap
+              - competitor_gap
+              - market_volume
+              - regression
+              - trend
+              - brand_fit
+          additionalProperties:
+            type: number
+            minimum: 0
+            maximum: 1
+          required:
+            - customers
+            - severity
+            - satisfaction_gap
+            - competitor_gap
+            - market_volume
+            - regression
+            - trend
+            - brand_fit
+        evidenceLevel:
+          type: string
+          enum:
+            - high
+            - medium
+            - low
+            - assumption
+        context:
+          type: object
+          properties:
+            preset:
+              type: array
+              items:
+                $ref: "#/components/schemas/ContextItem"
+            pmInputs:
+              type: array
+              items:
+                $ref: "#/components/schemas/ContextItem"
+          required:
+            - preset
+            - pmInputs
+          additionalProperties: false
+        originCaseId:
+          anyOf:
+            - type: string
+              minLength: 1
+            - type: "null"
+        mergedInto:
+          anyOf:
+            - type: string
+              minLength: 1
+            - type: "null"
+        requirementIds:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        manualRank:
+          anyOf:
+            - type: integer
+              minimum: -9007199254740991
+              maximum: 9007199254740991
+            - type: "null"
+        manualRankReason:
+          type: string
+        newSignalCount:
+          type: integer
+          minimum: -9007199254740991
+          maximum: 9007199254740991
+        createdAt:
+          type: string
+        createdBy:
+          type: string
+        updatedAt:
+          type: string
+        synthetic:
+          type: boolean
+      required:
+        - id
+        - title
+        - summary
+        - series
+        - relatedSeries
+        - scope
+        - ownerId
+        - coOwnerIds
+        - watcherIds
+        - state
+        - outcome
+        - markets
+        - carArea
+        - type
+        - changeDepth
+        - featureName
+        - bodyMd
+        - bodyVersion
+        - signalIds
+        - figures
+        - marketConflict
+        - brandFit
+        - factors
+        - evidenceLevel
+        - context
+        - originCaseId
+        - mergedInto
+        - requirementIds
+        - manualRank
+        - newSignalCount
+        - createdAt
+        - createdBy
+        - updatedAt
+        - synthetic
+      additionalProperties: false
+    MarketFigure:
+      type: object
+      properties:
+        market:
+          type: string
+          enum:
+            - EU
+            - US
+            - CN
+            - RoW
+            - unknown
+        customers:
+          type: integer
+          minimum: -9007199254740991
+          maximum: 9007199254740991
+        complaints:
+          type: integer
+          minimum: -9007199254740991
+          maximum: 9007199254740991
+        wishes:
+          type: integer
+          minimum: -9007199254740991
+          maximum: 9007199254740991
+        likes:
+          type: integer
+          minimum: -9007199254740991
+          maximum: 9007199254740991
+        studyLabel:
+          type: string
+        studyScore:
+          type: string
+        salesShare2030:
+          type: number
+        sentiment:
+          type: number
+          minimum: -1
+          maximum: 1
+      required:
+        - market
+        - customers
+        - complaints
+        - wishes
+        - likes
+        - sentiment
+      additionalProperties: false
+    ContextItem:
+      type: object
+      properties:
+        kind:
+          type: string
+          enum:
+            - brand
+            - baseline
+            - past_decision
+            - study
+            - sales
+            - competitor
+            - note
+            - meeting
+            - answer
+            - diff
+        label:
+          type: string
+        detail:
+          type: string
+        ref:
+          type: string
+        at:
+          type: string
+      required:
+        - kind
+        - label
+        - detail
+      additionalProperties: false
+    OpenQuestion:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+        objectType:
+          type: string
+          enum:
+            - case
+            - requirement
+        objectId:
+          type: string
+          minLength: 1
+        addressee:
+          type: string
+          enum:
+            - engineering
+            - finance
+            - design
+            - quality
+            - market_pm
+            - purchasing
+            - other
+        contact:
+          type: string
+        question:
+          type: string
+        why:
+          type: string
+        status:
+          type: string
+          enum:
+            - open
+            - answered
+            - dropped
+        answer:
+          type: string
+        answerSource:
+          type: string
+          enum:
+            - meeting_note
+            - chat
+            - manual
+        answeredAt:
+          type: string
+        dueDate:
+          type: string
+        askedBy:
+          type: string
+          minLength: 1
+        createdAt:
+          type: string
+        fieldsAffected:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - objectType
+        - objectId
+        - addressee
+        - question
+        - why
+        - status
+        - askedBy
+        - createdAt
+        - fieldsAffected
+      additionalProperties: false
+    Requirement:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+        caseId:
+          type: string
+          minLength: 1
+        series:
+          type: string
+          enum:
+            - G60
+            - F70
+            - G70
+        title:
+          type: string
+        description:
+          type: string
+        marketScope:
+          type: string
+          enum:
+            - global
+            - RoW
+            - CN
+        variantOf:
+          anyOf:
+            - type: string
+              minLength: 1
+            - type: "null"
+        status:
+          type: string
+          enum:
+            - draft
+            - in_discussion
+            - pm_approved
+            - signed_off
+            - planned
+            - exported
+            - rejected
+        releaseTarget:
+          type: string
+          enum:
+            - next_gen
+            - lci
+            - ota
+        carArea:
+          type: string
+          enum:
+            - exterior_design
+            - interior_comfort
+            - seats
+            - climate
+            - infotainment_hmi
+            - connectivity_digital
+            - driver_assistance
+            - dynamics_powertrain
+            - range_charging
+            - practicality
+            - quality_materials
+        changeDepth:
+          type: string
+          enum:
+            - trim_option
+            - part_module
+            - platform_powertrain
+            - software_ota
+        metrics:
+          type: array
+          items:
+            $ref: "#/components/schemas/Metric"
+        acceptanceCriteria:
+          type: array
+          items:
+            type: string
+        assumptions:
+          type: array
+          items:
+            type: string
+        evidenceLevel:
+          type: string
+          enum:
+            - high
+            - medium
+            - low
+            - assumption
+        cost:
+          type: object
+          properties:
+            size:
+              type: string
+              enum:
+                - S
+                - M
+                - L
+            eurBand:
+              type: string
+            source:
+              type: string
+              enum:
+                - option_price
+                - ai_estimate
+                - pm
+                - finance
+            note:
+              type: string
+          required:
+            - size
+            - eurBand
+            - source
+            - note
+          additionalProperties: false
+        ownerId:
+          type: string
+          minLength: 1
+        manualRank:
+          anyOf:
+            - type: integer
+              minimum: -9007199254740991
+              maximum: 9007199254740991
+            - type: "null"
+        plannedFeatureId:
+          anyOf:
+            - type: string
+              minLength: 1
+            - type: "null"
+        sentBackReason:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        synthetic:
+          type: boolean
+      required:
+        - id
+        - caseId
+        - series
+        - title
+        - description
+        - marketScope
+        - variantOf
+        - status
+        - releaseTarget
+        - carArea
+        - changeDepth
+        - metrics
+        - acceptanceCriteria
+        - assumptions
+        - evidenceLevel
+        - cost
+        - ownerId
+        - manualRank
+        - plannedFeatureId
+        - createdAt
+        - updatedAt
+        - synthetic
+      additionalProperties: false
+    Metric:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+        question:
+          type: string
+        target:
+          type: string
+        unit:
+          type: string
+        basis:
+          type: string
+          enum:
+            - evidence
+            - assumption
+        benchmark:
+          type: string
+      required:
+        - id
+        - question
+        - target
+        - basis
+      additionalProperties: false
+    Referral:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+        kind:
+          type: string
+          enum:
+            - referral
+            - escalation
+        caseId:
+          type: string
+          minLength: 1
+        fromUserId:
+          type: string
+          minLength: 1
+        toUserId:
+          type: string
+          minLength: 1
+        note:
+          type: string
+        status:
+          type: string
+          enum:
+            - pending
+            - accepted
+            - declined
+            - escalated
+            - resolved
+        createdAt:
+          type: string
+        decidedAt:
+          type: string
+        declineReason:
+          type: string
+        linkedCaseId:
+          anyOf:
+            - type: string
+              minLength: 1
+            - type: "null"
+        resolution:
+          type: string
+      required:
+        - id
+        - kind
+        - caseId
+        - fromUserId
+        - toUserId
+        - note
+        - status
+        - createdAt
+        - linkedCaseId
+      additionalProperties: false
+    Alert:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+        ownerId:
+          type: string
+          minLength: 1
+        caseId:
+          anyOf:
+            - type: string
+              minLength: 1
+            - type: "null"
+        requirementId:
+          anyOf:
+            - type: string
+              minLength: 1
+            - type: "null"
+        verdict:
+          type: string
+          enum:
+            - supports
+            - contradicts
+            - raises_the_bar
+        title:
+          type: string
+        detail:
+          type: string
+        signalIds:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        status:
+          type: string
+          enum:
+            - open
+            - dismissed
+            - rework
+        resolution:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - ownerId
+        - caseId
+        - requirementId
+        - verdict
+        - title
+        - detail
+        - signalIds
+        - status
+        - createdAt
+      additionalProperties: false
+    MeetingNote:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+        caseId:
+          type: string
+          minLength: 1
+        title:
+          type: string
+        date:
+          type: string
+        attendees:
+          type: array
+          items:
+            type: string
+        text:
+          type: string
+        createdBy:
+          type: string
+          minLength: 1
+        proposalIds:
+          type: array
+          items:
+            type: string
+            minLength: 1
+      required:
+        - id
+        - caseId
+        - title
+        - date
+        - attendees
+        - text
+        - createdBy
+        - proposalIds
+      additionalProperties: false
+    Proposal:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+        objectType:
+          type: string
+          enum:
+            - case
+            - requirement
+        objectId:
+          type: string
+          minLength: 1
+        source:
+          type: string
+          enum:
+            - chat
+            - meeting_note
+            - monitor
+        kind:
+          type: string
+          enum:
+            - field
+            - body
+            - question_answer
+            - new_question
+            - new_requirement
+        summary:
+          type: string
+        changes:
+          type: array
+          items:
+            $ref: "#/components/schemas/FieldChange"
+        questionId:
+          type: string
+          minLength: 1
+        citations:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum:
+            - pending
+            - accepted
+            - rejected
+        createdAt:
+          type: string
+        decidedBy:
+          type: string
+          minLength: 1
+        decidedAt:
+          type: string
+      required:
+        - id
+        - objectType
+        - objectId
+        - source
+        - kind
+        - summary
+        - changes
+        - citations
+        - status
+        - createdAt
+      additionalProperties: false
+    FieldChange:
+      type: object
+      properties:
+        field:
+          type: string
+        before: {}
+        after: {}
+      required:
+        - field
+        - before
+        - after
+      additionalProperties: false
+    PlannedFeature:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+        carArea:
+          type: string
+          enum:
+            - exterior_design
+            - interior_comfort
+            - seats
+            - climate
+            - infotainment_hmi
+            - connectivity_digital
+            - driver_assistance
+            - dynamics_powertrain
+            - range_charging
+            - practicality
+            - quality_materials
+        name:
+          type: string
+        today:
+          type: string
+          enum:
+            - standard
+            - optional
+            - absent
+            - removed
+        todayDetail:
+          type: string
+        action:
+          type: string
+          enum:
+            - keep
+            - new
+            - improve
+            - remove
+        requirementIds:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        release:
+          type: string
+          enum:
+            - next_gen
+            - lci
+            - ota
+        protected:
+          type: boolean
+        note:
+          type: string
+      required:
+        - id
+        - carArea
+        - name
+        - today
+        - todayDetail
+        - action
+        - requirementIds
+        - release
+        - protected
+        - note
+      additionalProperties: false
+    ScoredCase:
+      type: object
+      properties:
+        caseId:
+          type: string
+          minLength: 1
+        profileId:
+          type: string
+          minLength: 1
+        score:
+          type: number
+        rank:
+          type: integer
+          minimum: -9007199254740991
+          maximum: 9007199254740991
+        contributions:
+          type: object
+          propertyNames:
+            type: string
+            enum:
+              - customers
+              - severity
+              - satisfaction_gap
+              - competitor_gap
+              - market_volume
+              - regression
+              - trend
+              - brand_fit
+          additionalProperties:
+            type: number
+            minimum: 0
+            maximum: 1
+          required:
+            - customers
+            - severity
+            - satisfaction_gap
+            - competitor_gap
+            - market_volume
+            - regression
+            - trend
+            - brand_fit
+      required:
+        - caseId
+        - profileId
+        - score
+        - rank
+        - contributions
+      additionalProperties: false
+    BrandProfile:
+      type: object
+      properties:
+        version:
+          type: integer
+          minimum: -9007199254740991
+          maximum: 9007199254740991
+        updatedAt:
+          type: string
+        updatedBy:
+          type: string
+          minLength: 1
+        pillars:
+          type: array
+          items:
+            $ref: "#/components/schemas/BrandPillar"
+        doNot:
+          type: array
+          items:
+            type: string
+        notesMd:
+          type: string
+      required:
+        - version
+        - updatedAt
+        - updatedBy
+        - pillars
+        - doNot
+        - notesMd
+      additionalProperties: false
+    BrandPillar:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+      required:
+        - name
+        - description
+      additionalProperties: false
+    InnovationMeta:
+      type: object
+      properties:
+        caseId:
+          type: string
+          minLength: 1
+        horizon:
+          type: string
+          enum:
+            - next_gen
+            - gen_after
+            - new_product
+        votes:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        interestedSeries:
+          type: array
+          items:
+            type: string
+            enum:
+              - G60
+              - F70
+              - G70
+        pulledInto:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        pitch:
+          type: string
+      required:
+        - caseId
+        - horizon
+        - votes
+        - interestedSeries
+        - pulledInto
+        - pitch
+      additionalProperties: false
+    VehiclePlan:
+      type: object
+      properties:
+        series:
+          type: string
+          enum:
+            - G60
+            - F70
+            - G70
+        successorName:
+          type: string
+        projectType:
+          type: string
+          enum:
+            - new_gen
+            - lci
+        sop:
+          type: string
+        ownerIds:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        features:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlannedFeature"
+      required:
+        - series
+        - successorName
+        - projectType
+        - sop
+        - ownerIds
+        - features
+      additionalProperties: false
+    ChatMessage:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+        objectType:
+          type: string
+          enum:
+            - case
+            - requirement
+        objectId:
+          type: string
+          minLength: 1
+        role:
+          type: string
+          enum:
+            - user
+            - assistant
+        authorId:
+          type: string
+          minLength: 1
+        content:
+          type: string
+        citations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Citation"
+        proposalIds:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        createdAt:
+          type: string
+      required:
+        - id
+        - objectType
+        - objectId
+        - role
+        - content
+        - citations
+        - proposalIds
+        - createdAt
+      additionalProperties: false
+    Citation:
+      type: object
+      properties:
+        ref:
+          type: string
+        label:
+          type: string
+      required:
+        - ref
+        - label
+      additionalProperties: false
+    Comment:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+        objectType:
+          type: string
+          enum:
+            - case
+            - requirement
+        objectId:
+          type: string
+          minLength: 1
+        authorId:
+          type: string
+          minLength: 1
+        body:
+          type: string
+        mentions:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        createdAt:
+          type: string
+      required:
+        - id
+        - objectType
+        - objectId
+        - authorId
+        - body
+        - mentions
+        - createdAt
+      additionalProperties: false
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+        userId:
+          type: string
+          minLength: 1
+        kind:
+          type: string
+          enum:
+            - alert
+            - mention
+            - referral
+            - question_answered
+            - sign_off_request
+            - sent_back
+            - new_signals
+            - escalation
+        title:
+          type: string
+        body:
+          type: string
+        link:
+          type: string
+        actorId:
+          type: string
+        read:
+          type: boolean
+        createdAt:
+          type: string
+      required:
+        - id
+        - userId
+        - kind
+        - title
+        - body
+        - link
+        - read
+        - createdAt
+      additionalProperties: false
+    AuditEvent:
+      type: object
+      properties:
+        seq:
+          type: integer
+          minimum: -9007199254740991
+          maximum: 9007199254740991
+        at:
+          type: string
+        actorId:
+          type: string
+        actorType:
+          type: string
+          enum:
+            - human
+            - ai
+        action:
+          type: string
+        objectType:
+          type: string
+          enum:
+            - case
+            - requirement
+            - signal
+            - referral
+            - question
+            - plan
+            - profile
+            - workspace
+        objectId:
+          type: string
+          minLength: 1
+        before: {}
+        after: {}
+        rationale:
+          type: string
+      required:
+        - seq
+        - at
+        - actorId
+        - actorType
+        - action
+        - objectType
+        - objectId
+      additionalProperties: false
+    Dataset:
+      $ref: "#/components/schemas/Dataset"

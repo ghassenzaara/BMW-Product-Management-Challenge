@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "question": {
+      "type": "string"
+    },
+    "target": {
+      "type": "string"
+    },
+    "unit": {
+      "type": "string"
+    },
+    "basis": {
+      "type": "string",
+      "enum": [
+        "evidence",
+        "assumption"
+      ]
+    },
+    "benchmark": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "question",
+    "target",
+    "basis"
+  ],
+  "additionalProperties": false
+}

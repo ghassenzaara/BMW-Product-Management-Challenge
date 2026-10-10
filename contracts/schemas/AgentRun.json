@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "agent": {
+      "type": "string",
+      "enum": [
+        "bmw_data",
+        "competitor",
+        "customer_public",
+        "trends",
+        "innovation_scout"
+      ]
+    },
+    "series": {
+      "type": "string",
+      "enum": [
+        "G60",
+        "F70",
+        "G70"
+      ]
+    },
+    "startedAt": {
+      "type": "string"
+    },
+    "endedAt": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ok",
+        "partial",
+        "failed"
+      ]
+    },
+    "valid": {
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    },
+    "rejected": {
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    },
+    "newSignals": {
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    },
+    "llmCostUsd": {
+      "type": "number"
+    },
+    "note": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "agent",
+    "series",
+    "startedAt",
+    "endedAt",
+    "status",
+    "valid",
+    "rejected",
+    "newSignals",
+    "llmCostUsd"
+  ],
+  "additionalProperties": false
+}

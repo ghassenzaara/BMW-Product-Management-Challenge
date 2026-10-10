@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "horizon": {
+      "type": "string",
+      "enum": [
+        "next_gen",
+        "gen_after",
+        "new_product"
+      ]
+    },
+    "votes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "interestedSeries": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "G60",
+          "F70",
+          "G70"
+        ]
+      }
+    },
+    "pulledInto": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "pitch": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "caseId",
+    "horizon",
+    "votes",
+    "interestedSeries",
+    "pulledInto",
+    "pitch"
+  ],
+  "additionalProperties": false
+}

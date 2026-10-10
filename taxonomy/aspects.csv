@@ -1,0 +1,85 @@
+vfc_level3,aspect_group
+Like: function,function
+Customer request: function,function
+Vehicle equipment: not available,function
+Like: vehicle equipment,function
+too few,function
+Information / accuracy insufficient,function
+Customer request: compatibility,function
+Not user-friendly,usability
+Like: usability,usability
+Customer request: usability,usability
+Ergonomics do not appeal,usability
+Installation and set-up: difficult,usability
+Operating force not OK,usability
+Permanent switch-off not possible,usability
+Switch off not possible,usability
+Accidental triggering,usability
+Malfunction,reliability
+Connection fault,reliability
+Blank / frozen screen,reliability
+Battery discharge,reliability
+Communication fault,reliability
+"Locking, detent: fault",reliability
+Fitting fault,reliability
+Installation: fault,reliability
+"Opening, closing: not possible / not complete",reliability
+Warning / notification active,reliability
+Reception quality not OK,reliability
+Capacity loss,reliability
+Like: performance,performance
+Drive power/driving performance not OK,performance
+"Effect, power not OK",performance
+Like: responsiveness,performance
+Response characteristics: too sluggish,performance
+Response characteristics not OK,performance
+Response characteristics: too fast,performance
+Response characteristics: too jerky/too abrupt,performance
+Too slow,performance
+Shift characteristics not OK,performance
+Drivability not OK,performance
+Customer request: performance,performance
+Pulls to one side,performance
+Light intensity not OK,performance
+Like: Efficiency,efficiency_range
+Fuel / power consumption too high,efficiency_range
+"Range, not OK",efficiency_range
+Like: Range,efficiency_range
+Information / Accuracy insufficient (electric range),efficiency_range
+Charging infrastructure inadequate,efficiency_range
+Look / design appeals,design
+Customer request: design,design
+Likes comfort,comfort
+Not comfortable,comfort
+Customer request: comfort,comfort
+Like: odor,comfort
+insufficient storage space,space
+Size not user friendly,space
+Like: Space / spatial impression,space
+Likes size,space
+Like: storage space,space
+Customer request: space / spatial impression,space
+Customer request: size,space
+View/restricted panoramic view,space
+Like: view/panoramic view,space
+Damage,quality
+Workmanship appeals,quality
+Workmanship does not appeal,quality
+Customer request: material quality,quality
+Dirty contamination,quality
+Leak,quality
+Leak: water ingress/condensation,quality
+Leak: air,quality
+Condensation,quality
+Cavity sealant: wax residue,quality
+Stiff movement,quality
+Odor/smoke,quality
+"Vibration, oscillation",quality
+Excessive opening,quality
+Noise,sound
+Wind noise,sound
+Like: sound,sound
+Customer request: sound,sound
+Like: price-performance ratio,price
+Dislike: price-performance ratio,price
+Vehicle equipment: not standard / too costly,price

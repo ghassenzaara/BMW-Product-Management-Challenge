@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "userId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "alert",
+        "mention",
+        "referral",
+        "question_answered",
+        "sign_off_request",
+        "sent_back",
+        "new_signals",
+        "escalation"
+      ]
+    },
+    "title": {
+      "type": "string"
+    },
+    "body": {
+      "type": "string"
+    },
+    "link": {
+      "type": "string"
+    },
+    "actorId": {
+      "type": "string"
+    },
+    "read": {
+      "type": "boolean"
+    },
+    "createdAt": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "userId",
+    "kind",
+    "title",
+    "body",
+    "link",
+    "read",
+    "createdAt"
+  ],
+  "additionalProperties": false
+}

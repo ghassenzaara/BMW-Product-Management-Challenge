@@ -1,0 +1,255 @@
+# Topic list, taxonomy 2026-10-11.1. Use only these topic_id values, or 'other'.
+
+## exterior_design: Exterior, design & lighting
+- exterior_design: Exterior design
+- exterior: Exterior
+- exterior_rearview_mirror: Exterior rearview mirror
+- exterior_lighting: Exterior lighting
+- welcome_light_carpet: Welcome Light Carpet
+- windshield_wiper: Windshield wiper
+- windshield: Windshield
+- flashing: Flashing (Turn signals and hazard lights.)
+- radiator_grille: Radiator grille
+- rain_sensor_mode: Rain sensor mode
+- roof: Roof
+- bumper_rear: Bumper, rear
+- hood: Hood
+- rear_wiper: Rear wiper
+- bumper_front: Bumper, front
+- fog_light: Fog light
+- side_sill_trim_panel: Side sill trim panel
+- opening_closing_convertible_top_hardtop: Opening / closing convertible top / hardtop
+- running_board: Running board
+- wash_wipe_switch: Wash / wipe switch
+
+## interior_comfort: Interior & comfort
+- interior_design: Interior design
+- interior_comfort: Interior comfort
+- space_spatial_impression: Space / spatial impression (Perceived roominess of the cabin (legroom, headroom).)
+- ambient_light: Ambient light
+- instrument_panel: Instrument panel (Dashboard as an object: layout, look, materials.)
+- panorama_glass_roof: Panorama glass roof
+- steering_wheel: Steering wheel (The wheel itself: rim, size, material, look. Steering feel is 'Steering'.)
+- center_console_front: Center console, front
+- interior: Interior
+- vehicle_interior_lighting: Vehicle interior, lighting
+- sun_protection: Sun protection
+- interior_rearview_mirror: Interior rearview mirror
+- center_armrest_front: Center armrest, front
+- grab_handle: Grab handle
+- sun_visor_front: Sun visor, front
+- roof_function_centre: Roof function centre (Overhead console: reading lights, SOS button, switches.)
+- caring_car: Caring Car (Wellness programs (vitalize / relax).)
+
+## seats: Seats
+- seats: Seats
+- seating_ventilate_heat: Seating, ventilate / heat
+- seat_massage: Seat massage
+- seat_memory: Seat memory
+- headrest_adjust: Headrest, adjust
+- adjustment_of_lower_lumbar_support: Adjustment of lower lumbar support
+- child_restraint_seat_use: Child restraint seat, use
+- headrests_rear: Headrests, rear
+
+## climate: Climate
+- vehicle_climatization: Vehicle, climatization
+- air_conditioning_setting: Air conditioning, setting
+- blower_function: Blower function
+- heated_steering_wheel: Heated steering wheel
+- air_conditioning_control_panel: Air conditioning control panel
+- air_conditioning_overall_technology: Air conditioning, overall technology
+- panel_heating: Panel heating
+- heated_rear_window: Heated rear window
+- auxiliary_heater_function: Auxiliary heater function
+
+## infotainment_hmi: Infotainment & HMI
+- touch_screen_operation: Touch screen, operation
+- connecteddrive_and_infotainment_overall_technology: ConnectedDrive and Infotainment, overall technology
+- audio_mode_sound: Audio mode, sound
+- operating_concept_operating_system: Operating concept, operating system
+- owner_s_manual: Owner's Manual (Printed or digital owner's manual, how-to information in the car.)
+- navigation: Navigation
+- apple_carplay: Apple CarPlay
+- head_up_display: Head-Up Display
+- instrument_cluster: Instrument cluster
+- driver_profile: Driver profile
+- rear_seat_entertainment: Rear seat entertainment
+- radio_function: Radio function
+- voice_control_speech_recognition: Voice control / speech recognition
+- android_auto: Android Auto
+- gesture_control: Gesture control
+- controller_operation: Controller operation
+- multi_function_steering_wheel_operation: Multi-function steering wheel operation
+- touch_command: Touch Command (Rear-seat tablet/controls (7 Series) for comfort functions.)
+- experience_modes: Experience Modes (Screen and ambience themes of My Modes (artwork, sounds); not the driving behaviour.)
+- real_time_traffic_information_rtti: Real Time Traffic Information (RTTI)
+- traffic_camera_information: Traffic Camera Information
+- cd_dvd_changer_playback: CD / DVD changer, playback
+- video_playback_streaming: Video: playback / streaming
+- map_update: Map update
+- display_time: Display, time
+- light_switch_operating_unit: Light switch operating unit
+- screen_mirroring: Screen mirroring
+- smart_poi_search: Smart POI search
+
+## connectivity_digital: Connectivity & digital (incl. AI assistant)
+- my_bmw_app_mini_app: My BMW App / MINI App
+- intelligent_personal_assistant: Intelligent Personal Assistant
+- digital_key: Digital Key
+- personal_esim: Personal eSIM
+- usb_port: USB port
+- mobile_device_wireless_charging: Mobile device, wireless charging
+- remote_software_upgrade_rsu: Remote Software Upgrade/RSU
+- manage_pair_mobile_device_bluetooth: Manage / pair mobile device (Bluetooth)
+- wifi_hotspot: WiFi hotspot
+- remote_services_remote_keyless_entry_my_bmw_app_mini_app: Remote Services & Remote Keyless Entry (My BMW App/MINI App)
+- apps_in_car: Apps (in-car)
+- intelligent_personal_assistant_activation_word: Intelligent Personal Assistant, activation word
+- remote_engine_start_my_bmw_app_mini_app: Remote Engine Start (My BMW App / MINI App)
+- connecteddrive_services_smartphone_technology_overall: ConnectedDrive services (smartphone) technology overall
+- priorities_for_telephones: Priorities for telephones
+- interior_camera: Interior camera
+- bmw_connecteddrive_upgrades_mini_connected_upgrades: BMW ConnectedDrive upgrades/ MINI CONNECTED upgrades
+- remote_3d_view_my_bmw_app_mini_app: Remote 3D View (My BMW App / MINI App)
+- my_bmw_mini_portal: My BMW / MINI Portal
+- teleservices: Teleservices (Service intervals and remote service notifications.)
+- remote_interior_camera_my_bmw_app_mini_app: Remote interior camera (My BMW App / MINI App)
+- display_key: Display key (BMW key fob with a display.)
+- bmw_online_mini_online: BMW Online / MINI Online
+- customer_account_my_bmw_mini_portal: Customer Account (My BMW / MINI Portal)
+- driver_s_guide_app: Driver's Guide App
+- apps_smartphone: Apps (smartphone)
+
+## driver_assistance: Driver assistance & safety
+- impression_of_safety: Impression of safety (How safe the car feels overall.)
+- driver_assistance_automated_driving_overall_technology: Driver assistance, automated driving, overall technology
+- highway_assistant: Highway assistant
+- active_cruise_control: (Active) cruise control
+- parking_assistant: Parking Assistant
+- rear_view_camera: Rear view camera
+- lane_departure_warning: Lane departure warning
+- park_distance_control_pdc: Park Distance Control (PDC)
+- vehicle_safety_overall_technology: Vehicle safety, overall technology
+- steering_and_lane_guide_assist: Steering and lane guide assist
+- surround_view: Surround View
+- seat_belts: Seat belts
+- all_round_view: All-round view
+- speed_limit_assistant: Speed Limit Assistant
+- drive_recorder: Drive Recorder
+- back_up_assistant: Back-up Assistant
+- blind_spot_monitoring: Blind spot monitoring
+- front_collision_warning: Front collision warning
+- remote_controlled_parking: Remote controlled parking
+- emergency_request: Emergency request
+- cross_traffic_warning_rear_with_brake_intervention: Cross Traffic Warning Rear with Brake Intervention
+- fatigue_alert: Fatigue Alert
+- anti_theft_alarm_system: Anti-theft alarm system
+- high_beam_assistant: High-beam assistant
+- lane_change_assistant: Lane Change Assistant
+- child_safety_latch: Child safety latch
+- night_vision: Night Vision
+- side_view: Side View
+- traffic_light_and_sign_warning: Traffic Light And Sign Warning
+- rear_end_collision_warning: Rear-end collision warning
+- airbags: Airbags
+- emergency_stop_assistant: Emergency Stop Assistant
+- traffic_jam_assistant: Traffic Jam Assistant
+- intersection_warning_with_brake_intervention: Intersection Warning with Brake Intervention
+
+## dynamics_powertrain: Driving dynamics & powertrain
+- drivetrain: Drivetrain (Engine/motor power, acceleration, fuel or energy efficiency of the propulsion system.)
+- drive_driving_dynamics_and_chassis_overall_technology: Drive, driving dynamics and chassis, overall technology (Overall driving feel: sportiness, agility, 'fun to drive'.)
+- handling_riding: Handling / Riding (Ride comfort and handling on the road.)
+- my_modes_driving_experience: My Modes / driving experience (BMW My Modes: selectable driving/experience modes (Sport, Efficient, Personal).)
+- cushioning_damping_vehicle: Cushioning / damping vehicle
+- braking: Braking
+- wheels_tires: Wheels / tires
+- automatic_engine_start_stop_function_msa: Automatic engine start-stop function (MSA)
+- transmission: Transmission
+- engine_acoustics_engine_sound: Engine acoustics / engine sound
+- steering: Steering
+- resting_state_after_door_opening: Resting state after door opening (Vehicle wake/sleep behaviour: car stays on or switches off when doors open, settings not retained.)
+- brake_energy_regeneration_recuperation: Brake Energy Regeneration / recuperation (Regenerative braking, one-pedal feel of electrified cars.)
+- operate_selector_lever: Operate selector lever
+- automatic_hold: Automatic-hold
+- rsc_tire: RSC tire
+- vehicle_battery: Vehicle battery (12 V battery and its warnings. The high-voltage battery is range_charging.)
+- ground_clearance: ground clearance
+- tire_pressure_control: Tire pressure control
+- parking_brake: Parking brake
+- self_leveling_suspension: Self-leveling suspension
+- tirefit: Tirefit
+- starting_engine: Starting engine
+- pedals_operate: Pedals, operate
+- start_engine_switch_on_drive_readiness: Start engine/switch on drive readiness
+- dynamic_stability_control: Dynamic Stability Control
+- shift_paddle: Shift paddle
+- cooling: Cooling (Engine or drivetrain cooling (overheating, coolant). Cabin cooling is climate.)
+- engine_oil: Engine oil
+- launch_control: Launch Control
+- exhaust_system: Exhaust system
+
+## range_charging: Range, charging & refuelling
+- electric_range: Electric Range
+- public_charging_external_providers: Public charging / external providers
+- charge_high_voltage_battery: Charge high-voltage battery
+- high_voltage_battery: High voltage battery
+- wallbox_charging_home_charging: Wallbox, charging / home charging
+- opening_closing_charging_socket_cover: Opening/closing charging socket cover
+- fuel_filler_flap_open_close: Fuel filler flap , open / close
+- high_voltage_battery_preconditioning: High voltage battery, preconditioning
+- charging_cable: Charging cable
+- fuel_tank: Fuel tank
+- high_voltage_charging_power_socket: High-voltage charging power socket
+- route_optimized_for_charging: Route optimized for charging
+- bidirectional_charging: Bidirectional charging
+
+## practicality: Practicality & access
+- luggage_compartment: Luggage compartment
+- door_open_close: Door, open / close
+- trunk_lid_open_close: Trunk lid, open / close
+- vehicle_key: Vehicle key
+- automatic_doors: Automatic doors
+- non_contact_trunk_lid_opening: non-contact trunk lid opening
+- vehicle_lock_unlock: Vehicle, lock / unlock
+- comfort_access: Comfort Access
+- vehicle_access_and_exit: Vehicle, access and exit
+- garage_door_opener: Garage door opener
+- glove_box: Glove box
+- storage_compartments: Storage compartments
+- cupholder: Cupholder
+- door_front: Door, front
+- side_window_open_close: Side window, open / close
+- accessories_parts: Accessories / Parts (BMW accessories and spare parts (roof rack, cargo net, tray tables).)
+- outer_door_handle_front: Outer door handle, front
+- remote_engine_start_vehicle_key: Remote Engine Start (Vehicle Key )
+- frunk: Frunk
+- towing_eye: Towing eye
+- 12_v_connection: 12 V connection
+- hood_open_close: Hood, open / close
+- washer_fluid_top_up: Washer fluid, top up
+- through_loading_facility: Through-loading facility
+- trailer_use: Trailer, use
+- trunk_light: Trunk light
+- horns: Horns
+- outer_door_handle_rear: Outer door handle, rear
+
+## quality_materials: Quality & materials
+- body_equipment_overall_technology: Body equipment, overall technology (General equipment level and overall build/technology of the body.)
+- interior_acoustics: Interior acoustics (Cabin quietness and noise insulation.)
+- door_finisher_panel_front: Door, finisher panel, front
+- upholstery_interior_trim: Upholstery / interior trim
+- floor_mat: Floor mat
+
+## aspect_group
+- function: Does the feature exist and do its job (incl. missing equipment).
+- usability: How easy it is to operate; ergonomics; can't switch it off.
+- reliability: Defects, faults, things that stop working.
+- performance: Power, speed, responsiveness, strength of an effect.
+- efficiency_range: Consumption, efficiency, electric range, charging infrastructure.
+- design: Look and styling.
+- comfort: Physical comfort.
+- space: Size, room, storage, view.
+- quality: Materials, workmanship, damage, leaks, rattles, smells.
+- sound: Noise and sound.
+- price: Price-performance, standard vs. paid option.

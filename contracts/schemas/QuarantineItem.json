@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "agent": {
+      "type": "string",
+      "enum": [
+        "bmw_data",
+        "competitor",
+        "customer_public",
+        "trends",
+        "innovation_scout"
+      ]
+    },
+    "sourceName": {
+      "type": "string"
+    },
+    "snippet": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "agent",
+    "sourceName",
+    "snippet",
+    "reason",
+    "at"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "userId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "series": {
+      "type": "string",
+      "enum": [
+        "G60",
+        "F70",
+        "G70"
+      ]
+    },
+    "region": {
+      "type": "string",
+      "enum": [
+        "global",
+        "RoW",
+        "CN"
+      ]
+    },
+    "projectType": {
+      "type": "string",
+      "enum": [
+        "new_gen",
+        "lci"
+      ]
+    },
+    "weightProfileId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sourceFilter": {
+      "type": "object",
+      "properties": {
+        "excludeSocial": {
+          "type": "boolean"
+        },
+        "ownersOnly": {
+          "type": "boolean"
+        },
+        "minTrust": {
+          "type": "string",
+          "enum": [
+            "A",
+            "B",
+            "C",
+            "D",
+            "E"
+          ]
+        }
+      },
+      "required": [
+        "excludeSocial",
+        "ownersOnly",
+        "minTrust"
+      ],
+      "additionalProperties": false
+    },
+    "watchlist": {
+      "type": "object",
+      "properties": {
+        "competitors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "topics": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "domains": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "languages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "competitors",
+        "topics",
+        "domains",
+        "languages"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "id",
+    "userId",
+    "series",
+    "region",
+    "projectType",
+    "weightProfileId",
+    "sourceFilter",
+    "watchlist"
+  ],
+  "additionalProperties": false
+}

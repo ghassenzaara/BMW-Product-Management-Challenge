@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "name": {
+      "type": "string"
+    },
+    "initials": {
+      "type": "string"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "vehicle_pm",
+        "attribute_pm",
+        "head"
+      ]
+    },
+    "title": {
+      "type": "string"
+    },
+    "series": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "G60",
+          "F70",
+          "G70"
+        ]
+      }
+    },
+    "region": {
+      "type": "string",
+      "enum": [
+        "global",
+        "RoW",
+        "CN"
+      ]
+    },
+    "attributeScope": {
+      "type": "string"
+    },
+    "color": {
+      "type": "string"
+    },
+    "synthetic": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "initials",
+    "role",
+    "title",
+    "series",
+    "region",
+    "color",
+    "synthetic"
+  ],
+  "additionalProperties": false
+}

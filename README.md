@@ -22,3 +22,9 @@ A daily background loop fetches web evidence (v1: fetch steps 1 to 9 of the sour
 | [`plan.md`](plan.md) | Implementation plan and progress |
 | [`layers.mmd`](layers.mmd) | BMW's process slide as a diagram, for reference |
 | [`All-context/`](All-context/README.md) | Challenge material, provided data, meeting notes, team notes, web sources |
+| [`web/`](web/README.md) | **Clickable demo** (Next.js): signals → cases → requirements → vehicle plan, 4 personas, mock backend on synthetic data. Run with `npm install && npm run dev` in `web/` |
+| [`contracts/`](contracts/openapi.yaml) | REST contract between UI and backend (OpenAPI 3.1 + JSON Schemas), generated from `web/src/contracts` |
+| [`taxonomy/`](taxonomy/README.md) | **Fixed taxonomy** for classifying signals: 11 car areas → 219 topics (BMW VFC level 2) + aspect groups, classifier schema and prompt, eval against BMW labels. Hand-off spec for the agents |
+| [`docs/`](docs/README.md) | Amine's knowledge base: data insights, processed CSVs (used by the demo seed), solution design, UX decisions |
+
+In the UI, "findings" are called **signals**.

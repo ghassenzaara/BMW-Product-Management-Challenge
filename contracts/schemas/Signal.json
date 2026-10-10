@@ -1,0 +1,255 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "complaint",
+        "wish",
+        "like",
+        "competitor_fact",
+        "trend",
+        "innovation"
+      ]
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "defect",
+        "difficult_to_use",
+        "wish",
+        "none"
+      ]
+    },
+    "agent": {
+      "type": "string",
+      "enum": [
+        "bmw_data",
+        "competitor",
+        "customer_public",
+        "trends",
+        "innovation_scout"
+      ]
+    },
+    "sourceType": {
+      "type": "string",
+      "enum": [
+        "bmw_feedback",
+        "bmw_study",
+        "bmw_sales",
+        "option_list",
+        "review",
+        "video",
+        "forum",
+        "social",
+        "news",
+        "competitor_official",
+        "trend_report",
+        "trade_fair"
+      ]
+    },
+    "sourceName": {
+      "type": "string"
+    },
+    "trust": {
+      "type": "string",
+      "enum": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E"
+      ]
+    },
+    "url": {
+      "type": "string"
+    },
+    "recordRef": {
+      "type": "string"
+    },
+    "publishedAt": {
+      "type": "string"
+    },
+    "fetchedAt": {
+      "type": "string"
+    },
+    "series": {
+      "type": "string",
+      "enum": [
+        "G60",
+        "F70",
+        "G70"
+      ]
+    },
+    "vehicleRole": {
+      "type": "string",
+      "enum": [
+        "current",
+        "predecessor",
+        "competitor",
+        "unknown"
+      ]
+    },
+    "competitor": {
+      "type": "string"
+    },
+    "powertrain": {
+      "type": "string",
+      "enum": [
+        "ICE",
+        "PHEV",
+        "BEV",
+        "unknown"
+      ]
+    },
+    "market": {
+      "type": "string",
+      "enum": [
+        "EU",
+        "US",
+        "CN",
+        "RoW",
+        "unknown"
+      ]
+    },
+    "marketBasis": {
+      "type": "string",
+      "enum": [
+        "stated",
+        "inferred",
+        "unknown"
+      ]
+    },
+    "country": {
+      "type": "string"
+    },
+    "carArea": {
+      "type": "string",
+      "enum": [
+        "exterior_design",
+        "interior_comfort",
+        "seats",
+        "climate",
+        "infotainment_hmi",
+        "connectivity_digital",
+        "driver_assistance",
+        "dynamics_powertrain",
+        "range_charging",
+        "practicality",
+        "quality_materials"
+      ]
+    },
+    "featureHint": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "quote": {
+      "type": "string"
+    },
+    "quoteEn": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string"
+    },
+    "audience": {
+      "type": "string",
+      "enum": [
+        "owner",
+        "reviewer",
+        "public"
+      ]
+    },
+    "reach": {
+      "type": "number"
+    },
+    "reachUnit": {
+      "type": "string",
+      "enum": [
+        "views",
+        "upvotes",
+        "likes",
+        "none"
+      ]
+    },
+    "metric": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "cycle": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "value",
+        "unit"
+      ],
+      "additionalProperties": false
+    },
+    "caseId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "clustered",
+        "unclustered",
+        "quarantined"
+      ]
+    },
+    "synthetic": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "id",
+    "kind",
+    "severity",
+    "agent",
+    "sourceType",
+    "sourceName",
+    "trust",
+    "publishedAt",
+    "fetchedAt",
+    "series",
+    "vehicleRole",
+    "powertrain",
+    "market",
+    "marketBasis",
+    "carArea",
+    "featureHint",
+    "summary",
+    "quote",
+    "language",
+    "audience",
+    "caseId",
+    "status",
+    "synthetic"
+  ],
+  "additionalProperties": false
+}

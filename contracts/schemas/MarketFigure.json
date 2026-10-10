@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "market": {
+      "type": "string",
+      "enum": [
+        "EU",
+        "US",
+        "CN",
+        "RoW",
+        "unknown"
+      ]
+    },
+    "customers": {
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    },
+    "complaints": {
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    },
+    "wishes": {
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    },
+    "likes": {
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    },
+    "studyLabel": {
+      "type": "string"
+    },
+    "studyScore": {
+      "type": "string"
+    },
+    "salesShare2030": {
+      "type": "number"
+    },
+    "sentiment": {
+      "type": "number",
+      "minimum": -1,
+      "maximum": 1
+    }
+  },
+  "required": [
+    "market",
+    "customers",
+    "complaints",
+    "wishes",
+    "likes",
+    "sentiment"
+  ],
+  "additionalProperties": false
+}

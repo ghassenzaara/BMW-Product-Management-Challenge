@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "objectType": {
+      "type": "string",
+      "enum": [
+        "case",
+        "requirement"
+      ]
+    },
+    "objectId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "chat",
+        "meeting_note",
+        "monitor"
+      ]
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "field",
+        "body",
+        "question_answer",
+        "new_question",
+        "new_requirement"
+      ]
+    },
+    "summary": {
+      "type": "string"
+    },
+    "changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "before": {},
+          "after": {}
+        },
+        "required": [
+          "field",
+          "before",
+          "after"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "questionId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "citations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "rejected"
+      ]
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "decidedBy": {
+      "type": "string",
+      "minLength": 1
+    },
+    "decidedAt": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "objectType",
+    "objectId",
+    "source",
+    "kind",
+    "summary",
+    "changes",
+    "citations",
+    "status",
+    "createdAt"
+  ],
+  "additionalProperties": false
+}

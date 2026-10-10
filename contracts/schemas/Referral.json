@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "referral",
+        "escalation"
+      ]
+    },
+    "caseId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "fromUserId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "toUserId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "note": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "declined",
+        "escalated",
+        "resolved"
+      ]
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "decidedAt": {
+      "type": "string"
+    },
+    "declineReason": {
+      "type": "string"
+    },
+    "linkedCaseId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "resolution": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "kind",
+    "caseId",
+    "fromUserId",
+    "toUserId",
+    "note",
+    "status",
+    "createdAt",
+    "linkedCaseId"
+  ],
+  "additionalProperties": false
+}

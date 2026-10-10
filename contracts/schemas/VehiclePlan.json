@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "series": {
+      "type": "string",
+      "enum": [
+        "G60",
+        "F70",
+        "G70"
+      ]
+    },
+    "successorName": {
+      "type": "string"
+    },
+    "projectType": {
+      "type": "string",
+      "enum": [
+        "new_gen",
+        "lci"
+      ]
+    },
+    "sop": {
+      "type": "string"
+    },
+    "ownerIds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "carArea": {
+            "type": "string",
+            "enum": [
+              "exterior_design",
+              "interior_comfort",
+              "seats",
+              "climate",
+              "infotainment_hmi",
+              "connectivity_digital",
+              "driver_assistance",
+              "dynamics_powertrain",
+              "range_charging",
+              "practicality",
+              "quality_materials"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "today": {
+            "type": "string",
+            "enum": [
+              "standard",
+              "optional",
+              "absent",
+              "removed"
+            ]
+          },
+          "todayDetail": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "keep",
+              "new",
+              "improve",
+              "remove"
+            ]
+          },
+          "requirementIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "release": {
+            "type": "string",
+            "enum": [
+              "next_gen",
+              "lci",
+              "ota"
+            ]
+          },
+          "protected": {
+            "type": "boolean"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "carArea",
+          "name",
+          "today",
+          "todayDetail",
+          "action",
+          "requirementIds",
+          "release",
+          "protected",
+          "note"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "series",
+    "successorName",
+    "projectType",
+    "sop",
+    "ownerIds",
+    "features"
+  ],
+  "additionalProperties": false
+}

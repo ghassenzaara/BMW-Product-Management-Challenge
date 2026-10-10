@@ -1,0 +1,250 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "caseId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "series": {
+      "type": "string",
+      "enum": [
+        "G60",
+        "F70",
+        "G70"
+      ]
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "marketScope": {
+      "type": "string",
+      "enum": [
+        "global",
+        "RoW",
+        "CN"
+      ]
+    },
+    "variantOf": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "in_discussion",
+        "pm_approved",
+        "signed_off",
+        "planned",
+        "exported",
+        "rejected"
+      ]
+    },
+    "releaseTarget": {
+      "type": "string",
+      "enum": [
+        "next_gen",
+        "lci",
+        "ota"
+      ]
+    },
+    "carArea": {
+      "type": "string",
+      "enum": [
+        "exterior_design",
+        "interior_comfort",
+        "seats",
+        "climate",
+        "infotainment_hmi",
+        "connectivity_digital",
+        "driver_assistance",
+        "dynamics_powertrain",
+        "range_charging",
+        "practicality",
+        "quality_materials"
+      ]
+    },
+    "changeDepth": {
+      "type": "string",
+      "enum": [
+        "trim_option",
+        "part_module",
+        "platform_powertrain",
+        "software_ota"
+      ]
+    },
+    "metrics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "question": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "basis": {
+            "type": "string",
+            "enum": [
+              "evidence",
+              "assumption"
+            ]
+          },
+          "benchmark": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "question",
+          "target",
+          "basis"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "acceptanceCriteria": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidenceLevel": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low",
+        "assumption"
+      ]
+    },
+    "cost": {
+      "type": "object",
+      "properties": {
+        "size": {
+          "type": "string",
+          "enum": [
+            "S",
+            "M",
+            "L"
+          ]
+        },
+        "eurBand": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "option_price",
+            "ai_estimate",
+            "pm",
+            "finance"
+          ]
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "size",
+        "eurBand",
+        "source",
+        "note"
+      ],
+      "additionalProperties": false
+    },
+    "ownerId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "manualRank": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "plannedFeatureId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "sentBackReason": {
+      "type": "string"
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "updatedAt": {
+      "type": "string"
+    },
+    "synthetic": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "id",
+    "caseId",
+    "series",
+    "title",
+    "description",
+    "marketScope",
+    "variantOf",
+    "status",
+    "releaseTarget",
+    "carArea",
+    "changeDepth",
+    "metrics",
+    "acceptanceCriteria",
+    "assumptions",
+    "evidenceLevel",
+    "cost",
+    "ownerId",
+    "manualRank",
+    "plannedFeatureId",
+    "createdAt",
+    "updatedAt",
+    "synthetic"
+  ],
+  "additionalProperties": false
+}

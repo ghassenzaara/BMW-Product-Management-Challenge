@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "objectType": {
+      "type": "string",
+      "enum": [
+        "case",
+        "requirement"
+      ]
+    },
+    "objectId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "addressee": {
+      "type": "string",
+      "enum": [
+        "engineering",
+        "finance",
+        "design",
+        "quality",
+        "market_pm",
+        "purchasing",
+        "other"
+      ]
+    },
+    "contact": {
+      "type": "string"
+    },
+    "question": {
+      "type": "string"
+    },
+    "why": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "answered",
+        "dropped"
+      ]
+    },
+    "answer": {
+      "type": "string"
+    },
+    "answerSource": {
+      "type": "string",
+      "enum": [
+        "meeting_note",
+        "chat",
+        "manual"
+      ]
+    },
+    "answeredAt": {
+      "type": "string"
+    },
+    "dueDate": {
+      "type": "string"
+    },
+    "askedBy": {
+      "type": "string",
+      "minLength": 1
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "fieldsAffected": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "id",
+    "objectType",
+    "objectId",
+    "addressee",
+    "question",
+    "why",
+    "status",
+    "askedBy",
+    "createdAt",
+    "fieldsAffected"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,2476 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "generatedAt": {
+      "type": "string"
+    },
+    "users": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string"
+          },
+          "initials": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "vehicle_pm",
+              "attribute_pm",
+              "head"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "series": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "G60",
+                "F70",
+                "G70"
+              ]
+            }
+          },
+          "region": {
+            "type": "string",
+            "enum": [
+              "global",
+              "RoW",
+              "CN"
+            ]
+          },
+          "attributeScope": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "synthetic": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "initials",
+          "role",
+          "title",
+          "series",
+          "region",
+          "color",
+          "synthetic"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "workspaces": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "userId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "series": {
+            "type": "string",
+            "enum": [
+              "G60",
+              "F70",
+              "G70"
+            ]
+          },
+          "region": {
+            "type": "string",
+            "enum": [
+              "global",
+              "RoW",
+              "CN"
+            ]
+          },
+          "projectType": {
+            "type": "string",
+            "enum": [
+              "new_gen",
+              "lci"
+            ]
+          },
+          "weightProfileId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sourceFilter": {
+            "type": "object",
+            "properties": {
+              "excludeSocial": {
+                "type": "boolean"
+              },
+              "ownersOnly": {
+                "type": "boolean"
+              },
+              "minTrust": {
+                "type": "string",
+                "enum": [
+                  "A",
+                  "B",
+                  "C",
+                  "D",
+                  "E"
+                ]
+              }
+            },
+            "required": [
+              "excludeSocial",
+              "ownersOnly",
+              "minTrust"
+            ],
+            "additionalProperties": false
+          },
+          "watchlist": {
+            "type": "object",
+            "properties": {
+              "competitors": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "topics": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "domains": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "languages": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "competitors",
+              "topics",
+              "domains",
+              "languages"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "series",
+          "region",
+          "projectType",
+          "weightProfileId",
+          "sourceFilter",
+          "watchlist"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "weightProfiles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "ownerId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "isDefault": {
+            "type": "boolean"
+          },
+          "weights": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "enum": [
+                "customers",
+                "severity",
+                "satisfaction_gap",
+                "competitor_gap",
+                "market_volume",
+                "regression",
+                "trend",
+                "brand_fit"
+              ]
+            },
+            "additionalProperties": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "required": [
+              "customers",
+              "severity",
+              "satisfaction_gap",
+              "competitor_gap",
+              "market_volume",
+              "regression",
+              "trend",
+              "brand_fit"
+            ]
+          },
+          "costMultiplier": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "enum": [
+                "S",
+                "M",
+                "L"
+              ]
+            },
+            "additionalProperties": {
+              "type": "number"
+            },
+            "required": [
+              "S",
+              "M",
+              "L"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "ownerId",
+          "isDefault",
+          "weights",
+          "costMultiplier"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "brandProfile": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "updatedAt": {
+          "type": "string"
+        },
+        "updatedBy": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pillars": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "description"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "doNot": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "notesMd": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "version",
+        "updatedAt",
+        "updatedBy",
+        "pillars",
+        "doNot",
+        "notesMd"
+      ],
+      "additionalProperties": false
+    },
+    "signals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "complaint",
+              "wish",
+              "like",
+              "competitor_fact",
+              "trend",
+              "innovation"
+            ]
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "defect",
+              "difficult_to_use",
+              "wish",
+              "none"
+            ]
+          },
+          "agent": {
+            "type": "string",
+            "enum": [
+              "bmw_data",
+              "competitor",
+              "customer_public",
+              "trends",
+              "innovation_scout"
+            ]
+          },
+          "sourceType": {
+            "type": "string",
+            "enum": [
+              "bmw_feedback",
+              "bmw_study",
+              "bmw_sales",
+              "option_list",
+              "review",
+              "video",
+              "forum",
+              "social",
+              "news",
+              "competitor_official",
+              "trend_report",
+              "trade_fair"
+            ]
+          },
+          "sourceName": {
+            "type": "string"
+          },
+          "trust": {
+            "type": "string",
+            "enum": [
+              "A",
+              "B",
+              "C",
+              "D",
+              "E"
+            ]
+          },
+          "url": {
+            "type": "string"
+          },
+          "recordRef": {
+            "type": "string"
+          },
+          "publishedAt": {
+            "type": "string"
+          },
+          "fetchedAt": {
+            "type": "string"
+          },
+          "series": {
+            "type": "string",
+            "enum": [
+              "G60",
+              "F70",
+              "G70"
+            ]
+          },
+          "vehicleRole": {
+            "type": "string",
+            "enum": [
+              "current",
+              "predecessor",
+              "competitor",
+              "unknown"
+            ]
+          },
+          "competitor": {
+            "type": "string"
+          },
+          "powertrain": {
+            "type": "string",
+            "enum": [
+              "ICE",
+              "PHEV",
+              "BEV",
+              "unknown"
+            ]
+          },
+          "market": {
+            "type": "string",
+            "enum": [
+              "EU",
+              "US",
+              "CN",
+              "RoW",
+              "unknown"
+            ]
+          },
+          "marketBasis": {
+            "type": "string",
+            "enum": [
+              "stated",
+              "inferred",
+              "unknown"
+            ]
+          },
+          "country": {
+            "type": "string"
+          },
+          "carArea": {
+            "type": "string",
+            "enum": [
+              "exterior_design",
+              "interior_comfort",
+              "seats",
+              "climate",
+              "infotainment_hmi",
+              "connectivity_digital",
+              "driver_assistance",
+              "dynamics_powertrain",
+              "range_charging",
+              "practicality",
+              "quality_materials"
+            ]
+          },
+          "featureHint": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "quote": {
+            "type": "string"
+          },
+          "quoteEn": {
+            "type": "string"
+          },
+          "language": {
+            "type": "string"
+          },
+          "audience": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "reviewer",
+              "public"
+            ]
+          },
+          "reach": {
+            "type": "number"
+          },
+          "reachUnit": {
+            "type": "string",
+            "enum": [
+              "views",
+              "upvotes",
+              "likes",
+              "none"
+            ]
+          },
+          "metric": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "value": {
+                "type": "number"
+              },
+              "unit": {
+                "type": "string"
+              },
+              "cycle": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "value",
+              "unit"
+            ],
+            "additionalProperties": false
+          },
+          "caseId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "new",
+              "clustered",
+              "unclustered",
+              "quarantined"
+            ]
+          },
+          "synthetic": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "severity",
+          "agent",
+          "sourceType",
+          "sourceName",
+          "trust",
+          "publishedAt",
+          "fetchedAt",
+          "series",
+          "vehicleRole",
+          "powertrain",
+          "market",
+          "marketBasis",
+          "carArea",
+          "featureHint",
+          "summary",
+          "quote",
+          "language",
+          "audience",
+          "caseId",
+          "status",
+          "synthetic"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "clusters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "type": "string"
+          },
+          "series": {
+            "type": "string",
+            "enum": [
+              "G60",
+              "F70",
+              "G70"
+            ]
+          },
+          "carArea": {
+            "type": "string",
+            "enum": [
+              "exterior_design",
+              "interior_comfort",
+              "seats",
+              "climate",
+              "infotainment_hmi",
+              "connectivity_digital",
+              "driver_assistance",
+              "dynamics_powertrain",
+              "range_charging",
+              "practicality",
+              "quality_materials"
+            ]
+          },
+          "size": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "sentiment": {
+            "type": "number",
+            "minimum": -1,
+            "maximum": 1
+          },
+          "markets": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": "number"
+            }
+          },
+          "caseId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "signalIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "series",
+          "carArea",
+          "size",
+          "sentiment",
+          "markets",
+          "caseId",
+          "signalIds"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "agentRuns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "agent": {
+            "type": "string",
+            "enum": [
+              "bmw_data",
+              "competitor",
+              "customer_public",
+              "trends",
+              "innovation_scout"
+            ]
+          },
+          "series": {
+            "type": "string",
+            "enum": [
+              "G60",
+              "F70",
+              "G70"
+            ]
+          },
+          "startedAt": {
+            "type": "string"
+          },
+          "endedAt": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "partial",
+              "failed"
+            ]
+          },
+          "valid": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "rejected": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "newSignals": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "llmCostUsd": {
+            "type": "number"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "agent",
+          "series",
+          "startedAt",
+          "endedAt",
+          "status",
+          "valid",
+          "rejected",
+          "newSignals",
+          "llmCostUsd"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "quarantine": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "agent": {
+            "type": "string",
+            "enum": [
+              "bmw_data",
+              "competitor",
+              "customer_public",
+              "trends",
+              "innovation_scout"
+            ]
+          },
+          "sourceName": {
+            "type": "string"
+          },
+          "snippet": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "agent",
+          "sourceName",
+          "snippet",
+          "reason",
+          "at"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "series": {
+            "type": "string",
+            "enum": [
+              "G60",
+              "F70",
+              "G70"
+            ]
+          },
+          "relatedSeries": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "G60",
+                "F70",
+                "G70"
+              ]
+            }
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "global",
+              "RoW",
+              "CN"
+            ]
+          },
+          "ownerId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "coOwnerIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "watcherIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "observed",
+              "new",
+              "investigating",
+              "awaiting_answers",
+              "ready",
+              "decided"
+            ]
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "confirmed",
+                  "referred",
+                  "innovation_pool",
+                  "parked",
+                  "merged",
+                  "rejected"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "outcomeNote": {
+            "type": "string"
+          },
+          "markets": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "EU",
+                "US",
+                "CN",
+                "RoW",
+                "unknown"
+              ]
+            }
+          },
+          "carArea": {
+            "type": "string",
+            "enum": [
+              "exterior_design",
+              "interior_comfort",
+              "seats",
+              "climate",
+              "infotainment_hmi",
+              "connectivity_digital",
+              "driver_assistance",
+              "dynamics_powertrain",
+              "range_charging",
+              "practicality",
+              "quality_materials"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "new_feature",
+              "fix_improve",
+              "performance_target",
+              "quality_perception",
+              "market_variant",
+              "brand_differentiator",
+              "regression"
+            ]
+          },
+          "changeDepth": {
+            "type": "string",
+            "enum": [
+              "trim_option",
+              "part_module",
+              "platform_powertrain",
+              "software_ota"
+            ]
+          },
+          "featureName": {
+            "type": "string"
+          },
+          "bodyMd": {
+            "type": "string"
+          },
+          "bodyVersion": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "signalIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "figures": {
+            "type": "object",
+            "properties": {
+              "perMarket": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "market": {
+                      "type": "string",
+                      "enum": [
+                        "EU",
+                        "US",
+                        "CN",
+                        "RoW",
+                        "unknown"
+                      ]
+                    },
+                    "customers": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "complaints": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "wishes": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "likes": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "studyLabel": {
+                      "type": "string"
+                    },
+                    "studyScore": {
+                      "type": "string"
+                    },
+                    "salesShare2030": {
+                      "type": "number"
+                    },
+                    "sentiment": {
+                      "type": "number",
+                      "minimum": -1,
+                      "maximum": 1
+                    }
+                  },
+                  "required": [
+                    "market",
+                    "customers",
+                    "complaints",
+                    "wishes",
+                    "likes",
+                    "sentiment"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "equipmentToday": {
+                "type": "string"
+              },
+              "competitorOffer": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "trend": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "perMarket",
+              "equipmentToday",
+              "competitorOffer",
+              "trend"
+            ],
+            "additionalProperties": false
+          },
+          "marketConflict": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "note": {
+                    "type": "string"
+                  },
+                  "markets": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "EU",
+                        "US",
+                        "CN",
+                        "RoW",
+                        "unknown"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "note",
+                  "markets"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "brandFit": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "reason": {
+                "type": "string"
+              },
+              "confirmedBy": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "value",
+              "reason",
+              "confirmedBy"
+            ],
+            "additionalProperties": false
+          },
+          "factors": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "enum": [
+                "customers",
+                "severity",
+                "satisfaction_gap",
+                "competitor_gap",
+                "market_volume",
+                "regression",
+                "trend",
+                "brand_fit"
+              ]
+            },
+            "additionalProperties": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "required": [
+              "customers",
+              "severity",
+              "satisfaction_gap",
+              "competitor_gap",
+              "market_volume",
+              "regression",
+              "trend",
+              "brand_fit"
+            ]
+          },
+          "evidenceLevel": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low",
+              "assumption"
+            ]
+          },
+          "context": {
+            "type": "object",
+            "properties": {
+              "preset": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "brand",
+                        "baseline",
+                        "past_decision",
+                        "study",
+                        "sales",
+                        "competitor",
+                        "note",
+                        "meeting",
+                        "answer",
+                        "diff"
+                      ]
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "ref": {
+                      "type": "string"
+                    },
+                    "at": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "label",
+                    "detail"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "pmInputs": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "brand",
+                        "baseline",
+                        "past_decision",
+                        "study",
+                        "sales",
+                        "competitor",
+                        "note",
+                        "meeting",
+                        "answer",
+                        "diff"
+                      ]
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "ref": {
+                      "type": "string"
+                    },
+                    "at": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "label",
+                    "detail"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "preset",
+              "pmInputs"
+            ],
+            "additionalProperties": false
+          },
+          "originCaseId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "mergedInto": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "requirementIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "manualRank": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "manualRankReason": {
+            "type": "string"
+          },
+          "newSignalCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "synthetic": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "summary",
+          "series",
+          "relatedSeries",
+          "scope",
+          "ownerId",
+          "coOwnerIds",
+          "watcherIds",
+          "state",
+          "outcome",
+          "markets",
+          "carArea",
+          "type",
+          "changeDepth",
+          "featureName",
+          "bodyMd",
+          "bodyVersion",
+          "signalIds",
+          "figures",
+          "marketConflict",
+          "brandFit",
+          "factors",
+          "evidenceLevel",
+          "context",
+          "originCaseId",
+          "mergedInto",
+          "requirementIds",
+          "manualRank",
+          "newSignalCount",
+          "createdAt",
+          "createdBy",
+          "updatedAt",
+          "synthetic"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "objectType": {
+            "type": "string",
+            "enum": [
+              "case",
+              "requirement"
+            ]
+          },
+          "objectId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "addressee": {
+            "type": "string",
+            "enum": [
+              "engineering",
+              "finance",
+              "design",
+              "quality",
+              "market_pm",
+              "purchasing",
+              "other"
+            ]
+          },
+          "contact": {
+            "type": "string"
+          },
+          "question": {
+            "type": "string"
+          },
+          "why": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "answered",
+              "dropped"
+            ]
+          },
+          "answer": {
+            "type": "string"
+          },
+          "answerSource": {
+            "type": "string",
+            "enum": [
+              "meeting_note",
+              "chat",
+              "manual"
+            ]
+          },
+          "answeredAt": {
+            "type": "string"
+          },
+          "dueDate": {
+            "type": "string"
+          },
+          "askedBy": {
+            "type": "string",
+            "minLength": 1
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "fieldsAffected": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "objectType",
+          "objectId",
+          "addressee",
+          "question",
+          "why",
+          "status",
+          "askedBy",
+          "createdAt",
+          "fieldsAffected"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "meetingNotes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "caseId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          },
+          "attendees": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "text": {
+            "type": "string"
+          },
+          "createdBy": {
+            "type": "string",
+            "minLength": 1
+          },
+          "proposalIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "required": [
+          "id",
+          "caseId",
+          "title",
+          "date",
+          "attendees",
+          "text",
+          "createdBy",
+          "proposalIds"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "proposals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "objectType": {
+            "type": "string",
+            "enum": [
+              "case",
+              "requirement"
+            ]
+          },
+          "objectId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "chat",
+              "meeting_note",
+              "monitor"
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "field",
+              "body",
+              "question_answer",
+              "new_question",
+              "new_requirement"
+            ]
+          },
+          "summary": {
+            "type": "string"
+          },
+          "changes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string"
+                },
+                "before": {},
+                "after": {}
+              },
+              "required": [
+                "field",
+                "before",
+                "after"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "questionId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "citations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "accepted",
+              "rejected"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "decidedBy": {
+            "type": "string",
+            "minLength": 1
+          },
+          "decidedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "objectType",
+          "objectId",
+          "source",
+          "kind",
+          "summary",
+          "changes",
+          "citations",
+          "status",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "requirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "caseId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "series": {
+            "type": "string",
+            "enum": [
+              "G60",
+              "F70",
+              "G70"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "marketScope": {
+            "type": "string",
+            "enum": [
+              "global",
+              "RoW",
+              "CN"
+            ]
+          },
+          "variantOf": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "in_discussion",
+              "pm_approved",
+              "signed_off",
+              "planned",
+              "exported",
+              "rejected"
+            ]
+          },
+          "releaseTarget": {
+            "type": "string",
+            "enum": [
+              "next_gen",
+              "lci",
+              "ota"
+            ]
+          },
+          "carArea": {
+            "type": "string",
+            "enum": [
+              "exterior_design",
+              "interior_comfort",
+              "seats",
+              "climate",
+              "infotainment_hmi",
+              "connectivity_digital",
+              "driver_assistance",
+              "dynamics_powertrain",
+              "range_charging",
+              "practicality",
+              "quality_materials"
+            ]
+          },
+          "changeDepth": {
+            "type": "string",
+            "enum": [
+              "trim_option",
+              "part_module",
+              "platform_powertrain",
+              "software_ota"
+            ]
+          },
+          "metrics": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "question": {
+                  "type": "string"
+                },
+                "target": {
+                  "type": "string"
+                },
+                "unit": {
+                  "type": "string"
+                },
+                "basis": {
+                  "type": "string",
+                  "enum": [
+                    "evidence",
+                    "assumption"
+                  ]
+                },
+                "benchmark": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "question",
+                "target",
+                "basis"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "acceptanceCriteria": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "assumptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "evidenceLevel": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low",
+              "assumption"
+            ]
+          },
+          "cost": {
+            "type": "object",
+            "properties": {
+              "size": {
+                "type": "string",
+                "enum": [
+                  "S",
+                  "M",
+                  "L"
+                ]
+              },
+              "eurBand": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "option_price",
+                  "ai_estimate",
+                  "pm",
+                  "finance"
+                ]
+              },
+              "note": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "size",
+              "eurBand",
+              "source",
+              "note"
+            ],
+            "additionalProperties": false
+          },
+          "ownerId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "manualRank": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "plannedFeatureId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sentBackReason": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "synthetic": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "caseId",
+          "series",
+          "title",
+          "description",
+          "marketScope",
+          "variantOf",
+          "status",
+          "releaseTarget",
+          "carArea",
+          "changeDepth",
+          "metrics",
+          "acceptanceCriteria",
+          "assumptions",
+          "evidenceLevel",
+          "cost",
+          "ownerId",
+          "manualRank",
+          "plannedFeatureId",
+          "createdAt",
+          "updatedAt",
+          "synthetic"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "referrals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "referral",
+              "escalation"
+            ]
+          },
+          "caseId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "fromUserId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "toUserId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "note": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "accepted",
+              "declined",
+              "escalated",
+              "resolved"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "decidedAt": {
+            "type": "string"
+          },
+          "declineReason": {
+            "type": "string"
+          },
+          "linkedCaseId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "resolution": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "caseId",
+          "fromUserId",
+          "toUserId",
+          "note",
+          "status",
+          "createdAt",
+          "linkedCaseId"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "innovation": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "caseId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "horizon": {
+            "type": "string",
+            "enum": [
+              "next_gen",
+              "gen_after",
+              "new_product"
+            ]
+          },
+          "votes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "interestedSeries": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "G60",
+                "F70",
+                "G70"
+              ]
+            }
+          },
+          "pulledInto": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "pitch": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "caseId",
+          "horizon",
+          "votes",
+          "interestedSeries",
+          "pulledInto",
+          "pitch"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "plans": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "series": {
+            "type": "string",
+            "enum": [
+              "G60",
+              "F70",
+              "G70"
+            ]
+          },
+          "successorName": {
+            "type": "string"
+          },
+          "projectType": {
+            "type": "string",
+            "enum": [
+              "new_gen",
+              "lci"
+            ]
+          },
+          "sop": {
+            "type": "string"
+          },
+          "ownerIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "features": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "carArea": {
+                  "type": "string",
+                  "enum": [
+                    "exterior_design",
+                    "interior_comfort",
+                    "seats",
+                    "climate",
+                    "infotainment_hmi",
+                    "connectivity_digital",
+                    "driver_assistance",
+                    "dynamics_powertrain",
+                    "range_charging",
+                    "practicality",
+                    "quality_materials"
+                  ]
+                },
+                "name": {
+                  "type": "string"
+                },
+                "today": {
+                  "type": "string",
+                  "enum": [
+                    "standard",
+                    "optional",
+                    "absent",
+                    "removed"
+                  ]
+                },
+                "todayDetail": {
+                  "type": "string"
+                },
+                "action": {
+                  "type": "string",
+                  "enum": [
+                    "keep",
+                    "new",
+                    "improve",
+                    "remove"
+                  ]
+                },
+                "requirementIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "release": {
+                  "type": "string",
+                  "enum": [
+                    "next_gen",
+                    "lci",
+                    "ota"
+                  ]
+                },
+                "protected": {
+                  "type": "boolean"
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "carArea",
+                "name",
+                "today",
+                "todayDetail",
+                "action",
+                "requirementIds",
+                "release",
+                "protected",
+                "note"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "series",
+          "successorName",
+          "projectType",
+          "sop",
+          "ownerIds",
+          "features"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "messages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "objectType": {
+            "type": "string",
+            "enum": [
+              "case",
+              "requirement"
+            ]
+          },
+          "objectId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "assistant"
+            ]
+          },
+          "authorId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "content": {
+            "type": "string"
+          },
+          "citations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "ref": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "ref",
+                "label"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "proposalIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "objectType",
+          "objectId",
+          "role",
+          "content",
+          "citations",
+          "proposalIds",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "comments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "objectType": {
+            "type": "string",
+            "enum": [
+              "case",
+              "requirement"
+            ]
+          },
+          "objectId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "authorId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "body": {
+            "type": "string"
+          },
+          "mentions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "objectType",
+          "objectId",
+          "authorId",
+          "body",
+          "mentions",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "notifications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "userId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "alert",
+              "mention",
+              "referral",
+              "question_answered",
+              "sign_off_request",
+              "sent_back",
+              "new_signals",
+              "escalation"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "link": {
+            "type": "string"
+          },
+          "actorId": {
+            "type": "string"
+          },
+          "read": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "kind",
+          "title",
+          "body",
+          "link",
+          "read",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "alerts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "ownerId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "caseId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "requirementId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "supports",
+              "contradicts",
+              "raises_the_bar"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "signalIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "dismissed",
+              "rework"
+            ]
+          },
+          "resolution": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "ownerId",
+          "caseId",
+          "requirementId",
+          "verdict",
+          "title",
+          "detail",
+          "signalIds",
+          "status",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "audit": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "at": {
+            "type": "string"
+          },
+          "actorId": {
+            "type": "string"
+          },
+          "actorType": {
+            "type": "string",
+            "enum": [
+              "human",
+              "ai"
+            ]
+          },
+          "action": {
+            "type": "string"
+          },
+          "objectType": {
+            "type": "string",
+            "enum": [
+              "case",
+              "requirement",
+              "signal",
+              "referral",
+              "question",
+              "plan",
+              "profile",
+              "workspace"
+            ]
+          },
+          "objectId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "before": {},
+          "after": {},
+          "rationale": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "seq",
+          "at",
+          "actorId",
+          "actorType",
+          "action",
+          "objectType",
+          "objectId"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "generatedAt",
+    "users",
+    "workspaces",
+    "weightProfiles",
+    "brandProfile",
+    "signals",
+    "clusters",
+    "agentRuns",
+    "quarantine",
+    "cases",
+    "questions",
+    "meetingNotes",
+    "proposals",
+    "requirements",
+    "referrals",
+    "innovation",
+    "plans",
+    "messages",
+    "comments",
+    "notifications",
+    "alerts",
+    "audit"
+  ],
+  "additionalProperties": false
+}
