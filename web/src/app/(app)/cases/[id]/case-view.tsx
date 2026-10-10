@@ -7,6 +7,7 @@ import {
   AlertTriangle,
   ArrowRight,
   Bot,
+  Box,
   ChevronDown,
   Download,
   Eye,
@@ -216,6 +217,11 @@ function CaseActions({ c, canEdit, watching, onAction, userId }: { c: Case; canE
         }}
       >
         <Download className="size-3.5" /> .md
+      </Button>
+      <Button asChild variant="outline" size="sm">
+        <Link href={`/car?case=${c.id}`}>
+          <Box className="size-3.5" /> View on car
+        </Link>
       </Button>
       {c.marketConflict && c.state !== "decided" && (
         <Button variant="outline" size="sm" onClick={() => onAction("escalate")}>

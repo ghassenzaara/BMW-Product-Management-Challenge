@@ -6,6 +6,7 @@ import { useEffect, useSyncExternalStore, type ReactNode } from "react";
 import {
   Bell,
   BookOpenCheck,
+  Box,
   Car,
   ClipboardCheck,
   FileClock,
@@ -61,6 +62,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     { href: "/inbox", label: "Inbox", icon: Inbox, badge: pendingIn + openAlerts },
     { href: "/radar", label: "Signal radar", icon: Radar },
     { href: "/cases", label: "Cases", icon: KanbanSquare },
+    { href: "/car", label: "Car map", icon: Box },
     { href: "/requirements", label: "Requirements", icon: ListChecks },
     { href: `/plan/${series}`, label: "Vehicle plan", icon: Car },
     { href: "/innovation", label: "Innovation pool", icon: Lightbulb },

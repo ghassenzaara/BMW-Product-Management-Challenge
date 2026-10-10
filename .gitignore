@@ -1,2 +1,4 @@
 .claude/
 .entire/
+# Raw 3D downloads (120 MB). The web-ready copies live in web/public/models/.
+#Car_models/
