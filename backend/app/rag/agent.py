@@ -1,4 +1,4 @@
-"""RAG sidebar agent on case and requirement pages.
+"""Argus, the AI colleague of the PMs: the RAG agent on case and requirement pages.
 
 Tools: search_signals, search_context, get_case, get_requirement,
 score_breakdown, compare_markets, what_if_weights, propose_edit. Every factual
@@ -7,8 +7,9 @@ person told the system (brief, stance, answers, meeting notes, feedback,
 comments) is cited as [context:<type>:<id>] and is never customer evidence.
 Citation check: a cited ID must have been returned by a search in this
 conversation turn, otherwise the citation is removed; an answer left without
-any valid citation becomes "No evidence found". Edits are only proposals
-(diffs) that the PM accepts or rejects.
+any valid citation becomes "No evidence found", unless it was built on the
+stored figures of the case (counts, scores, requirement fields): then it is kept
+and marked as such. Edits are only proposals (diffs) that the PM accepts or rejects.
 
 Without an OpenAI key the agent answers extractively from the hybrid search
 (changes.md 7.3).
@@ -34,6 +35,17 @@ CITATION = re.compile(r"\[signal:([0-9a-f-]{36})\]")
 CONTEXT_CITATION = re.compile(r"\[context:([a-z_]+):([^\]\s]+)\]")
 NO_EVIDENCE = "No evidence found in the stored sources."
 MAX_STEPS = 6
+# Tools that read stored rows of the case itself: an answer built on them is grounded without a signal.
+DATA_TOOLS = ("get_case", "get_requirement", "score_breakdown", "compare_markets", "what_if_weights")
+FROM_FIGURES = "_From the stored case figures and scores; no customer quote is cited._"
+# A greeting or "who are you" needs no search and no model.
+GREETING = re.compile(r"^\s*(hi|hello|hey|good (morning|afternoon|evening)|who are you|what are you|"
+                      r"what can you do|how can you help|help)\b[\s!?.,]*(argus)?[\s!?.]*$", re.I)
+INTRO = ("I'm Argus, your AI colleague in Argon. I work on this page with you: I search the stored customer and "
+         "market signals and cite every claim, compare markets with numbers, explain why a case ranks where it "
+         "does, recall what you and your colleagues decided or asked, and propose page edits for you to accept "
+         "or reject. I research and draft; you decide. Ask me, for example, what customers complain about most "
+         "here, how the markets differ, or why this is ranked where it is.")
 
 
 @dataclass
@@ -44,6 +56,7 @@ class Turn:
     context: set[tuple[str, str]] = field(default_factory=set)   # (type, id) of PM-context chunks returned
     proposal: dict | None = None
     actor: str | None = None   # who asks (pm:<user id>): decides whose brief is the context
+    grounded: set[str] = field(default_factory=set)   # stored-data tools that returned something
 
 
 def search(conn, query: str, *, k: int = 12, vehicle: str | None = None, case_id: str | None = None,
@@ -203,9 +216,11 @@ def _tool_specs() -> list[dict]:
 
 
 def check_citations(conn, answer: str, retrieved: set[str],
-                    context: set[tuple[str, str]] | None = None) -> tuple[str, list[str]]:
+                    context: set[tuple[str, str]] | None = None, grounded: bool = False) -> tuple[str, list[str]]:
     """Keep only citations of things a search returned in this turn: signals, and
-    PM-context items. An answer left with neither is replaced by "No evidence found"."""
+    PM-context items. An answer left with neither is replaced by "No evidence found",
+    unless it was built on the stored figures of the case (``grounded``): then it stays
+    and says so."""
     cited = list(dict.fromkeys(CITATION.findall(answer)))
     existing = {str(r["id"]) for r in conn.execute("select id from signal where id = any(%s::uuid[])"
                                                    " and validation = 'valid'", (cited,)).fetchall()} if cited else set()
@@ -215,6 +230,8 @@ def check_citations(conn, answer: str, retrieved: set[str],
     kept = [m for m in CONTEXT_CITATION.findall(cleaned) if m in context]
     cleaned = CONTEXT_CITATION.sub(lambda m: m.group(0) if (m.group(1), m.group(2)) in context else "", cleaned)
     if not valid and not kept:
+        if grounded and cleaned.strip() and NO_EVIDENCE not in cleaned:
+            return f"{cleaned.strip()}\n\n{FROM_FIGURES}", []
         return NO_EVIDENCE, []
     return cleaned.strip(), valid
 
@@ -260,6 +277,8 @@ def _llm_answer(conn, turn: Turn, question: str, history: list[dict]) -> tuple[s
             try:
                 args = json.loads(call.arguments or "{}")
                 result = fn(conn, turn, **args) if fn else {"error": "unknown tool"}
+                if call.name in DATA_TOOLS and result and not (isinstance(result, dict) and "error" in result):
+                    turn.grounded.add(call.name)
             except Exception as exc:  # tool errors go back to the model, not to the PM
                 result = {"error": str(exc)[:300]}
             pending.append({"type": "function_call_output", "call_id": call.call_id,
@@ -275,19 +294,22 @@ def ask(conn, object_type: str, object_id: str, question: str, *, actor: str, re
     audit.insert(conn, "chat_message", {"object_type": object_type, "object_id": object_id, "role": "pm",
                                         "author": actor, "content": question}, actor=actor, request_id=request_id)
     model = None
-    if llm_available():
-        raw, prompt_version = _llm_answer(conn, turn, question, history)
-        model = get_settings().llm_model_for("rag_agent")
+    if GREETING.match(question):
+        answer, cited, prompt_version = INTRO, [], "argus_intro@v1"
     else:
-        raw, prompt_version = _extractive(conn, turn, question), "rag_extractive@v2"
-    answer, cited = check_citations(conn, raw, turn.retrieved, turn.context)
+        if llm_available():
+            raw, prompt_version = _llm_answer(conn, turn, question, history)
+            model = get_settings().llm_model_for("rag_agent")
+        else:
+            raw, prompt_version = _extractive(conn, turn, question), "rag_extractive@v2"
+        answer, cited = check_citations(conn, raw, turn.retrieved, turn.context, grounded=bool(turn.grounded))
     row = audit.insert(conn, "chat_message", {
         "object_type": object_type, "object_id": object_id, "role": "agent", "author": "agent:rag",
         "content": answer, "cited_signals": [uuid.UUID(c) for c in cited],
         "retrieved_signals": [uuid.UUID(r) for r in sorted(turn.retrieved)],
         "proposed_diff": turn.proposal, "diff_status": "proposed" if turn.proposal else "none",
         "model": model, "prompt_version": prompt_version,
-    }, actor="agent:rag", request_id=request_id, rationale="RAG answer (citations checked)")
+    }, actor="agent:rag", request_id=request_id, rationale="Argus answer (citations checked)")
     if turn.proposal:
         from app.collab import proposals
 

@@ -14,6 +14,7 @@ import {
   marketLabel,
   regionLabel,
   signalKindLabel,
+  type AspectGroup,
   type Case,
   type Market,
   type SignalKind,
@@ -60,6 +61,7 @@ function Pick<T extends string>({ value, options, onChange, className }: { value
 }
 
 const areaOptions = CarAreas.options.map((o) => [o, carAreaLabel[o]] as [Case["carArea"], string]);
+const aspectName = (id: string) => (id[0].toUpperCase() + id.slice(1)).replace(/_/g, " / ");
 const typeOptions = CaseTypes.options.map((o) => [o, caseTypeLabel[o]] as [Case["type"], string]);
 const depthOptions = ChangeDepths.options.map((o) => [o, changeDepthLabel[o]] as [Case["changeDepth"], string]);
 const scopeOptions = Regions.options.map((o) => [o, regionLabel[o]] as [Case["scope"], string]);
@@ -73,12 +75,19 @@ export function NewCaseDialog({ open, onOpenChange }: { open: boolean; onOpenCha
   const create = useApiMutation("createCase", { success: (c) => `${c.id} created. Add your evidence next.` });
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
+  // Fixed taxonomy: a case is one topic and one aspect. The car area only narrows the topic list.
+  const taxonomy = useApi("taxonomy");
   const [carArea, setCarArea] = useState<Case["carArea"]>(CarAreas.options[0]);
+  const [topicId, setTopicId] = useState("");
+  const [aspect, setAspect] = useState<AspectGroup>("function");
   const [type, setType] = useState<Case["type"]>("fix_improve");
   const [depth, setDepth] = useState<Case["changeDepth"]>("part_module");
   const [scope, setScope] = useState<Case["scope"] | null>(null);
   const series = me.data?.workspace.series;
   const effectiveScope = scope ?? me.data?.user.region ?? "global";
+  const topicOptions = (taxonomy.data?.topics ?? []).filter((t) => t.carArea === carArea && t.id !== "other").map((t) => [t.id, t.label] as [string, string]);
+  const aspectOptions = (taxonomy.data?.aspectGroups ?? []).map((a) => [a.id, aspectName(a.id)] as [AspectGroup, string]);
+  const aspectHint = taxonomy.data?.aspectGroups.find((a) => a.id === aspect)?.description;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -96,8 +105,34 @@ export function NewCaseDialog({ open, onOpenChange }: { open: boolean; onOpenCha
           </Field>
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Car area">
-              <Pick value={carArea} options={areaOptions} onChange={setCarArea} />
+              <Pick
+                value={carArea}
+                options={areaOptions}
+                onChange={(v) => {
+                  setCarArea(v);
+                  setTopicId("");
+                }}
+              />
             </Field>
+            <Field label="Topic">
+              <Select value={topicId} onValueChange={setTopicId}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Pick the topic" />
+                </SelectTrigger>
+                <SelectContent>
+                  {topicOptions.map(([v, l]) => (
+                    <SelectItem key={v} value={v}>
+                      {l}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          </div>
+          <Field label="What about it?" hint={aspectHint}>
+            <Pick value={aspect} options={aspectOptions.length ? aspectOptions : [[aspect, aspectName(aspect)]]} onChange={setAspect} />
+          </Field>
+          <div className="grid gap-3 sm:grid-cols-3">
             <Field label="Type">
               <Pick value={type} options={typeOptions} onChange={setType} />
             </Field>
@@ -114,10 +149,10 @@ export function NewCaseDialog({ open, onOpenChange }: { open: boolean; onOpenCha
             Cancel
           </Button>
           <Button
-            disabled={title.trim().length < 3 || !series || create.isPending}
+            disabled={title.trim().length < 3 || !series || !topicId || create.isPending}
             onClick={async () => {
               const c = await create.mutateAsync({
-                body: { title: title.trim(), summary: summary.trim() || title.trim(), series: series!, scope: effectiveScope, carArea, type, changeDepth: depth, signalIds: [], rationale: "Started by hand by the PM" },
+                body: { title: title.trim(), summary: summary.trim() || title.trim(), series: series!, scope: effectiveScope, topicId, aspectGroup: aspect, type, changeDepth: depth, signalIds: [], rationale: "Started by hand by the PM" },
               });
               onOpenChange(false);
               setTitle("");
@@ -153,24 +188,16 @@ export function EditCaseDialog({ c, open, onOpenChange }: { c: Case; open: boole
           <DialogDescription>{c.id}</DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
-          <div className="grid gap-3 sm:grid-cols-[1fr_1.4fr]">
-            <Field label="Short name">
-              <Input value={d.shortTitle} onChange={(e) => set("shortTitle", e.target.value)} />
-            </Field>
-            <Field label="Feature name">
-              <Input value={d.featureName} onChange={(e) => set("featureName", e.target.value)} />
-            </Field>
-          </div>
+          <Field label="Short name">
+            <Input value={d.shortTitle} onChange={(e) => set("shortTitle", e.target.value)} />
+          </Field>
           <Field label="Problem">
             <Input value={d.title} onChange={(e) => set("title", e.target.value)} />
           </Field>
           <Field label="Summary">
             <Textarea rows={3} value={d.summary} onChange={(e) => set("summary", e.target.value)} />
           </Field>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="Car area">
-              <Pick value={d.carArea} options={areaOptions} onChange={(v) => set("carArea", v)} />
-            </Field>
+          <div className="grid gap-3 sm:grid-cols-3">
             <Field label="Type">
               <Pick value={d.type} options={typeOptions} onChange={(v) => set("type", v)} />
             </Field>
@@ -181,15 +208,10 @@ export function EditCaseDialog({ c, open, onOpenChange }: { c: Case; open: boole
               <Pick value={d.scope} options={scopeOptions} onChange={(v) => set("scope", v)} />
             </Field>
           </div>
-          <Field label="Markets">
-            <ToggleGroup type="multiple" variant="outline" size="sm" value={d.markets} onValueChange={(xs) => set("markets", MARKETS.filter((m) => xs.includes(m)))} className="flex-wrap">
-              {MARKETS.map((m) => (
-                <ToggleGroupItem key={m} value={m} className="px-3">
-                  {marketLabel[m]}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
-          </Field>
+          <p className="text-xs text-muted-foreground">
+            {c.featureName} · {carAreaLabel[c.carArea]}
+            {c.markets.length ? ` · ${c.markets.map((m) => marketLabel[m]).join(", ")}` : ""}. Topic and car area come from the fixed taxonomy, markets from the signals; they are not edited here.
+          </p>
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
@@ -213,7 +235,7 @@ export function EditCaseDialog({ c, open, onOpenChange }: { c: Case; open: boole
 }
 
 function pickEditable(c: Case) {
-  return { shortTitle: c.shortTitle, title: c.title, summary: c.summary, featureName: c.featureName, carArea: c.carArea, type: c.type, changeDepth: c.changeDepth, scope: c.scope, markets: c.markets.filter((m) => m !== "unknown") as Market[] };
+  return { shortTitle: c.shortTitle, title: c.title, summary: c.summary, type: c.type, changeDepth: c.changeDepth, scope: c.scope };
 }
 
 type Tab = "file" | "link" | "note";

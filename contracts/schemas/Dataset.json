@@ -935,6 +935,29 @@
               "null"
             ]
           },
+          "aspectGroup": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "function",
+                  "usability",
+                  "reliability",
+                  "performance",
+                  "efficiency_range",
+                  "design",
+                  "comfort",
+                  "space",
+                  "quality",
+                  "sound",
+                  "price"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "stances": {
             "type": "array",
             "items": {

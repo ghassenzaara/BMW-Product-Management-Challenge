@@ -11,6 +11,10 @@
 **For:** whoever (human or AI agent) connects the synthetic-data frontend to Ghassen's real backend.
 **State as of 11.10.2026, 02:30:** frontend on branch `feature/frontend-demo` ([PR #5](https://github.com/ghassenzaara/BMW-Product-Management-Challenge/pull/5) into `main`); backend on `main` (phases 0 to 10 done, see `plan.md`).
 
+> **Status, 11.10.2026 (after PR #10 and #11).** The adapter exists and is complete: `web/src/backend/` serves all 77 endpoints of the contract from FastAPI when `DATA_SOURCE=backend`; the mock serves all 77 on the demo data otherwise. The two sources are never mixed (`route.ts`), so the per-endpoint fallback and the sidecar store described in section 8 are history. Sections 5 to 8 describe the starting point and the plan; where they differ from the code, the code and `backend/API.md` are right (for example `savePmContext` became `saveCaseStance`).
+>
+> What the real backend does not offer yet: starting a fetch run from the UI, the competitor ripple with its conversion factors and monitor settings. `GET /me` reports this as `features: { agentRefresh, competitorRipple }` and the UI hides those controls instead of failing. Everything else (cases by hand, PM evidence, detail edits, trace replay, exports) is stored and audited by the backend.
+>
 > **How to use this file.** Read sections 1 to 3 to understand the product and the two codebases, then section 7 (the gap) and section 8 (the plan). Sections 4 to 6 are reference material: every screen, endpoint and business rule of the frontend, so nothing gets lost while swapping the data source.
 
 ---
@@ -129,7 +133,7 @@ Six navigation entries (after Thomas's "less is more"), plus detail pages. Endpo
 
 ---
 
-## 5. The frontend REST contract (56 endpoints)
+## 5. The frontend REST contract (56 endpoints at the time of writing; 77 today, see `web/src/contracts/api.ts`)
 
 Base `/api`, header `x-user-id`. Full schemas: `web/src/contracts/api.ts` and `entities.ts` (or `contracts/openapi.yaml`). "Backend today" = the closest call on main (section 7), or **none**.
 

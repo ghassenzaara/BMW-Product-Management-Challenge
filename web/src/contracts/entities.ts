@@ -380,6 +380,8 @@ export const Case = z.object({
   highlights: z.array(z.string()),
   /** Main taxonomy topic of the case. */
   topicId: z.string().nullable(),
+  /** Aspect group of the case (fixed taxonomy): a case is one topic and one aspect. */
+  aspectGroup: AspectGroup.nullable().optional(),
   /** One stance per PM who worked the case (layer 2). */
   stances: z.array(CaseStance),
   series: Series,

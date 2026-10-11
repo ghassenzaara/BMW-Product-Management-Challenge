@@ -37,7 +37,7 @@ import { extractFromNote } from "./ai/notes";
 import { liveChatEnabled, liveReply } from "./ai/live";
 import { argusReply } from "./ai/argus";
 import { refreshPool } from "./authored/world";
-import { WEB_CLASSIFIER, webSnapshotRecord, webSpecToSignal } from "./convert";
+import { WEB_CLASSIFIER, sha256, webSnapshotRecord, webSpecToSignal } from "./convert";
 import { buildReplay } from "./replay";
 import { assessFact, decideItem, reassess, SIGNED_STATUSES } from "./ripple";
 import taxonomyData from "./fixtures/taxonomy.json";
@@ -88,6 +88,9 @@ function caseSignals(d: Dataset, c: Case) {
   return c.signalIds.map((id) => d.signals.find((s) => s.id === id)).filter((s): s is Signal => !!s);
 }
 
+/** A link or a note a PM added is market evidence or an assumption; only rows of an uploaded file count as customers. */
+const isPmOpinion = (s: Signal) => s.sourceType === "pm_link" || s.sourceType === "pm_note";
+
 function recomputeFigures(d: Dataset, c: Case) {
   const sigs = caseSignals(d, c);
   const markets = new Set<Market>(c.markets);
@@ -95,7 +98,7 @@ function recomputeFigures(d: Dataset, c: Case) {
   const old = new Map(c.figures.perMarket.map((m) => [m.market, m]));
   c.markets = [...markets];
   c.figures.perMarket = [...markets].map((m) => {
-    const inM = sigs.filter((s) => s.market === m && s.sourceType !== "bmw_study" && s.kind !== "competitor_fact");
+    const inM = sigs.filter((s) => s.market === m && s.sourceType !== "bmw_study" && s.kind !== "competitor_fact" && !isPmOpinion(s));
     const complaints = inM.filter((s) => s.kind === "complaint").length;
     const wishes = inM.filter((s) => s.kind === "wish").length;
     const likes = inM.filter((s) => s.kind === "like").length;
@@ -113,7 +116,7 @@ function recomputeFigures(d: Dataset, c: Case) {
       sentiment: total ? Math.round(Math.max(-1, Math.min(1, (likes - complaints - 0.5 * wishes) / total)) * 100) / 100 : (prev?.sentiment ?? 0),
     };
   });
-  const customers = sigs.filter((s) => s.sourceType !== "bmw_study" && !["competitor_fact", "trend"].includes(s.kind)).length;
+  const customers = sigs.filter((s) => s.sourceType !== "bmw_study" && !["competitor_fact", "trend"].includes(s.kind) && !isPmOpinion(s)).length;
   c.factors.customers = Math.round(Math.min(1, Math.log10(1 + customers) / Math.log10(61)) * 100) / 100;
 }
 
@@ -338,7 +341,7 @@ export const handlers: Handlers = {
   me: ({ user }) => {
     const d = db();
     const brief = user.role === "vehicle_pm" ? resolveBrief(d, user.series[0], user.id) : null;
-    return { user, workspace: workspaceOf(d, user.id), weightProfile: profileOf(d, user.id), brief, needsOnboarding: needsOnboarding(d, user) };
+    return { user, workspace: workspaceOf(d, user.id), weightProfile: profileOf(d, user.id), brief, needsOnboarding: needsOnboarding(d, user), features: { agentRefresh: true, competitorRipple: true } };
   },
 
   // Series briefs (layer 1)
@@ -637,6 +640,14 @@ export const handlers: Handlers = {
     ),
   createCase: ({ body, user }) => {
     const d = db();
+    const picked = d.signals.filter((s) => body.signalIds.includes(s.id));
+    if (!picked.length && (!body.topicId || !body.aspectGroup)) throw new ApiError(400, "A case started by hand needs a topic and an aspect of the fixed taxonomy.");
+    const topicId = picked.length ? mostFrequentTopic(picked) : body.topicId!;
+    const topic = (taxonomyData as TaxonomyResponse).topics.find((t) => t.id === topicId);
+    if (!picked.length && !topic) throw new ApiError(400, `${body.topicId} is not a topic of the fixed taxonomy.`);
+    // The car area always follows from the topic (signals without a topic keep their own area).
+    const carArea: Case["carArea"] = topic?.carArea ?? picked[0]?.carArea ?? "quality_materials";
+    const aspectGroup = picked.length ? (picked.find((s) => s.topicId === topicId)?.aspectGroup ?? picked[0].aspectGroup) : body.aspectGroup!;
     const prefix = `CASE-${body.series}-${body.scope === "CN" ? "CN-" : ""}`;
     const id = nextId(prefix, d.cases.filter((c) => (body.scope === "CN" ? c.id.includes("-CN-") : !c.id.includes("-CN-"))));
     const c: Case = {
@@ -653,12 +664,13 @@ export const handlers: Handlers = {
       state: "new",
       outcome: null,
       markets: [],
-      carArea: body.carArea,
+      carArea,
       type: body.type,
       changeDepth: body.changeDepth,
-      featureName: body.title,
+      featureName: topic?.shortLabel ?? body.title,
       highlights: [body.summary],
-      topicId: mostFrequentTopic(d.signals.filter((s) => body.signalIds.includes(s.id))),
+      topicId,
+      aspectGroup,
       stances: [],
       bodyMd: `## Problem\n\n${body.summary}\n\n## Who is affected\n\n_To fill._\n\n## Evidence summary\n\n${body.signalIds.length ? `${body.signalIds.length} signals selected on the radar.` : "_Started by hand. Add evidence: files, links or notes._"}\n\n## Today's car\n\n_To fill._\n\n## Competitors\n\n_To fill._\n\n## Brand fit\n\n_AI proposal pending._\n\n## Options considered\n\n_None yet._\n\n## Decision log\n\n- ${now().slice(0, 10)} · Case opened by ${user.name}: ${body.rationale}`,
       bodyVersion: 1,
@@ -717,7 +729,7 @@ export const handlers: Handlers = {
         sourceName: it.type === "csv_row" ? (it.source ?? "Uploaded file") : it.type === "link" ? (host(it.url) ?? "Link") : user.name,
         trust: trust[it.type],
         url: it.url || undefined,
-        recordRef: it.type === "csv_row" ? `${it.source ?? "upload"}#row${i + 1}` : undefined,
+        recordRef: `pm:${it.type === "csv_row" ? `${it.source ?? "upload"}#row${i + 1}` : it.type}@${nextId("SIG-PM-", d.signals)}`,
         publishedAt: now(),
         fetchedAt: now(),
         series: c.series,
@@ -727,7 +739,7 @@ export const handlers: Handlers = {
         marketBasis: it.market === "unknown" ? "unknown" : "stated",
         carArea: c.carArea,
         topicId: c.topicId,
-        aspectGroup: null,
+        aspectGroup: c.aspectGroup ?? null,
         featureHint: c.featureName,
         summary: it.title?.trim() || it.text.slice(0, 140),
         quote: it.text,
@@ -738,6 +750,8 @@ export const handlers: Handlers = {
         classification: { method: "manual", label: `Added by ${user.name}` },
         synthetic: false,
       };
+      // The raw text is kept as the signal's source record, so the quote can be checked like any other.
+      d.sourceRecords.push({ ref: s.recordRef!, sourceName: s.sourceName, url: s.url, text: it.text, sha256: sha256(it.text), fetchedAt: s.fetchedAt, synthetic: false });
       d.signals.push(s);
       c.signalIds.push(s.id);
       return s;

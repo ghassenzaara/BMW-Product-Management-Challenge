@@ -108,6 +108,12 @@ export const MeResponse = z.object({
   brief: ResolvedBrief.nullable(),
   /** True when a vehicle PM has not confirmed a brief yet: the UI opens onboarding. */
   needsOnboarding: z.boolean(),
+  /**
+   * What this data source offers, so the UI hides what it cannot do instead of failing on click.
+   * Demo data: both true. Real backend: agents run on the server's schedule and the competitor
+   * ripple with its monitor settings is not stored yet.
+   */
+  features: z.object({ agentRefresh: z.boolean(), competitorRipple: z.boolean() }),
 });
 export type MeResponse = z.infer<typeof MeResponse>;
 
@@ -213,12 +219,17 @@ export const CreateCaseBody = z.object({
   title: z.string().min(3),
   series: Series,
   scope: Region,
-  carArea: CarArea,
   type: CaseType,
   changeDepth: ChangeDepth,
   summary: z.string(),
   /** Empty when the PM starts a case by hand and adds evidence afterwards. */
   signalIds: z.array(z.string()),
+  /**
+   * Fixed taxonomy: a case has one topic and one aspect group, and its car area follows from the topic.
+   * With signals both come from the signals; a case started by hand (no signals) must name them.
+   */
+  topicId: z.string().optional(),
+  aspectGroup: AspectGroup.optional(),
   rationale: Rationale,
 });
 
@@ -247,11 +258,9 @@ export const EditableCaseFields = Case.pick({
   summary: true,
   bodyMd: true,
   scope: true,
-  markets: true,
-  carArea: true,
+  // Car area, feature name and markets are not editable: they follow from the topic and the signals.
   type: true,
   changeDepth: true,
-  featureName: true,
   coOwnerIds: true,
   watcherIds: true,
   manualRank: true,

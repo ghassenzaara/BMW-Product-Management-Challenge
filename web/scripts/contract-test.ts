@@ -165,8 +165,28 @@ async function main() {
   await call("voteInnovation", { params: { caseId: "CASE-INNO-0001" }, body: {} });
   await call("pullInnovation", { params: { caseId: "CASE-INNO-0002" }, body: { series: "G60", rationale: "Sun protection wishes in G60 too" } });
   const created = (await call("createCase", {
-    body: { title: "Head-up display hard to read", series: "G60", scope: "RoW", carArea: "infotainment_hmi", type: "fix_improve", changeDepth: "part_module", summary: "HUD complaints from the radar", signalIds: ["G60-0209", "G60-0576"], rationale: "Cluster of HUD complaints" },
+    body: { title: "Head-up display hard to read", series: "G60", scope: "RoW", type: "fix_improve", changeDepth: "part_module", summary: "HUD complaints from the radar", signalIds: ["G60-0209", "G60-0576"], rationale: "Cluster of HUD complaints" },
   })) as { id: string };
+
+  // A case started by hand: one topic and one aspect of the fixed taxonomy; the car area follows from the topic.
+  const byHand = { title: "Rear passengers can't charge their phones", series: "G60", scope: "RoW", type: "new_feature", changeDepth: "part_module", summary: "No USB-C in the rear", signalIds: [], rationale: "Started by hand" };
+  await call("createCase", { body: byHand, expect: 400 });
+  const taxonomy = (await call("taxonomy")) as { topics: { id: string; carArea: string }[] };
+  const topic = taxonomy.topics.find((t) => t.id !== "other")!;
+  const hand = (await call("createCase", { body: { ...byHand, topicId: topic.id, aspectGroup: "function" } })) as { id: string; topicId: string; carArea: string };
+  expectTrue(hand.topicId === topic.id && hand.carArea === topic.carArea, "a hand-made case takes its car area from its topic");
+  const evidence = (await call("addCaseEvidence", {
+    params: { id: hand.id },
+    body: {
+      items: [
+        { type: "note", text: "Dealers say rear passengers ask for charging on long trips.", kind: "complaint", market: "US" },
+        { type: "csv_row", text: "My kids cannot charge their tablets in the back.", source: "clinic.csv", kind: "complaint", market: "US" },
+      ],
+      rationale: "Dealer feedback and a clinic file",
+    },
+  })) as { added: { recordRef?: string }[]; case: { figures: { perMarket: { market: string; customers: number }[] } } };
+  expectTrue(evidence.added.length === 2 && evidence.added.every((s) => !!s.recordRef), "PM evidence becomes signals with a stored source record");
+  expectTrue(evidence.case.figures.perMarket.find((m) => m.market === "US")?.customers === 1, "a PM note is evidence, not a customer; a file row counts");
   await call("transitionCase", { params: { id: created.id }, body: { action: "merge", mergeIntoId: "CASE-G60-0001", rationale: "Same operating-concept problem" } });
   await call("updateWorkspace", { body: { projectType: "lci" } });
   const wp = (await call("createWeightProfile", { body: { name: "My test", description: "test", weights: { customers: 1, severity: 1, satisfaction_gap: 1, competitor_gap: 1, market_volume: 1, regression: 1, trend: 1, brand_fit: 1 }, costMultiplier: { S: 1, M: 0.8, L: 0.5 } } })) as { id: string };
