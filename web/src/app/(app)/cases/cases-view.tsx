@@ -4,8 +4,8 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQueries } from "@tanstack/react-query";
-import { DndContext, DragOverlay, PointerSensor, useDraggable, useDroppable, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
-import { ArrowDown, ArrowUp, Columns3, Eye, EyeOff, ListOrdered, Minus, ShieldCheck, SlidersHorizontal } from "lucide-react";
+import { DndContext, DragOverlay, PointerSensor, useDraggable, useDroppable, useSensor, useSensors, type DragEndEvent, type DragMoveEvent } from "@dnd-kit/core";
+import { ArrowDown, ArrowUp, Columns3, Eye, EyeOff, ListOrdered, Minus, Plus, ShieldCheck, SlidersHorizontal } from "lucide-react";
 import {
   CarArea,
   CaseState as CaseStates,
@@ -22,12 +22,15 @@ import {
 } from "@/contracts";
 import { api } from "@/lib/api/client";
 import { useApi } from "@/lib/api/hooks";
+import { movedBecause } from "@/lib/rank-reasons";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/common/page";
 import { CaseStateDot, Pill, ScoreBar, caseStateTone } from "@/components/common/badges";
 import { useUsers } from "@/components/common/people";
 import { CaseCard } from "@/components/cases/case-card";
+import { attachToArgus, overArgus, setArgusDrag } from "@/components/argus/store";
 import { CaseActionDialog, type UiCaseAction } from "@/components/cases/case-action-dialog";
+import { NewCaseDialog } from "@/components/cases/case-forms";
 import { useScores } from "@/components/cases/use-scores";
 import { WeightPanel } from "@/components/cases/weight-panel";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -56,6 +59,7 @@ export function CasesView() {
 
   const scope: Scope = scopeChoice ?? ((params.get("scope") as Scope | null) ?? (params.get("owner") || user?.role === "head" ? "all" : "mine"));
 
+  const [newCase, setNewCase] = useState(false);
   const { data: cases = [] } = useApi("cases");
   const scores = useScores(undefined, whatIf);
   const { users } = useUsers();
@@ -84,6 +88,10 @@ export function CasesView() {
       <PageHeader
         title="Cases"
         actions={
+          <div className="flex items-center gap-2">
+          <Button size="sm" onClick={() => setNewCase(true)}>
+            <Plus className="size-3.5" /> New case
+          </Button>
           <ToggleGroup type="single" variant="outline" size="sm" value={view} onValueChange={(v) => v && setViewUrl(v as "board")}>
             <ToggleGroupItem value="board" className="gap-1.5 px-2.5">
               <Columns3 className="size-3.5" /> Board
@@ -92,6 +100,7 @@ export function CasesView() {
               <ListOrdered className="size-3.5" /> Ranked
             </ToggleGroupItem>
           </ToggleGroup>
+          </div>
         }
       >
         <div className="flex flex-wrap items-center gap-2">
@@ -108,7 +117,7 @@ export function CasesView() {
           </ToggleGroup>
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className={cn(activeFilters > 0 && "border-primary/60 text-primary")}>
+              <Button variant="outline" size="sm" className={cn(activeFilters > 0 && "border-foreground text-foreground")}>
                 <SlidersHorizontal className="size-3.5" /> Filters{activeFilters > 0 && ` · ${activeFilters}`}
               </Button>
             </PopoverTrigger>
@@ -131,6 +140,7 @@ export function CasesView() {
       ) : (
         <Ranked cases={filtered} scores={scores} whatIf={whatIf} setWhatIf={setWhatIf} baseWeights={me.data?.weightProfile.weights} />
       )}
+      <NewCaseDialog open={newCase} onOpenChange={setNewCase} />
     </div>
   );
 }
@@ -138,7 +148,7 @@ export function CasesView() {
 function FilterSelect({ value, onChange, label, options }: { value: string; onChange: (v: string) => void; label: string; options: [string, string][] }) {
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger size="sm" className={cn("w-full", value !== ALL && "border-primary/60 text-primary")}>
+      <SelectTrigger size="sm" className={cn("w-full", value !== ALL && "border-foreground text-foreground")}>
         <SelectValue placeholder={label} />
       </SelectTrigger>
       <SelectContent>
@@ -164,9 +174,16 @@ function Board({ cases, scores, showObserved }: { cases: Case[]; scores: Map<str
   const active = activeId ? cases.find((x) => x.id === activeId) : undefined;
   const columns = CaseStates.options.filter((s) => showObserved || s !== "observed");
 
+  // Cards drag with dnd-kit, not natively, so the Argus bubble is hit-tested by the pointer position.
+  const pointer = (e: DragMoveEvent | DragEndEvent) => {
+    const start = e.activatorEvent as PointerEvent;
+    return [start.clientX + e.delta.x, start.clientY + e.delta.y] as const;
+  };
   const onDragEnd = (e: DragEndEvent) => {
     setActiveId(null);
+    setArgusDrag(false);
     const c = cases.find((x) => x.id === e.active.id);
+    if (c && overArgus(...pointer(e))) return attachToArgus({ kind: "case", id: c.id, title: c.title });
     const to = e.over?.id as CaseState | undefined;
     if (!c || !to || to === c.state) return;
     if (to === "decided") return setDecide(c);
@@ -176,8 +193,14 @@ function Board({ cases, scores, showObserved }: { cases: Case[]; scores: Map<str
   };
 
   return (
-    <DndContext sensors={sensors} onDragStart={(e) => setActiveId(String(e.active.id))} onDragEnd={onDragEnd} onDragCancel={() => setActiveId(null)}>
-      <div className="flex min-h-0 flex-1 gap-3 overflow-x-auto p-4">
+    <DndContext
+      sensors={sensors}
+      onDragStart={(e) => (setActiveId(String(e.active.id)), setArgusDrag(true))}
+      onDragMove={(e) => setArgusDrag(true, overArgus(...pointer(e)))}
+      onDragEnd={onDragEnd}
+      onDragCancel={() => (setActiveId(null), setArgusDrag(false))}
+    >
+      <div className="flex min-h-0 flex-1 gap-3 overflow-x-auto px-6 py-5">
         {columns.map((state) => {
           const col = cases.filter((c) => c.state === state).sort((a, b) => (scores.get(b.id)?.score ?? 0) - (scores.get(a.id)?.score ?? 0));
           return <Column key={state} state={state} cases={col} scores={scores} />;
@@ -211,7 +234,7 @@ function Board({ cases, scores, showObserved }: { cases: Case[]; scores: Map<str
             ).map(([a, label, hint]) => (
               <button
                 key={a}
-                className="rounded-md border px-3 py-2 text-left hover:border-primary/60 hover:bg-muted/50"
+                className="rounded-lg border px-3 py-2 text-left transition-colors duration-150 hover:border-border-strong hover:bg-muted/60"
                 onClick={() => {
                   setPending({ c: decide!, action: a });
                   setDecide(null);
@@ -230,19 +253,19 @@ function Board({ cases, scores, showObserved }: { cases: Case[]; scores: Map<str
 
 function Column({ state, cases, scores }: { state: CaseState; cases: Case[]; scores: Map<string, { score: number; rank: number }> }) {
   const { setNodeRef, isOver } = useDroppable({ id: state });
-  const toneDot = { slate: "bg-slate-400", sky: "bg-sky-500", violet: "bg-violet-500", amber: "bg-amber-500", emerald: "bg-emerald-500" } as Record<string, string>;
+  const toneDot = { slate: "bg-tone-slate-dot", sky: "bg-tone-sky-dot", violet: "bg-tone-violet-dot", amber: "bg-tone-amber-dot", emerald: "bg-tone-emerald-dot" } as Record<string, string>;
   return (
-    <div ref={setNodeRef} className={cn("flex w-60 shrink-0 flex-col rounded-lg bg-muted/60 transition", isOver && "bg-primary/10 ring-2 ring-primary/40")}>
+    <div ref={setNodeRef} className={cn("flex w-60 shrink-0 flex-col rounded-xl border bg-recessed transition-colors duration-150", isOver && "border-border-strong bg-muted ring-1 ring-foreground/15")}>
       <div className="flex items-center gap-2 px-3 py-2.5">
-        <span className={cn("size-2 rounded-full", toneDot[caseStateTone[state]] ?? "bg-slate-400")} />
+        <span className={cn("size-2 rounded-full", toneDot[caseStateTone[state]] ?? "bg-tone-slate-dot")} />
         <span className="text-sm font-semibold">{caseStateLabel[state]}</span>
-        <span className="text-xs text-muted-foreground">{cases.length}</span>
+        <span className="text-xs text-muted-foreground tabular-nums">{cases.length}</span>
       </div>
-      <div className="flex-1 space-y-2 overflow-y-auto px-2 pb-3">
+      <div className="flex-1 space-y-2 overflow-y-auto px-2 pb-2">
         {cases.map((c) => (
           <DraggableCard key={c.id} c={c} score={scores.get(c.id)?.score} rank={scores.get(c.id)?.rank} />
         ))}
-        {cases.length === 0 && <div className="rounded-md border border-dashed p-4 text-center text-xs text-muted-foreground">Drop a case here</div>}
+        {cases.length === 0 && <div className="rounded-lg border border-dashed border-border-strong p-4 text-center text-xs text-muted-foreground">Drop a case here</div>}
       </div>
     </div>
   );
@@ -289,11 +312,11 @@ function Ranked({
     }).length;
 
   return (
-    <div className="flex-1 space-y-3 p-4">
+    <div className="flex-1 space-y-3 px-6 py-5">
       <div className="flex items-center gap-2">
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className={cn(whatIf && "border-primary/60 text-primary")}>
+            <Button variant="outline" size="sm" className={cn(whatIf && "border-foreground text-foreground")}>
               <SlidersHorizontal className="size-3.5" /> Weights{whatIf && " · what-if"}
             </Button>
           </PopoverTrigger>
@@ -303,8 +326,8 @@ function Ranked({
         </Popover>
         {whatIf && <span className="text-xs text-muted-foreground">Arrows show how each case moved</span>}
       </div>
-      <div className="overflow-hidden rounded-xl border bg-card shadow-xs">
-        <div className="grid grid-cols-[56px_1fr_160px_110px] gap-3 border-b bg-muted/40 px-4 py-2 text-[11px] font-medium text-muted-foreground uppercase">
+      <div className="overflow-hidden rounded-xl border bg-card">
+        <div className="grid grid-cols-[56px_1fr_160px_110px] gap-3 border-b bg-recessed px-4 py-2 text-xs font-medium text-muted-foreground uppercase">
           <span>Rank</span>
           <span>Case</span>
           <span>Score</span>
@@ -316,20 +339,20 @@ function Ranked({
           const before = savedLocal.get(c.id);
           const delta = whatIf && before ? before - r : 0;
           const top = (Object.entries(s.contributions) as [FactorKey, number][]).sort((a, b) => b[1] - a[1]).slice(0, 2);
-          const why = whatIf && baseWeights && delta !== 0 ? movedBecause(c, baseWeights, whatIf, delta > 0) : null;
+          const why = whatIf && baseWeights && delta !== 0 ? movedBecause(c.factors, baseWeights, whatIf, delta > 0) : null;
           const robust = topIn(c.id);
           return (
-            <Link key={c.id} href={`/cases/${c.id}`} className="grid grid-cols-[56px_1fr_160px_110px] items-center gap-3 border-b px-4 py-2.5 last:border-0 hover:bg-muted/40">
+            <Link key={c.id} href={`/cases/${c.id}`} className="grid grid-cols-[56px_1fr_160px_110px] items-center gap-3 border-b px-4 py-2.5 transition-colors duration-150 last:border-0 hover:bg-muted/60">
               <span className="flex items-center gap-1 font-mono text-sm font-semibold">
                 {r}
                 {delta > 0 && (
-                  <span className="flex items-center text-[11px] text-emerald-600">
+                  <span className="flex items-center text-xs text-positive">
                     <ArrowUp className="size-3" />
                     {delta}
                   </span>
                 )}
                 {delta < 0 && (
-                  <span className="flex items-center text-[11px] text-red-600">
+                  <span className="flex items-center text-xs text-negative">
                     <ArrowDown className="size-3" />
                     {-delta}
                   </span>
@@ -344,7 +367,7 @@ function Ranked({
                   <CaseStateDot state={c.state} />
                   {c.manualRank != null && <Pill t="violet">Manual rank</Pill>}
                 </span>
-                {why && <span className="block truncate text-[11px] text-primary">{why}</span>}
+                {why && <span className="block truncate text-xs text-muted-foreground">{why}</span>}
               </span>
               <span title={top.map(([f, v]) => `${factorLabel[f]} +${v.toFixed(2)}`).join(" · ")}>
                 <ScoreBar value={s.score} />
@@ -367,15 +390,4 @@ function Ranked({
       </div>
     </div>
   );
-}
-
-function movedBecause(c: Case, base: Record<FactorKey, number>, next: Record<FactorKey, number>, up: boolean) {
-  const changes = (Object.keys(next) as FactorKey[])
-    .map((f) => ({ f, d: (next[f] - base[f]) * c.factors[f] }))
-    .filter((x) => Math.abs(x.d) > 0.001)
-    .sort((a, b) => (up ? b.d - a.d : a.d - b.d));
-  const top = changes[0];
-  if (!top) return null;
-  const dir = next[top.f] > base[top.f] ? "↑" : "↓";
-  return `${up ? "Moved up" : "Moved down"} because ${factorLabel[top.f]} weight ${dir} and this case scores ${c.factors[top.f].toFixed(2)} on it`;
 }

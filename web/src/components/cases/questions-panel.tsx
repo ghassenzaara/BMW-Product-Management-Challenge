@@ -49,7 +49,7 @@ export function QuestionsPanel({ caseId, questions, proposals, canEdit }: { case
 
       {groups.map((g) => (
         <div key={g.a} className="overflow-hidden rounded-xl border bg-card">
-          <h3 className="border-b bg-muted/30 px-3 py-2 text-xs font-semibold text-muted-foreground">{addresseeLabel[g.a]}</h3>
+          <h3 className="border-b bg-recessed px-4 py-2.5 text-xs font-semibold text-muted-foreground">{addresseeLabel[g.a]}</h3>
           <div className="divide-y">
             {g.items.map((q) => (
               <QuestionRow key={q.id} q={q} />
@@ -69,14 +69,14 @@ function QuestionRow({ q }: { q: OpenQuestion }) {
   const [answer, setAnswer] = useState("");
   const overdue = q.status === "open" && q.dueDate && q.dueDate < new Date().toISOString().slice(0, 10);
   return (
-    <div className="px-3 py-2.5">
+    <div className="px-4 py-3">
       <div className="flex items-start gap-2.5">
         {q.status === "answered" ? <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-positive" /> : <CircleDot className="mt-0.5 size-4 shrink-0 text-muted-foreground" />}
         <div className="min-w-0 flex-1 space-y-1.5">
           <span className="block text-sm" title={`Why: ${q.why}`}>
             {q.question}
           </span>
-          {q.status === "answered" && <div className="rounded-md border-l-2 border-positive bg-positive/5 px-2 py-1 text-sm">{q.answer}</div>}
+          {q.status === "answered" && <div className="rounded-r-md border-l-2 border-positive bg-positive-soft px-2.5 py-1.5 text-sm">{q.answer}</div>}
           {answering && (
             <form
               className="mt-2 space-y-2"
@@ -122,7 +122,7 @@ function AddQuestion({ caseId, onDone }: { caseId: string; onDone: () => void })
   const [due, setDue] = useState("");
   return (
     <form
-      className="grid gap-3 rounded-lg border bg-card p-3 sm:grid-cols-2"
+      className="grid gap-4 rounded-xl border bg-card p-5 sm:grid-cols-2"
       onSubmit={(e) => {
         e.preventDefault();
         create.mutate({ params: { id: caseId }, body: { addressee, question, why, contact: contact || undefined, dueDate: due || undefined } }, { onSuccess: onDone });

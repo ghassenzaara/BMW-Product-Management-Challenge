@@ -30,7 +30,8 @@ export const Severity = z.enum(["defect", "difficult_to_use", "wish", "none"]);
 export type Severity = z.infer<typeof Severity>;
 
 /** Which agent produced the signal (architecture.mmd §2 + BMW data import). */
-export const Agent = z.enum(["bmw_data", "competitor", "customer_public", "trends", "innovation_scout"]);
+/** "pm" = evidence a PM added by hand (uploaded file, link or note), not fetched by an agent. */
+export const Agent = z.enum(["bmw_data", "competitor", "customer_public", "trends", "innovation_scout", "pm"]);
 export type Agent = z.infer<typeof Agent>;
 
 export const SourceType = z.enum([
@@ -46,6 +47,9 @@ export const SourceType = z.enum([
   "competitor_official",
   "trend_report",
   "trade_fair",
+  "pm_upload",
+  "pm_link",
+  "pm_note",
 ]);
 export type SourceType = z.infer<typeof SourceType>;
 
@@ -246,7 +250,7 @@ export type AnswerSource = z.infer<typeof AnswerSource>;
 export const ReferralStatus = z.enum(["pending", "accepted", "declined", "escalated", "resolved"]);
 export type ReferralStatus = z.infer<typeof ReferralStatus>;
 
-export const ObjectType = z.enum(["case", "requirement", "signal", "referral", "question", "plan", "profile", "workspace", "brief"]);
+export const ObjectType = z.enum(["case", "requirement", "signal", "referral", "question", "plan", "profile", "workspace", "brief", "ripple", "settings"]);
 export type ObjectType = z.infer<typeof ObjectType>;
 
 export const ProposalKind = z.enum(["field", "body", "question_answer", "new_question", "new_requirement", "brief_field", "new_version"]);
@@ -267,6 +271,7 @@ export const NotificationKind = z.enum([
   "sent_back",
   "new_signals",
   "escalation",
+  "fyi",
 ]);
 export type NotificationKind = z.infer<typeof NotificationKind>;
 
@@ -287,3 +292,30 @@ export type Availability = z.infer<typeof Availability>;
 
 export const InnovationHorizon = z.enum(["next_gen", "gen_after", "new_product"]);
 export type InnovationHorizon = z.infer<typeof InnovationHorizon>;
+
+// ---------- Traceability and the competitor ripple ----------
+/** Test cycle of a range figure. "none" for metrics without a cycle (e.g. charging minutes). */
+export const TargetCycle = z.enum(["WLTP", "CLTC", "EPA", "none"]);
+export type TargetCycle = z.infer<typeof TargetCycle>;
+
+export const Comparator = z.enum(["gte", "lte"]);
+export type Comparator = z.infer<typeof Comparator>;
+
+/** Machine-comparable metric keys. A competitor fact and a target meet on the same key. */
+export const MetricKey = z.enum(["ev_range", "dc_10_80_min"]);
+export type MetricKey = z.infer<typeof MetricKey>;
+
+/** Where our target stands against a new competitor value, after cycle normalization. */
+export const ImpactVerdict = z.enum(["behind", "at_par", "still_ahead", "not_comparable"]);
+export type ImpactVerdict = z.infer<typeof ImpactVerdict>;
+
+export const RippleDecisionKind = z.enum(["raise_target", "keep", "market_variant", "reopen_case"]);
+export type RippleDecisionKind = z.infer<typeof RippleDecisionKind>;
+
+/** How a signal got its topic: BMW's own VFC label, a model, or a person. */
+export const ClassificationMethod = z.enum(["bmw_label", "llm", "manual"]);
+export type ClassificationMethod = z.infer<typeof ClassificationMethod>;
+
+/** Portfolio row of the ripple grid: a series, or a series' market variant (G68 = 5 Series China). */
+export const PortfolioRow = z.enum(["G60", "G60_CN", "G70", "F70"]);
+export type PortfolioRow = z.infer<typeof PortfolioRow>;

@@ -1,0 +1,97 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>turntable</title>
+<style>
+  html, body { margin: 0; background: transparent; }
+  canvas { display: block; }
+</style>
+<canvas id="c"></canvas>
+<script type="importmap">
+  { "imports": { "three": "/three/build/three.module.js", "three/addons/": "/three/examples/jsm/" } }
+</script>
+<script type="module">
+  // One car, many angles, transparent background, packed into one sheet (frames left to right, then top to bottom).
+  // Same lights, studio reflections and paint as the app's 3D view, so the frames match it.
+  // ?front=-x|+x|-z|+z  ?length=5.06  ?frames=60  ?cols=10  ?w=640  ?h=240  ?dist=1.2  ?aim=0.36  ?start=0 (degrees, turns the first frame)
+  import * as THREE from "three";
+  import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+  import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
+
+  const q = new URLSearchParams(location.search);
+  const frames = Number(q.get("frames") ?? 60), cols = Number(q.get("cols") ?? 10), rows = Math.ceil(frames / cols);
+  const tw = Number(q.get("w") ?? 640), th = Number(q.get("h") ?? 240);
+
+  const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("c"), antialias: true, alpha: true, preserveDrawingBuffer: true });
+  renderer.setSize(cols * tw, rows * th, false);
+  renderer.setPixelRatio(1);
+  renderer.setScissorTest(true);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.setClearColor(0x000000, 0);
+
+  const scene = new THREE.Scene();
+  scene.add(new THREE.HemisphereLight(0xdfe8f0, 0x8a929c, 1.0));
+  const key = new THREE.DirectionalLight(0xffffff, 1.8); key.position.set(5, 8, 4); scene.add(key);
+  const rim = new THREE.DirectionalLight(0x7fc4ec, 1.2); rim.position.set(-6, 3, -5); scene.add(rim);
+
+  const studio = new THREE.Scene();
+  const panel = (intensity, position, rotation, scale) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(), new THREE.MeshBasicMaterial({ color: new THREE.Color(intensity, intensity, intensity), side: THREE.DoubleSide, toneMapped: false }));
+    m.position.set(...position); m.rotation.set(...rotation); m.scale.set(...scale); studio.add(m);
+  };
+  panel(3, [0, 6, 0], [Math.PI / 2, 0, 0], [12, 5, 1]);
+  panel(1.6, [7, 2, 3], [0, -Math.PI / 2, 0], [8, 3, 1]);
+  panel(1.2, [-7, 2, -3], [0, Math.PI / 2, 0], [8, 3, 1]);
+  panel(0.9, [0, 2, -8], [0, 0, 0], [10, 3, 1]);
+  scene.environment = new THREE.PMREMGenerator(renderer).fromScene(studio, 0, 0.1, 100).texture;
+
+  const gltf = await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync("/model.glb");
+  const car = gltf.scene;
+  const front = q.get("front") ?? "+x";
+  car.rotation.y = { "+x": 0, "-x": Math.PI, "+z": Math.PI / 2, "-z": -Math.PI / 2 }[front];
+  const holder = new THREE.Group(); holder.add(car); holder.updateMatrixWorld(true);
+  let box = new THREE.Box3().setFromObject(holder);
+  holder.scale.setScalar(Number(q.get("length") ?? 5) / box.getSize(new THREE.Vector3()).x);
+  holder.updateMatrixWorld(true);
+  box = new THREE.Box3().setFromObject(holder);
+  const mid = box.getCenter(new THREE.Vector3());
+  holder.position.set(-mid.x, -box.min.y, -mid.z);
+  scene.add(holder);
+  const size = box.getSize(new THREE.Vector3());
+
+  car.traverse((o) => {
+    if (!o.isMesh) return;
+    if (!o.geometry.getAttribute("normal")) o.geometry.computeVertexNormals();
+    let m = o.material;
+    if (m.name === "paint") {
+      const p = new THREE.MeshPhysicalMaterial();
+      THREE.MeshStandardMaterial.prototype.copy.call(p, m);
+      p.clearcoat = 1; p.clearcoatRoughness = 0.06; m = p;
+    }
+    m.side = THREE.DoubleSide;
+    o.material = m;
+  });
+
+  // Soft shadow under the car, in place of the turntable disc.
+  const blob = document.createElement("canvas"); blob.width = blob.height = 256;
+  const g = blob.getContext("2d"), grad = g.createRadialGradient(128, 128, 0, 128, 128, 128);
+  grad.addColorStop(0, "rgba(0,0,0,0.55)"); grad.addColorStop(0.55, "rgba(0,0,0,0.22)"); grad.addColorStop(1, "rgba(0,0,0,0)");
+  g.fillStyle = grad; g.fillRect(0, 0, 256, 256);
+  const shadow = new THREE.Mesh(new THREE.PlaneGeometry(size.x * 1.25, size.z * 1.6), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(blob), transparent: true, depthWrite: false }));
+  shadow.rotation.x = -Math.PI / 2; shadow.position.y = 0.004; scene.add(shadow);
+
+  const L = size.x, H = size.y;
+  const target = new THREE.Vector3(0, H * Number(q.get("aim") ?? 0.36), 0);
+  const base = new THREE.Vector3(0.62, 0.22, -0.72).normalize();
+  const cam = new THREE.PerspectiveCamera(30, tw / th, 0.05, 100);
+  for (let i = 0; i < frames; i++) {
+    const dir = base.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), (i / frames) * Math.PI * 2 + THREE.MathUtils.degToRad(Number(q.get("start") ?? 0)));
+    cam.position.copy(target).add(dir.multiplyScalar(Number(q.get("dist") ?? 1.2) * L));
+    cam.lookAt(target);
+    const x = (i % cols) * tw, y = (rows - 1 - Math.floor(i / cols)) * th;
+    renderer.setViewport(x, y, tw, th);
+    renderer.setScissor(x, y, tw, th);
+    renderer.render(scene, cam);
+  }
+  document.title = "ready";
+</script>
+

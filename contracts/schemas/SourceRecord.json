@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "ref": {
+      "type": "string"
+    },
+    "sourceName": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string"
+    },
+    "text": {
+      "type": "string"
+    },
+    "sha256": {
+      "type": "string"
+    },
+    "fetchedAt": {
+      "type": "string"
+    },
+    "synthetic": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "ref",
+    "sourceName",
+    "text",
+    "sha256",
+    "fetchedAt",
+    "synthetic"
+  ],
+  "additionalProperties": false
+}

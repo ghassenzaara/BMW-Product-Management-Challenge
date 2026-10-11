@@ -43,7 +43,7 @@ export function WeightPanel({
             ))}
           </SelectContent>
         </Select>
-        <p className="text-[11px] text-muted-foreground">{me.data?.weightProfile.description}</p>
+        <p className="text-xs text-muted-foreground">{me.data?.weightProfile.description}</p>
       </div>
       <div className="space-y-3">
         {FactorKeys.options.map((f) => (
@@ -79,7 +79,7 @@ export function WeightPanel({
           <Save className="size-3.5" /> Save as mine
         </Button>
       </div>
-      <p className="text-[11px] leading-relaxed text-muted-foreground">
+      <p className="text-xs leading-relaxed text-muted-foreground">
         Score = weighted mean of the factors (0..1). Cost is not part of a case score; it adjusts the requirement rank. Evidence level is shown separately.
       </p>
     </div>

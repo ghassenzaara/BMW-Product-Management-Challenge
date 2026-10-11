@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { ClipboardList, FileText, Globe, MessageSquareText, MessagesSquare, Newspaper, PlaySquare, Rss, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { sayLabel, type SankeyGraph, type SankeyNode, type SayType, type Tone } from "@/lib/sankey";
@@ -23,26 +23,26 @@ const sourceIcon: Record<string, LucideIcon> = {
 };
 
 const toneBorder: Record<Tone, string> = {
-  customer: "border-l-primary",
+  customer: "border-l-foreground",
   study: "border-l-chart-2",
-  web: "border-l-sky-500",
+  web: "border-l-tone-sky-dot",
   competitor: "border-l-chart-5",
-  fact: "border-l-muted-foreground/50",
+  fact: "border-l-ash dark:border-l-fog",
 };
 const toneFill: Record<Tone, string> = {
-  customer: "fill-primary",
+  customer: "fill-foreground",
   study: "fill-chart-2",
-  web: "fill-sky-500",
+  web: "fill-tone-sky-dot",
   competitor: "fill-chart-5",
-  fact: "fill-muted-foreground",
+  fact: "fill-ash dark:fill-fog",
 };
 export const sayText: Record<SayType, string> = {
   defect: "text-negative",
-  hard_to_use: "text-amber-700 dark:text-amber-400",
-  wish: "text-primary",
+  hard_to_use: "text-warning",
+  wish: "text-tone-blue-fg",
   like: "text-positive",
   complaint: "text-negative",
-  trend: "text-chart-5",
+  trend: "text-tone-violet-fg",
 };
 
 const HEADER = 30;
@@ -139,6 +139,9 @@ export function SankeyChart({
   selectedId,
   onSelect,
   className,
+  reveal = 1,
+  revealMs = 0,
+  highlight,
 }: {
   graph: SankeyGraph;
   /** Big number shown in the hero node (e.g. distinct customers). */
@@ -147,8 +150,15 @@ export function SankeyChart({
   selectedId?: string | null;
   onSelect?: (n: SankeyNode) => void;
   className?: string;
+  /** Trace replay: share of the width shown, left to right (0..1). Nodes and bands right of it are hidden. */
+  reveal?: number;
+  /** Transition time for reveal changes; 0 = jump (reduced motion, static fallback). */
+  revealMs?: number;
+  /** Trace replay: node ids to emphasize in the current beat. */
+  highlight?: string[];
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const clipId = `reveal-${useId().replace(/:/g, "")}`;
   const [width, setWidth] = useState(0);
   const [hover, setHover] = useState<string | null>(null);
 
@@ -176,6 +186,12 @@ export function SankeyChart({
             </div>
           ))}
           <svg className="absolute inset-0 overflow-visible" width={width} height={L.height} aria-hidden>
+            <defs>
+              <clipPath id={clipId}>
+                <rect x={0} y={0} height={L.height} style={{ width: Math.max(0, reveal) * width, transition: `width ${revealMs}ms ease-in-out` }} />
+              </clipPath>
+            </defs>
+            <g clipPath={reveal < 1 || revealMs ? `url(#${clipId})` : undefined}>
             {L.links.map((l) => {
               const s = L.placed.get(l.source)!;
               const t = L.placed.get(l.target)!;
@@ -184,19 +200,22 @@ export function SankeyChart({
                 <path
                   key={`${l.source}>${l.target}`}
                   d={band(l, s.x + s.w, t.x)}
-                  className={cn(toneFill[l.tone], "transition-opacity duration-150 motion-reduce:transition-none")}
-                  style={{ opacity: focus ? (on ? 0.5 : 0.07) : l.tone === "fact" ? 0.18 : 0.24 }}
+                  className={cn(focus && on ? "fill-ember" : toneFill[l.tone], "transition-[opacity,fill] duration-150 motion-reduce:transition-none")}
+                  style={{ opacity: focus ? (on ? 0.45 : 0.07) : l.tone === "fact" ? 0.14 : 0.24 }}
                 />
               );
             })}
+            </g>
           </svg>
           {[...L.placed.values()].map((n) => (
             <NodeCard
               key={n.id}
               n={n}
               heroValue={heroValue}
-              selected={selectedId === n.id}
-              dimmed={!!focus && focus !== n.id && !L.links.some((l) => (l.source === focus && l.target === n.id) || (l.target === focus && l.source === n.id))}
+              selected={selectedId === n.id || !!highlight?.includes(n.id)}
+              dimmed={(!!focus && focus !== n.id && !L.links.some((l) => (l.source === focus && l.target === n.id) || (l.target === focus && l.source === n.id))) || (!!highlight?.length && !highlight.includes(n.id))}
+              hidden={n.x + n.w * 0.5 > reveal * width + 1}
+              revealMs={revealMs}
               onHover={setHover}
               onSelect={onSelect}
             />
@@ -212,6 +231,8 @@ function NodeCard({
   heroValue,
   selected,
   dimmed,
+  hidden = false,
+  revealMs = 0,
   onHover,
   onSelect,
 }: {
@@ -219,13 +240,28 @@ function NodeCard({
   heroValue?: number;
   selected: boolean;
   dimmed: boolean;
+  hidden?: boolean;
+  revealMs?: number;
   onHover: (id: string | null) => void;
   onSelect?: (n: SankeyNode) => void;
 }) {
   const Icon = sourceIcon[n.id];
   const common = {
     title: n.sub && !n.say ? `${n.label} · ${n.sub}` : n.label,
-    style: { left: n.x, top: n.y, width: n.w, height: n.h },
+    style: {
+      left: n.x,
+      top: n.y,
+      width: n.w,
+      height: n.h,
+      opacity: hidden ? 0 : undefined,
+      transform: hidden ? "translateX(-12px)" : undefined,
+      transition: revealMs ? `opacity ${Math.round(revealMs * 0.6)}ms ease-out, transform ${Math.round(revealMs * 0.6)}ms ease-out` : undefined,
+      pointerEvents: hidden ? ("none" as const) : undefined,
+      // Without onSelect (e.g. inside the replay) the boxes only highlight on hover; they are not buttons to press.
+      cursor: onSelect ? undefined : "default",
+    },
+    "aria-hidden": hidden || undefined,
+    tabIndex: hidden || !onSelect ? -1 : undefined,
     onMouseEnter: () => onHover(n.id),
     onMouseLeave: () => onHover(null),
     onFocus: () => onHover(n.id),
@@ -237,11 +273,11 @@ function NodeCard({
       <button
         {...common}
         className={cn(
-          "absolute flex flex-col justify-center gap-1 rounded-xl bg-foreground px-5 text-left text-background shadow-sm transition hover:ring-2 hover:ring-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
-          selected && "ring-2 ring-primary",
+          "absolute flex flex-col justify-center gap-1 rounded-xl bg-foreground px-5 text-left text-background ring-offset-2 ring-offset-card transition-[box-shadow,opacity,transform] duration-150 hover:ring-2 hover:ring-border-strong motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+          selected && "ring-2 ring-ember hover:ring-ember",
         )}
       >
-        <span className="text-4xl font-semibold tabular-nums">{heroValue ?? n.value}</span>
+        <span className="text-heading font-semibold tabular-nums">{heroValue ?? n.value}</span>
         <span className="text-sm opacity-70">{n.sub}</span>
         <span className="mt-2 line-clamp-3 text-sm font-medium">{n.label}</span>
       </button>
@@ -250,9 +286,9 @@ function NodeCard({
     <button
       {...common}
       className={cn(
-        "absolute flex items-center gap-2.5 rounded-lg border bg-card px-3 text-left shadow-xs transition hover:border-primary/60 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+        "absolute flex items-center gap-2.5 rounded-lg border bg-card px-3 text-left transition-[border-color,box-shadow,opacity,transform] duration-150 hover:border-border-strong motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
         n.column === 0 && cn("border-l-[3px]", toneBorder[n.tone]),
-        selected && "border-primary ring-1 ring-primary",
+        selected && "border-ember ring-1 ring-ember hover:border-ember",
         dimmed && "opacity-45",
       )}
     >
@@ -276,7 +312,7 @@ function SankeyList({ graph, onSelect, selectedId }: { graph: SankeyGraph; onSel
     <div className="space-y-3">
       <div className="flex flex-wrap gap-1.5">
         {sources.map((n) => (
-          <button key={n.id} onClick={() => onSelect?.(n)} className="rounded-full border bg-card px-2.5 py-1 text-xs">
+          <button key={n.id} onClick={() => onSelect?.(n)} className="rounded-full border bg-card px-2.5 py-1 text-xs transition-colors duration-150 hover:border-border-strong">
             {n.label} <b className="tabular-nums">{n.value}</b>
           </button>
         ))}
@@ -286,11 +322,11 @@ function SankeyList({ graph, onSelect, selectedId }: { graph: SankeyGraph; onSel
           <button
             key={n.id}
             onClick={() => onSelect?.(n)}
-            className={cn("flex w-full items-center gap-2 rounded-lg border bg-card px-3 py-2 text-left", selectedId === n.id && "border-primary")}
+            className={cn("flex w-full items-center gap-2 rounded-lg border bg-card px-3 py-2 text-left transition-colors duration-150 hover:border-border-strong", selectedId === n.id && "border-ember ring-1 ring-ember")}
           >
             <span className="min-w-0 flex-1">
               <span className="block truncate text-sm font-medium">{n.label}</span>
-              <span className="mt-1 block h-1.5 rounded-full bg-primary/30" style={{ width: `${(n.value / max) * 100}%` }} />
+              <span className="mt-1 block h-1.5 rounded-full bg-muted-foreground/40" style={{ width: `${(n.value / max) * 100}%` }} />
             </span>
             {n.say && <span className={cn("text-xs", sayText[n.say])}>{sayLabel[n.say]}</span>}
             <span className="text-sm font-semibold tabular-nums">{n.value}</span>

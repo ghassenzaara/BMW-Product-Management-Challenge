@@ -1,6 +1,6 @@
 openapi: 3.1.0
 info:
-  title: Requirement Studio API
+  title: Argon API
   version: 0.1.0
   description: "Contract between the UI and the backend. Source of truth: web/src/contracts (Zod). Regenerate with `npm run export-contract` in web/. Reference implementation (mock): web/src/mock."
 servers:
@@ -35,12 +35,24 @@ paths:
                       - type: "null"
                   needsOnboarding:
                     type: boolean
+                  features:
+                    type: object
+                    properties:
+                      agentRefresh:
+                        type: boolean
+                      competitorRipple:
+                        type: boolean
+                    required:
+                      - agentRefresh
+                      - competitorRipple
+                    additionalProperties: false
                 required:
                   - user
                   - workspace
                   - weightProfile
                   - brief
                   - needsOnboarding
+                  - features
                 additionalProperties: false
         "400":
           description: Invalid request (Zod issues)
@@ -864,6 +876,7 @@ paths:
               - customer_public
               - trends
               - innovation_scout
+              - pm
         - name: market
           in: query
           required: false
@@ -1019,10 +1032,40 @@ paths:
                       $ref: "#/components/schemas/Signal"
                   notifications:
                     type: number
+                  ripples:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        status:
+                          type: string
+                          enum:
+                            - active
+                            - watch
+                        items:
+                          type: integer
+                          minimum: -9007199254740991
+                          maximum: 9007199254740991
+                        rows:
+                          type: integer
+                          minimum: -9007199254740991
+                          maximum: 9007199254740991
+                        summary:
+                          type: string
+                      required:
+                        - id
+                        - status
+                        - items
+                        - rows
+                        - summary
+                      additionalProperties: false
                 required:
                   - run
                   - signals
                   - notifications
+                  - ripples
                 additionalProperties: false
         "400":
           description: Invalid request (Zod issues)
@@ -1116,7 +1159,7 @@ paths:
           description: Invalid state transition
     post:
       operationId: createCase
-      summary: Start a case from signals
+      summary: Start a case from signals, or empty to fill by hand
       tags:
         - cases
       requestBody:
@@ -1141,20 +1184,6 @@ paths:
                     - global
                     - RoW
                     - CN
-                carArea:
-                  type: string
-                  enum:
-                    - exterior_design
-                    - interior_comfort
-                    - seats
-                    - climate
-                    - infotainment_hmi
-                    - connectivity_digital
-                    - driver_assistance
-                    - dynamics_powertrain
-                    - range_charging
-                    - practicality
-                    - quality_materials
                 type:
                   type: string
                   enum:
@@ -1175,10 +1204,25 @@ paths:
                 summary:
                   type: string
                 signalIds:
-                  minItems: 1
                   type: array
                   items:
                     type: string
+                topicId:
+                  type: string
+                aspectGroup:
+                  type: string
+                  enum:
+                    - function
+                    - usability
+                    - reliability
+                    - performance
+                    - efficiency_range
+                    - design
+                    - comfort
+                    - space
+                    - quality
+                    - sound
+                    - price
                 rationale:
                   type: string
                   minLength: 1
@@ -1186,7 +1230,6 @@ paths:
                 - title
                 - series
                 - scope
-                - carArea
                 - type
                 - changeDepth
                 - summary
@@ -1199,6 +1242,100 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Case"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /cases/{id}/evidence:
+    post:
+      operationId: addCaseEvidence
+      summary: Add PM evidence (CSV rows, links, notes) as signals
+      tags:
+        - cases
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                items:
+                  minItems: 1
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                        enum:
+                          - csv_row
+                          - link
+                          - note
+                      text:
+                        type: string
+                        minLength: 1
+                      title:
+                        type: string
+                      url:
+                        type: string
+                      source:
+                        type: string
+                      kind:
+                        type: string
+                        enum:
+                          - complaint
+                          - wish
+                          - like
+                          - competitor_fact
+                          - trend
+                          - innovation
+                      market:
+                        type: string
+                        enum:
+                          - EU
+                          - US
+                          - CN
+                          - RoW
+                          - unknown
+                    required:
+                      - type
+                      - text
+                      - kind
+                      - market
+                rationale:
+                  type: string
+                  minLength: 1
+              required:
+                - items
+                - rationale
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  case:
+                    $ref: "#/components/schemas/Case"
+                  added:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Signal"
+                required:
+                  - case
+                  - added
+                additionalProperties: false
         "400":
           description: Invalid request (Zod issues)
         "403":
@@ -1303,6 +1440,8 @@ paths:
                   properties:
                     title:
                       type: string
+                    shortTitle:
+                      type: string
                     summary:
                       type: string
                     bodyMd:
@@ -1313,30 +1452,6 @@ paths:
                         - global
                         - RoW
                         - CN
-                    markets:
-                      type: array
-                      items:
-                        type: string
-                        enum:
-                          - EU
-                          - US
-                          - CN
-                          - RoW
-                          - unknown
-                    carArea:
-                      type: string
-                      enum:
-                        - exterior_design
-                        - interior_comfort
-                        - seats
-                        - climate
-                        - infotainment_hmi
-                        - connectivity_digital
-                        - driver_assistance
-                        - dynamics_powertrain
-                        - range_charging
-                        - practicality
-                        - quality_materials
                     type:
                       type: string
                       enum:
@@ -1354,8 +1469,6 @@ paths:
                         - part_module
                         - platform_powertrain
                         - software_ota
-                    featureName:
-                      type: string
                     coOwnerIds:
                       type: array
                       items:
@@ -2235,6 +2348,8 @@ paths:
                   properties:
                     title:
                       type: string
+                    shortTitle:
+                      type: string
                     description:
                       type: string
                     marketScope:
@@ -2321,6 +2436,10 @@ paths:
                           minimum: -9007199254740991
                           maximum: 9007199254740991
                         - type: "null"
+                    argumentMd:
+                      type:
+                        - string
+                        - "null"
                 rationale:
                   type: string
                   minLength: 1
@@ -2458,6 +2577,221 @@ paths:
                 required:
                   - feedback
                   - proposal
+                additionalProperties: false
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /requirements/{id}/replay:
+    get:
+      operationId: requirementReplay
+      summary: "Whole life of a requirement for the trace replay: quotes, signals, case, score per decision, events and integrity checks"
+      tags:
+        - requirements
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requirement:
+                    $ref: "#/components/schemas/Requirement"
+                  versions:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/RequirementVersion"
+                  case:
+                    $ref: "#/components/schemas/Case"
+                  signals:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Signal"
+                  quoteIds:
+                    type: array
+                    items:
+                      type: string
+                  counts:
+                    type: object
+                    properties:
+                      customers:
+                        type: integer
+                        minimum: -9007199254740991
+                        maximum: 9007199254740991
+                      markets:
+                        type: array
+                        items:
+                          type: string
+                          enum:
+                            - EU
+                            - US
+                            - CN
+                            - RoW
+                            - unknown
+                      sources:
+                        type: integer
+                        minimum: -9007199254740991
+                        maximum: 9007199254740991
+                      bmwRecords:
+                        type: integer
+                        minimum: -9007199254740991
+                        maximum: 9007199254740991
+                      webRecords:
+                        type: integer
+                        minimum: -9007199254740991
+                        maximum: 9007199254740991
+                    required:
+                      - customers
+                      - markets
+                      - sources
+                      - bmwRecords
+                      - webRecords
+                    additionalProperties: false
+                  sourceRecords:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/SourceRecord"
+                  events:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        seq:
+                          type: integer
+                          minimum: -9007199254740991
+                          maximum: 9007199254740991
+                        at:
+                          type: string
+                        actorId:
+                          type: string
+                        actorType:
+                          type: string
+                          enum:
+                            - human
+                            - agent
+                        actorName:
+                          type: string
+                        action:
+                          type: string
+                        label:
+                          type: string
+                        objectType:
+                          type: string
+                        objectId:
+                          type: string
+                        rationale:
+                          type:
+                            - string
+                            - "null"
+                        version:
+                          anyOf:
+                            - type: integer
+                              minimum: -9007199254740991
+                              maximum: 9007199254740991
+                            - type: "null"
+                        scoreSnapshot:
+                          anyOf:
+                            - $ref: "#/components/schemas/ScoreSnapshot"
+                            - type: "null"
+                      required:
+                        - seq
+                        - at
+                        - actorId
+                        - actorType
+                        - actorName
+                        - action
+                        - label
+                        - objectType
+                        - objectId
+                        - rationale
+                        - version
+                        - scoreSnapshot
+                      additionalProperties: false
+                  scoreToday:
+                    type: object
+                    properties:
+                      score:
+                        type: number
+                      rank:
+                        type: integer
+                        minimum: -9007199254740991
+                        maximum: 9007199254740991
+                      of:
+                        type: integer
+                        minimum: -9007199254740991
+                        maximum: 9007199254740991
+                      profileName:
+                        type: string
+                    required:
+                      - score
+                      - rank
+                      - of
+                      - profileName
+                    additionalProperties: false
+                  plannedFeature:
+                    anyOf:
+                      - $ref: "#/components/schemas/PlannedFeature"
+                      - type: "null"
+                  alerts:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Alert"
+                  integrity:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          enum:
+                            - quotes_in_source
+                            - record_hashes
+                            - audit_sequence
+                            - rationale_on_status
+                        label:
+                          type: string
+                        ok:
+                          type: boolean
+                        detail:
+                          type: string
+                        failures:
+                          type: array
+                          items:
+                            type: string
+                      required:
+                        - id
+                        - label
+                        - ok
+                        - detail
+                        - failures
+                      additionalProperties: false
+                  generatedAt:
+                    type: string
+                required:
+                  - requirement
+                  - versions
+                  - case
+                  - signals
+                  - quoteIds
+                  - counts
+                  - sourceRecords
+                  - events
+                  - scoreToday
+                  - plannedFeature
+                  - alerts
+                  - integrity
+                  - generatedAt
                 additionalProperties: false
         "400":
           description: Invalid request (Zod issues)
@@ -3624,6 +3958,97 @@ paths:
           description: Not found
         "409":
           description: Invalid state transition
+  /argus/ask:
+    post:
+      operationId: argusAsk
+      summary: Ask Argus from anywhere, with dragged-in cases, requirements or signals as context; answers only, never edits
+      tags:
+        - conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  minLength: 1
+                attachments:
+                  maxItems: 5
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum:
+                          - case
+                          - requirement
+                          - signal
+                      id:
+                        type: string
+                    required:
+                      - kind
+                      - id
+                history:
+                  maxItems: 20
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      role:
+                        type: string
+                        enum:
+                          - user
+                          - assistant
+                      content:
+                        type: string
+                    required:
+                      - role
+                      - content
+              required:
+                - content
+                - attachments
+                - history
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: string
+                  citations:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        ref:
+                          type: string
+                        label:
+                          type: string
+                        href:
+                          type: string
+                      required:
+                        - ref
+                        - label
+                        - href
+                      additionalProperties: false
+                required:
+                  - content
+                  - citations
+                additionalProperties: false
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
   /proposals/{id}/decide:
     post:
       operationId: decideProposal
@@ -4236,6 +4661,263 @@ paths:
                 required:
                   - ok
                 additionalProperties: false
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /ripples:
+    get:
+      operationId: ripples
+      summary: Ripples, newest first
+      tags:
+        - monitor
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Ripple"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /ripples/{id}:
+    get:
+      operationId: ripple
+      summary: One ripple with the conversion table and monitor settings
+      tags:
+        - monitor
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ripple:
+                    $ref: "#/components/schemas/Ripple"
+                  conversions:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/CycleConversion"
+                  settings:
+                    $ref: "#/components/schemas/MonitorSettings"
+                required:
+                  - ripple
+                  - conversions
+                  - settings
+                additionalProperties: false
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /ripples/{id}/items/{itemId}/decision:
+    post:
+      operationId: decideRippleItem
+      summary: "Owner decision on an affected item: raise target or market variant (both proposals), keep with reason (mutes repeats), reopen the case"
+      tags:
+        - monitor
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                kind:
+                  type: string
+                  enum:
+                    - raise_target
+                    - keep
+                    - market_variant
+                    - reopen_case
+                rationale:
+                  type: string
+                  minLength: 1
+                value:
+                  type: number
+                  exclusiveMinimum: 0
+              required:
+                - kind
+                - rationale
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ripple:
+                    $ref: "#/components/schemas/Ripple"
+                  proposal:
+                    anyOf:
+                      - $ref: "#/components/schemas/Proposal"
+                      - type: "null"
+                required:
+                  - ripple
+                  - proposal
+                additionalProperties: false
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /conversions:
+    get:
+      operationId: conversions
+      summary: Cycle conversion table (labelled assumptions)
+      tags:
+        - monitor
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CycleConversion"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /conversions/{id}:
+    put:
+      operationId: saveConversion
+      summary: Change a conversion factor (head only); re-assesses open ripples
+      tags:
+        - monitor
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                factor:
+                  type: number
+                  exclusiveMinimum: 0
+                rationale:
+                  type: string
+                  minLength: 1
+              required:
+                - factor
+                - rationale
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CycleConversion"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+  /settings/monitor:
+    get:
+      operationId: monitorSettings
+      summary: Monitor settings (mute threshold, at-par tolerance)
+      tags:
+        - monitor
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MonitorSettings"
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
+    put:
+      operationId: saveMonitorSettings
+      summary: Change monitor settings (logged with a reason)
+      tags:
+        - monitor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                muteThresholdPct:
+                  type: number
+                  minimum: 0
+                  maximum: 50
+                atParTolerancePct:
+                  type: number
+                  minimum: 0
+                  maximum: 20
+                rationale:
+                  type: string
+                  minLength: 1
+              required:
+                - rationale
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MonitorSettings"
         "400":
           description: Invalid request (Zod issues)
         "403":
@@ -5022,6 +5704,7 @@ components:
             - customer_public
             - trends
             - innovation_scout
+            - pm
         sourceType:
           type: string
           enum:
@@ -5037,6 +5720,9 @@ components:
             - competitor_official
             - trend_report
             - trade_fair
+            - pm_upload
+            - pm_link
+            - pm_note
         sourceName:
           type: string
         trust:
@@ -5166,6 +5852,24 @@ components:
             - clustered
             - unclustered
             - quarantined
+        classification:
+          type: object
+          properties:
+            method:
+              type: string
+              enum:
+                - bmw_label
+                - llm
+                - manual
+            label:
+              type: string
+            model:
+              type: string
+            promptVersion:
+              type: string
+          required:
+            - method
+          additionalProperties: false
         synthetic:
           type: boolean
       required:
@@ -5288,6 +5992,7 @@ components:
             - customer_public
             - trends
             - innovation_scout
+            - pm
         series:
           type: string
           enum:
@@ -5320,6 +6025,31 @@ components:
           type: number
         note:
           type: string
+        steps:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              status:
+                type: string
+                enum:
+                  - ok
+                  - skipped
+                  - failed
+              detail:
+                type: string
+            required:
+              - name
+              - status
+              - detail
+            additionalProperties: false
+        rippleId:
+          anyOf:
+            - type: string
+              minLength: 1
+            - type: "null"
       required:
         - id
         - agent
@@ -5346,6 +6076,7 @@ components:
             - customer_public
             - trends
             - innovation_scout
+            - pm
         sourceName:
           type: string
         snippet:
@@ -5382,6 +6113,22 @@ components:
           type:
             - string
             - "null"
+        aspectGroup:
+          anyOf:
+            - type: string
+              enum:
+                - function
+                - usability
+                - reliability
+                - performance
+                - efficiency_range
+                - design
+                - comfort
+                - space
+                - quality
+                - sound
+                - price
+            - type: "null"
         stances:
           type: array
           items:
@@ -6169,6 +6916,10 @@ components:
             - type: "null"
         sentBackReason:
           type: string
+        argumentMd:
+          type:
+            - string
+            - "null"
         createdAt:
           type: string
         updatedAt:
@@ -6287,11 +7038,53 @@ components:
             - assumption
         benchmark:
           type: string
+        targetSpec:
+          $ref: "#/components/schemas/TargetSpec"
       required:
         - id
         - question
         - target
         - basis
+      additionalProperties: false
+    TargetSpec:
+      type: object
+      properties:
+        key:
+          type: string
+          enum:
+            - ev_range
+            - dc_10_80_min
+        comparator:
+          type: string
+          enum:
+            - gte
+            - lte
+        value:
+          type: number
+        unit:
+          type: string
+        cycle:
+          type: string
+          enum:
+            - WLTP
+            - CLTC
+            - EPA
+            - none
+        market:
+          type: string
+          enum:
+            - global
+            - EU
+            - US
+            - CN
+            - RoW
+      required:
+        - key
+        - comparator
+        - value
+        - unit
+        - cycle
+        - market
       additionalProperties: false
     Referral:
       type: object
@@ -6391,6 +7184,38 @@ components:
           type: string
         createdAt:
           type: string
+        rippleId:
+          type: string
+          minLength: 1
+        itemVerdict:
+          type: string
+          enum:
+            - behind
+            - at_par
+            - still_ahead
+            - not_comparable
+        comparison:
+          type: object
+          properties:
+            ours:
+              type: string
+            theirs:
+              type: string
+            normalized:
+              type: string
+            factor:
+              type:
+                - number
+                - "null"
+            isAssumption:
+              type: boolean
+          required:
+            - ours
+            - theirs
+            - normalized
+            - factor
+            - isAssumption
+          additionalProperties: false
       required:
         - id
         - ownerId
@@ -6746,6 +7571,7 @@ components:
             - feedback
             - brief_change
             - edit
+            - ripple
         feedbackId:
           type: string
           minLength: 1
@@ -6920,6 +7746,149 @@ components:
         - resultingVersion
         - createdAt
         - createdBy
+      additionalProperties: false
+    SourceRecord:
+      type: object
+      properties:
+        ref:
+          type: string
+        sourceName:
+          type: string
+        url:
+          type: string
+        text:
+          type: string
+        sha256:
+          type: string
+        fetchedAt:
+          type: string
+        synthetic:
+          type: boolean
+      required:
+        - ref
+        - sourceName
+        - text
+        - sha256
+        - fetchedAt
+        - synthetic
+      additionalProperties: false
+    ScoreSnapshot:
+      type: object
+      properties:
+        caseId:
+          type: string
+          minLength: 1
+        profileId:
+          type: string
+          minLength: 1
+        profileName:
+          type: string
+        profileVersion:
+          type: integer
+          minimum: -9007199254740991
+          maximum: 9007199254740991
+        weights:
+          type: object
+          propertyNames:
+            type: string
+            enum:
+              - customers
+              - severity
+              - satisfaction_gap
+              - competitor_gap
+              - market_volume
+              - regression
+              - trend
+              - brand_fit
+          additionalProperties:
+            type: number
+            minimum: 0
+            maximum: 1
+          required:
+            - customers
+            - severity
+            - satisfaction_gap
+            - competitor_gap
+            - market_volume
+            - regression
+            - trend
+            - brand_fit
+        factors:
+          type: object
+          propertyNames:
+            type: string
+            enum:
+              - customers
+              - severity
+              - satisfaction_gap
+              - competitor_gap
+              - market_volume
+              - regression
+              - trend
+              - brand_fit
+          additionalProperties:
+            type: number
+            minimum: 0
+            maximum: 1
+          required:
+            - customers
+            - severity
+            - satisfaction_gap
+            - competitor_gap
+            - market_volume
+            - regression
+            - trend
+            - brand_fit
+        contributions:
+          type: object
+          propertyNames:
+            type: string
+            enum:
+              - customers
+              - severity
+              - satisfaction_gap
+              - competitor_gap
+              - market_volume
+              - regression
+              - trend
+              - brand_fit
+          additionalProperties:
+            type: number
+            minimum: 0
+            maximum: 1
+          required:
+            - customers
+            - severity
+            - satisfaction_gap
+            - competitor_gap
+            - market_volume
+            - regression
+            - trend
+            - brand_fit
+        score:
+          type: number
+        rank:
+          type: integer
+          minimum: -9007199254740991
+          maximum: 9007199254740991
+        of:
+          type: integer
+          minimum: -9007199254740991
+          maximum: 9007199254740991
+        at:
+          type: string
+      required:
+        - caseId
+        - profileId
+        - profileName
+        - profileVersion
+        - weights
+        - factors
+        - contributions
+        - score
+        - rank
+        - of
+        - at
       additionalProperties: false
     ScoredCase:
       type: object
@@ -7140,6 +8109,7 @@ components:
             - sent_back
             - new_signals
             - escalation
+            - fyi
         title:
           type: string
         body:
@@ -7192,6 +8162,8 @@ components:
             - profile
             - workspace
             - brief
+            - ripple
+            - settings
         objectId:
           type: string
           minLength: 1
@@ -7199,6 +8171,8 @@ components:
         after: {}
         rationale:
           type: string
+        scoreSnapshot:
+          $ref: "#/components/schemas/ScoreSnapshot"
       required:
         - seq
         - at
@@ -7208,5 +8182,459 @@ components:
         - objectType
         - objectId
       additionalProperties: false
+    Ripple:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+        runId:
+          type: string
+          minLength: 1
+        fact:
+          $ref: "#/components/schemas/RippleFact"
+        status:
+          type: string
+          enum:
+            - active
+            - watch
+        statusReason:
+          type: string
+        conversionIds:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        tolerancePct:
+          type: number
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/RippleItem"
+        createdAt:
+          type: string
+      required:
+        - id
+        - runId
+        - fact
+        - status
+        - statusReason
+        - conversionIds
+        - tolerancePct
+        - items
+        - createdAt
+      additionalProperties: false
+    RippleFact:
+      type: object
+      properties:
+        signalId:
+          type: string
+          minLength: 1
+        competitor:
+          type: string
+        key:
+          type: string
+          enum:
+            - ev_range
+            - dc_10_80_min
+        value:
+          type: number
+        unit:
+          type: string
+        cycle:
+          type: string
+          enum:
+            - WLTP
+            - CLTC
+            - EPA
+            - none
+        market:
+          type: string
+          enum:
+            - EU
+            - US
+            - CN
+            - RoW
+            - unknown
+        trust:
+          type: string
+          enum:
+            - A
+            - B
+            - C
+            - D
+            - E
+        sourceName:
+          type: string
+        url:
+          type: string
+        summary:
+          type: string
+      required:
+        - signalId
+        - competitor
+        - key
+        - value
+        - unit
+        - cycle
+        - market
+        - trust
+        - sourceName
+        - summary
+      additionalProperties: false
+    RippleItem:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+        kind:
+          type: string
+          enum:
+            - requirement
+            - case
+        objectId:
+          type: string
+          minLength: 1
+        title:
+          type: string
+        caseId:
+          type: string
+          minLength: 1
+        row:
+          type: string
+          enum:
+            - G60
+            - G60_CN
+            - G70
+            - F70
+        alsoRows:
+          type: array
+          items:
+            type: string
+            enum:
+              - G60
+              - G60_CN
+              - G70
+              - F70
+        carArea:
+          type: string
+          enum:
+            - exterior_design
+            - interior_comfort
+            - seats
+            - climate
+            - infotainment_hmi
+            - connectivity_digital
+            - driver_assistance
+            - dynamics_powertrain
+            - range_charging
+            - practicality
+            - quality_materials
+        ownerId:
+          type: string
+          minLength: 1
+        coOwnerIds:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        status:
+          type: string
+        ours:
+          anyOf:
+            - type: object
+              properties:
+                value:
+                  type: number
+                unit:
+                  type: string
+                cycle:
+                  type: string
+                  enum:
+                    - WLTP
+                    - CLTC
+                    - EPA
+                    - none
+                comparator:
+                  type: string
+                  enum:
+                    - gte
+                    - lte
+                market:
+                  type: string
+                text:
+                  type: string
+              required:
+                - value
+                - unit
+                - cycle
+                - comparator
+                - market
+                - text
+              additionalProperties: false
+            - type: "null"
+        theirsNormalized:
+          anyOf:
+            - type: object
+              properties:
+                value:
+                  type: number
+                unit:
+                  type: string
+                cycle:
+                  type: string
+                  enum:
+                    - WLTP
+                    - CLTC
+                    - EPA
+                    - none
+                low:
+                  type: number
+                high:
+                  type: number
+              required:
+                - value
+                - unit
+                - cycle
+                - low
+                - high
+              additionalProperties: false
+            - type: "null"
+        conversionId:
+          anyOf:
+            - type: string
+              minLength: 1
+            - type: "null"
+        gapPct:
+          type:
+            - number
+            - "null"
+        verdict:
+          type: string
+          enum:
+            - behind
+            - at_par
+            - still_ahead
+            - not_comparable
+        reason:
+          type: string
+        rankBefore:
+          anyOf:
+            - type: integer
+              minimum: -9007199254740991
+              maximum: 9007199254740991
+            - type: "null"
+        rankAfter:
+          anyOf:
+            - type: integer
+              minimum: -9007199254740991
+              maximum: 9007199254740991
+            - type: "null"
+        movedBecause:
+          type:
+            - string
+            - "null"
+        notified:
+          type: array
+          items:
+            type: object
+            properties:
+              userId:
+                type: string
+                minLength: 1
+              kind:
+                type: string
+                enum:
+                  - alert
+                  - fyi
+                  - head
+            required:
+              - userId
+              - kind
+            additionalProperties: false
+        muted:
+          type: boolean
+        decision:
+          anyOf:
+            - type: object
+              properties:
+                kind:
+                  type: string
+                  enum:
+                    - raise_target
+                    - keep
+                    - market_variant
+                    - reopen_case
+                by:
+                  type: string
+                  minLength: 1
+                rationale:
+                  type: string
+                at:
+                  type: string
+                proposalId:
+                  anyOf:
+                    - type: string
+                      minLength: 1
+                    - type: "null"
+              required:
+                - kind
+                - by
+                - rationale
+                - at
+                - proposalId
+              additionalProperties: false
+            - type: "null"
+        variant:
+          anyOf:
+            - type: object
+              properties:
+                by:
+                  type: string
+                  minLength: 1
+                rationale:
+                  type: string
+                at:
+                  type: string
+                proposalId:
+                  anyOf:
+                    - type: string
+                      minLength: 1
+                    - type: "null"
+              required:
+                - by
+                - rationale
+                - at
+                - proposalId
+              additionalProperties: false
+            - type: "null"
+      required:
+        - id
+        - kind
+        - objectId
+        - title
+        - caseId
+        - row
+        - alsoRows
+        - carArea
+        - ownerId
+        - coOwnerIds
+        - status
+        - ours
+        - theirsNormalized
+        - conversionId
+        - gapPct
+        - verdict
+        - reason
+        - rankBefore
+        - rankAfter
+        - movedBecause
+        - notified
+        - muted
+        - decision
+        - variant
+      additionalProperties: false
+    CycleConversion:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+        from:
+          type: string
+          enum:
+            - WLTP
+            - CLTC
+            - EPA
+            - none
+        to:
+          type: string
+          enum:
+            - WLTP
+            - CLTC
+            - EPA
+            - none
+        factor:
+          type: number
+          exclusiveMinimum: 0
+        range:
+          type: array
+          prefixItems:
+            - type: number
+              exclusiveMinimum: 0
+            - type: number
+              exclusiveMinimum: 0
+          items: false
+          minItems: 2
+          maxItems: 2
+        source:
+          type: string
+        isAssumption:
+          type: boolean
+        updatedAt:
+          type: string
+        updatedBy:
+          type: string
+      required:
+        - id
+        - from
+        - to
+        - factor
+        - range
+        - source
+        - isAssumption
+        - updatedAt
+        - updatedBy
+      additionalProperties: false
+    MonitorSettings:
+      type: object
+      properties:
+        muteThresholdPct:
+          type: number
+          minimum: 0
+          maximum: 50
+        atParTolerancePct:
+          type: number
+          minimum: 0
+          maximum: 20
+        updatedAt:
+          type: string
+        updatedBy:
+          type: string
+      required:
+        - muteThresholdPct
+        - atParTolerancePct
+        - updatedAt
+        - updatedBy
+      additionalProperties: false
     Dataset:
       $ref: "#/components/schemas/Dataset"
+    RippleMute:
+      type: object
+      properties:
+        requirementId:
+          type: string
+          minLength: 1
+        key:
+          type: string
+          enum:
+            - ev_range
+            - dc_10_80_min
+        gapPctAtDecision:
+          type: number
+        reason:
+          type: string
+        by:
+          type: string
+          minLength: 1
+        at:
+          type: string
+      required:
+        - requirementId
+        - key
+        - gapPctAtDecision
+        - reason
+        - by
+        - at
+      additionalProperties: false

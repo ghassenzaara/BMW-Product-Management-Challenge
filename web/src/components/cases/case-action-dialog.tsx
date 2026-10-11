@@ -20,7 +20,7 @@ const copy: Record<UiCaseAction, { title: string; description: string; confirm: 
   reopen: { title: "Reopen the case", description: "Clears the decision and moves the case back to Investigating.", confirm: "Reopen" },
   confirm: {
     title: "Confirm: build requirement(s)",
-    description: "The problem is real and worth solving. Next, answer up to three questions and the AI drafts SMART requirement(s) from your brief and stance; you then edit, discuss with engineering and approve.",
+    description: "The problem is real and worth solving. Next, answer up to three questions and the AI drafts SMART requirement(s) from your product specs and context; you then edit, discuss with engineering and approve.",
     confirm: "Confirm case",
   },
   refer: { title: "Refer to another PM", description: "Hand the case to the PM who owns the series or attribute. You stay linked; they accept or send it back.", confirm: "Refer" },

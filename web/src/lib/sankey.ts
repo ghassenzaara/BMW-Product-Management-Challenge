@@ -57,6 +57,9 @@ const sourceGroup: Record<SourceType, { id: string; label: string; tone: Tone }>
   trend_report: { id: "news", label: "News & trends", tone: "web" },
   trade_fair: { id: "news", label: "News & trends", tone: "web" },
   competitor_official: { id: "competitor", label: "Competitor web", tone: "competitor" },
+  pm_upload: { id: "pm", label: "Added by you", tone: "customer" },
+  pm_link: { id: "pm", label: "Added by you", tone: "customer" },
+  pm_note: { id: "pm", label: "Added by you", tone: "customer" },
 };
 export const sourceGroupOf = (s: Signal) => sourceGroup[s.sourceType];
 
@@ -71,7 +74,7 @@ export function sayOf(s: Signal): SayType {
 
 export const isFact = (s: Signal) => s.kind === "competitor_fact";
 /** Customers = distinct people speaking (feedback, reviews, forums), not study rows or facts. */
-export const isCustomer = (s: Signal) => !isFact(s) && s.sourceType !== "bmw_study" && s.sourceType !== "bmw_sales" && s.kind !== "trend";
+export const isCustomer = (s: Signal) => !isFact(s) && s.sourceType !== "bmw_study" && s.sourceType !== "bmw_sales" && s.sourceType !== "pm_note" && s.kind !== "trend";
 
 type TopicLabels = Map<string, string>;
 export const topicLabels = (t?: TaxonomyResponse): TopicLabels => new Map((t?.topics ?? []).map((x) => [x.id, x.shortLabel]));

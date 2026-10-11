@@ -21,7 +21,7 @@ export function Markdown({ children, className, onCite }: { children: string; cl
               <button
                 type="button"
                 onClick={() => onCite?.(href.slice(5))}
-                className="mx-0.5 inline-flex items-center rounded border border-primary/30 bg-primary/5 px-1 font-mono text-[11px] text-primary hover:bg-primary/15"
+                className="mx-0.5 inline-flex items-center rounded-sm border border-border-strong bg-recessed px-1 font-mono text-xs leading-4 text-foreground transition-colors duration-150 hover:border-foreground/40 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               >
                 {c}
               </button>

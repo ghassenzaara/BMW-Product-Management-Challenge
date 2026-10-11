@@ -153,7 +153,10 @@ async function main() {
   // 7. Refresh run + alert resolution + misc mutations.
   await call("refresh", { body: { series: "G60" } });
   await call("refresh", { body: { series: "G60" } }); // second run: dedupe, no new signals
-  await call("resolveAlert", { params: { id: "AL-0001" }, body: { status: "rework", rationale: "Range options need the new benchmark" } });
+  const lenaAlerts = (await call("alerts")) as { id: string; status: string; rippleId?: string; requirementId: string | null }[];
+  const rippleAlert = lenaAlerts.find((a) => a.status === "open" && a.rippleId);
+  expectTrue(!!rippleAlert && !!rippleAlert.requirementId, "the competitor alert from the run sits on a requirement");
+  await call("resolveAlert", { params: { id: rippleAlert!.id }, body: { status: "rework", rationale: "Range options need the new benchmark" } });
   await call("createQuestion", { params: { id: "CASE-G60-0006" }, body: { addressee: "engineering", question: "Space for a compact spare in the US?", why: "US-only option" } });
   await call("patchQuestion", { params: { id: "Q-0002" }, body: { answer: "About €14 per car" } });
   await call("patchCase", { params: { id: "CASE-G60-0011" }, body: { patch: { watcherIds: ["u-wei"] } }, as: "u-wei" });
@@ -162,8 +165,28 @@ async function main() {
   await call("voteInnovation", { params: { caseId: "CASE-INNO-0001" }, body: {} });
   await call("pullInnovation", { params: { caseId: "CASE-INNO-0002" }, body: { series: "G60", rationale: "Sun protection wishes in G60 too" } });
   const created = (await call("createCase", {
-    body: { title: "Head-up display hard to read", series: "G60", scope: "RoW", carArea: "infotainment_hmi", type: "fix_improve", changeDepth: "part_module", summary: "HUD complaints from the radar", signalIds: ["G60-0209", "G60-0576"], rationale: "Cluster of HUD complaints" },
+    body: { title: "Head-up display hard to read", series: "G60", scope: "RoW", type: "fix_improve", changeDepth: "part_module", summary: "HUD complaints from the radar", signalIds: ["G60-0209", "G60-0576"], rationale: "Cluster of HUD complaints" },
   })) as { id: string };
+
+  // A case started by hand: one topic and one aspect of the fixed taxonomy; the car area follows from the topic.
+  const byHand = { title: "Rear passengers can't charge their phones", series: "G60", scope: "RoW", type: "new_feature", changeDepth: "part_module", summary: "No USB-C in the rear", signalIds: [], rationale: "Started by hand" };
+  await call("createCase", { body: byHand, expect: 400 });
+  const taxonomy = (await call("taxonomy")) as { topics: { id: string; carArea: string }[] };
+  const topic = taxonomy.topics.find((t) => t.id !== "other")!;
+  const hand = (await call("createCase", { body: { ...byHand, topicId: topic.id, aspectGroup: "function" } })) as { id: string; topicId: string; carArea: string };
+  expectTrue(hand.topicId === topic.id && hand.carArea === topic.carArea, "a hand-made case takes its car area from its topic");
+  const evidence = (await call("addCaseEvidence", {
+    params: { id: hand.id },
+    body: {
+      items: [
+        { type: "note", text: "Dealers say rear passengers ask for charging on long trips.", kind: "complaint", market: "US" },
+        { type: "csv_row", text: "My kids cannot charge their tablets in the back.", source: "clinic.csv", kind: "complaint", market: "US" },
+      ],
+      rationale: "Dealer feedback and a clinic file",
+    },
+  })) as { added: { recordRef?: string }[]; case: { figures: { perMarket: { market: string; customers: number }[] } } };
+  expectTrue(evidence.added.length === 2 && evidence.added.every((s) => !!s.recordRef), "PM evidence becomes signals with a stored source record");
+  expectTrue(evidence.case.figures.perMarket.find((m) => m.market === "US")?.customers === 1, "a PM note is evidence, not a customer; a file row counts");
   await call("transitionCase", { params: { id: created.id }, body: { action: "merge", mergeIntoId: "CASE-G60-0001", rationale: "Same operating-concept problem" } });
   await call("updateWorkspace", { body: { projectType: "lci" } });
   const wp = (await call("createWeightProfile", { body: { name: "My test", description: "test", weights: { customers: 1, severity: 1, satisfaction_gap: 1, competitor_gap: 1, market_volume: 1, regression: 1, trend: 1, brand_fit: 1 }, costMultiplier: { S: 1, M: 0.8, L: 0.5 } } })) as { id: string };
@@ -175,6 +198,7 @@ async function main() {
   await call("audit", { query: { limit: "20" } });
 
   await contextLayersStory();
+  await traceAndRippleStory();
 
   await call("reset", { body: {} });
   console.log(`\n${calls} calls, ${failures} failures`);
@@ -251,6 +275,72 @@ async function contextLayersStory() {
   expectTrue(!!open, `the overlay's differences are brief conflicts (${conflicts.length})`);
   if (open) await call("resolveBriefConflict", { params: { id: open.overlayId, field: open.field }, body: { resolution: "regional_variant", rationale: "China plans in CLTC" }, as: "u-katrin" });
   await call("resolveBriefConflict", { params: { id: overlay.id, field: "thesis" }, body: { resolution: "align", rationale: "x" }, as: "u-lena", expect: 403 });
+}
+
+type Replay = {
+  events: { action: string; actorType: string; rationale: string | null; scoreSnapshot: { score: number; profileVersion: number; weights: Record<string, number>; at: string } | null }[];
+  integrity: { id: string; ok: boolean; failures: string[] }[];
+  quoteIds: string[];
+  counts: { customers: number };
+};
+type RippleT = {
+  id: string;
+  status: string;
+  items: { id: string; kind: string; objectId: string; row: string; alsoRows: string[]; verdict: string; gapPct: number | null; muted: boolean; notified: { userId: string; kind: string }[]; rankBefore: number | null; rankAfter: number | null; movedBecause: string | null }[];
+};
+
+/** Trace replay of the hero + the competitor ripple across the portfolio, and the decision showing up in the replay. */
+async function traceAndRippleStory() {
+  await call("reset", { body: {} });
+  const hero = "REQ-G60-0010";
+  const replay = (await call("requirementReplay", { params: { id: hero } })) as Replay;
+  expectTrue(replay.integrity.every((c) => c.ok), `replay integrity: ${replay.integrity.map((c) => `${c.id} ${c.ok ? "ok" : `FAIL ${c.failures[0]}`}`).join(", ")}`);
+  const snaps = replay.events.filter((e) => e.scoreSnapshot).map((e) => e.scoreSnapshot!);
+  expectTrue(snaps.length >= 2 && snaps[0].profileVersion === 1 && snaps[0].weights.competitor_gap !== snaps.at(-1)!.weights.competitor_gap, `score snapshots use the profile of the decision date (v${snaps[0]?.profileVersion} then, v${snaps.at(-1)?.profileVersion} at sign-off)`);
+  expectTrue(replay.events.some((e) => e.actorType === "agent") && replay.events.some((e) => e.actorType === "human"), "replay separates agent steps from human decisions");
+  expectTrue(replay.quoteIds.length > 0 && replay.counts.customers >= replay.quoteIds.length, `replay samples ${replay.quoteIds.length} quotes of ${replay.counts.customers} customers`);
+
+  const run = (await call("refresh", { body: { series: "G60" } })) as { run: { steps?: unknown[]; rippleId?: string | null }; ripples: { id: string; status: string }[] };
+  expectTrue((run.run.steps?.length ?? 0) === 5 && !!run.run.rippleId, "refresh shows 5 agent-run steps and links the ripple");
+  expectTrue(run.ripples.some((r) => r.status === "watch"), "a low-trust fact only goes on the watch list");
+  const active = run.ripples.find((r) => r.status === "active")!;
+  const bundle = (await call("ripple", { params: { id: active.id } })) as { ripple: RippleT };
+  const items = bundle.ripple.items;
+  const item = (id: string) => items.find((i) => i.objectId === id)!;
+  const rows = new Set(items.flatMap((i) => [i.row, ...i.alsoRows]));
+  expectTrue(new Set([...rows].map((r) => (r === "G60_CN" ? "G60" : r))).size >= 3, `the ripple spans ${rows.size} rows in 3+ series`);
+  expectTrue(item(hero).verdict === "at_par" && item("REQ-G60-CN-0003").verdict === "behind" && item("REQ-G70-0002").verdict === "still_ahead" && item("REQ-F70-0002").verdict === "not_comparable", "verdicts: hero at par, China behind, Baukasten ahead, F70 not comparable");
+  expectTrue(item(hero).notified.some((n) => n.userId === "u-katrin" && n.kind === "head"), "the head is notified because the hero is signed off");
+  expectTrue(items.every((i) => i.kind === "requirement"), "a competitor update affects requirements only, not target-less cases");
+  const seeded = (await call("alerts", { query: { all: "true" }, as: "u-katrin" })) as { status: string; rippleId?: string }[];
+  expectTrue(seeded.filter((a) => a.status === "open").every((a) => a.rippleId), "every open competitor alert comes from a ripple");
+
+  const raise = (await call("decideRippleItem", { params: { id: active.id, itemId: item("REQ-G60-CN-0003").id }, body: { kind: "raise_target", rationale: "Beat Xiaomi" }, as: "u-wei" })) as { proposal: { kind: string; status: string } };
+  const cn = (await call("requirementBundle", { params: { id: "REQ-G60-CN-0003" } })) as { requirement: { metrics: { target: string }[] } };
+  expectTrue(raise.proposal.kind === "new_version" && raise.proposal.status === "pending" && cn.requirement.metrics[0].target === "750 km", "raise target is a proposal only: the requirement is unchanged");
+  const variant = (await call("decideRippleItem", { params: { id: active.id, itemId: item(hero).id }, body: { kind: "market_variant", rationale: "China buyers compare CLTC" }, as: "u-wei" })) as { proposal: { objectId: string } };
+  expectTrue(variant.proposal.objectId === "REQ-G60-CN-0003", "Wei's market variant links the existing China requirement instead of duplicating it");
+  await call("decideRippleItem", { params: { id: active.id, itemId: item(hero).id }, body: { kind: "keep", rationale: "At par; we win on charging speed" }, as: "u-sofia", expect: 403 });
+  await call("decideRippleItem", { params: { id: active.id, itemId: item(hero).id }, body: { kind: "keep", rationale: "At par; we win on charging speed" } });
+  const after = (await call("requirementReplay", { params: { id: hero } })) as Replay;
+  expectTrue(after.events.some((e) => e.action === "ripple.kept" && e.rationale === "At par; we win on charging speed") && after.events.some((e) => e.action === "alert.raised"), "the alert and Lena's decision show up in the hero's replay");
+  expectTrue(after.integrity.every((c) => c.ok), "the chain stays intact after the ripple");
+
+  const run2 = (await call("refresh", { body: { series: "G60" } })) as { ripples: { id: string; status: string }[] };
+  const second = (await call("ripple", { params: { id: run2.ripples[0].id } })) as { ripple: RippleT };
+  const h2 = second.ripple.items.find((i) => i.objectId === hero)!;
+  expectTrue(h2.muted && h2.notified.length === 0, `a repeat fact stays muted for the kept target (gap ${h2.gapPct}%)`);
+  const weiAlerts = ((await call("alerts", { as: "u-wei" })) as { status: string; rippleId?: string; requirementId: string | null }[]).filter((a) => a.status === "open" && a.requirementId === "REQ-G60-CN-0003" && a.rippleId);
+  expectTrue(weiAlerts.length === 1 && weiAlerts[0].rippleId === second.ripple.id, `a newer fact from the same competitor replaces the older alert (${weiAlerts.map((a) => a.rippleId).join(", ")})`);
+
+  await call("saveConversion", { params: { id: "CONV-CLTC-WLTP" }, body: { factor: 0.9, rationale: "x" }, expect: 403 });
+  await call("saveConversion", { params: { id: "CONV-CLTC-WLTP" }, body: { factor: 0.9, rationale: "Long-range trims read closer to 0.9" }, as: "u-katrin" });
+  const re = (await call("ripple", { params: { id: active.id } })) as { ripple: RippleT };
+  expectTrue(re.ripple.items.find((i) => i.objectId === hero)!.verdict === "behind", "factor 0.90 turns the hero behind (the verdict hinges on the assumption)");
+  await call("conversions");
+  await call("ripples");
+  await call("monitorSettings");
+  await call("saveMonitorSettings", { body: { muteThresholdPct: 4, rationale: "Fewer repeats for small moves" }, as: "u-katrin" });
 }
 
 main().catch((e) => {

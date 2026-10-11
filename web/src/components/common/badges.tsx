@@ -23,19 +23,19 @@ import {
 } from "@/contracts";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-const pill = "inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[11px] font-medium leading-none whitespace-nowrap";
+const pill = "inline-flex items-center gap-1 rounded-full border px-2 py-px text-xs font-medium leading-4 whitespace-nowrap";
 
 const tone = {
-  slate: "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300",
-  sky: "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-800 dark:bg-sky-950/60 dark:text-sky-300",
-  violet: "border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-800 dark:bg-violet-950/60 dark:text-violet-300",
-  amber: "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-300",
-  emerald: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300",
-  red: "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950/60 dark:text-red-300",
-  fuchsia: "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700 dark:border-fuchsia-800 dark:bg-fuchsia-950/60 dark:text-fuchsia-300",
-  blue: "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950/60 dark:text-blue-300",
-  teal: "border-teal-200 bg-teal-50 text-teal-700 dark:border-teal-800 dark:bg-teal-950/60 dark:text-teal-300",
-  outline: "border-border text-muted-foreground",
+  slate: "border-tone-slate-bd bg-tone-slate-bg text-tone-slate-fg",
+  sky: "border-tone-sky-bd bg-tone-sky-bg text-tone-sky-fg",
+  violet: "border-tone-violet-bd bg-tone-violet-bg text-tone-violet-fg",
+  amber: "border-tone-amber-bd bg-tone-amber-bg text-tone-amber-fg",
+  emerald: "border-tone-emerald-bd bg-tone-emerald-bg text-tone-emerald-fg",
+  red: "border-tone-red-bd bg-tone-red-bg text-tone-red-fg",
+  fuchsia: "border-tone-fuchsia-bd bg-tone-fuchsia-bg text-tone-fuchsia-fg",
+  blue: "border-tone-blue-bd bg-tone-blue-bg text-tone-blue-fg",
+  teal: "border-tone-teal-bd bg-tone-teal-bg text-tone-teal-fg",
+  outline: "border-border bg-card text-muted-foreground",
 } as const;
 export type Tone = keyof typeof tone;
 
@@ -74,18 +74,17 @@ export const reqTone: Record<RequirementStatus, Tone> = {
 };
 
 const dotColor: Record<Tone, string> = {
-  slate: "bg-slate-400",
-  sky: "bg-sky-500",
-  violet: "bg-violet-500",
-  amber: "bg-amber-500",
-  emerald: "bg-emerald-500",
-  red: "bg-red-500",
-  fuchsia: "bg-fuchsia-500",
-  blue: "bg-blue-500",
-  teal: "bg-teal-500",
+  slate: "bg-tone-slate-dot",
+  sky: "bg-tone-sky-dot",
+  violet: "bg-tone-violet-dot",
+  amber: "bg-tone-amber-dot",
+  emerald: "bg-tone-emerald-dot",
+  red: "bg-tone-red-dot",
+  fuchsia: "bg-tone-fuchsia-dot",
+  blue: "bg-tone-blue-dot",
+  teal: "bg-tone-teal-dot",
   outline: "bg-muted-foreground/50",
 };
-
 /** Quiet status for lists: a coloured dot plus a short word, no box. */
 export function StatusDot({ t, children, className }: { t: Tone; children?: React.ReactNode; className?: string }) {
   return (
@@ -126,7 +125,7 @@ export function EvidenceBars({ level, showLabel = true }: { level: EvidenceLevel
         <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
           <span className="flex gap-0.5" aria-hidden>
             {[0, 1, 2].map((i) => (
-              <span key={i} className={cn("h-3 w-1.5 rounded-[1px]", i < n ? (n === 3 ? "bg-positive" : n === 2 ? "bg-sky-500" : "bg-warning") : "bg-muted-foreground/25")} />
+              <span key={i} className={cn("h-3 w-1.5 rounded-[2px]", i < n ? (n === 3 ? "bg-positive" : n === 2 ? "bg-tone-sky-fg" : "bg-warning") : "bg-border-strong")} />
             ))}
           </span>
           {showLabel ? label : <span className="sr-only">{label}</span>}
@@ -184,7 +183,7 @@ export function ScoreBar({ value, className }: { value: number; className?: stri
   return (
     <div className={cn("flex items-center gap-2", className)}>
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-        <div className="h-full rounded-full bg-primary" style={{ width: `${Math.max(2, Math.min(100, value * 100))}%` }} />
+        <div className="h-full rounded-full bg-foreground/80" style={{ width: `${Math.max(2, Math.min(100, value * 100))}%` }} />
       </div>
       <span className="w-8 shrink-0 text-right font-mono text-xs tabular-nums">{value.toFixed(2)}</span>
     </div>

@@ -51,18 +51,18 @@ function Body({ id }: { id: string }) {
 
   return (
     <>
-      <SheetHeader className="gap-2 border-b px-6 pt-5 pb-4">
-        <div className="flex items-center gap-2 pr-8 text-xs text-muted-foreground">
+      <SheetHeader className="gap-2.5 border-b px-6 pt-6 pb-5">
+        <div className="flex flex-wrap items-center gap-2 pr-8 text-xs text-muted-foreground">
           <span className="font-mono">{r.id}</span>
           <ReqStatusBadge status={r.status} />
           <ReleaseChip release={r.releaseTarget} />
           <RegionChip region={r.marketScope} />
           <Pill>Cost {r.cost.size}</Pill>
-          <Link href={`/requirements/${r.id}`} className="ml-auto inline-flex items-center gap-1 hover:text-foreground">
+          <Link href={`/requirements/${r.id}`} className="ml-auto inline-flex items-center gap-1 font-medium text-foreground underline decoration-border-strong underline-offset-2 transition-colors duration-150 hover:decoration-foreground">
             Full page <ExternalLink className="size-3" />
           </Link>
         </div>
-        <SheetTitle className="text-lg leading-snug">{r.title}</SheetTitle>
+        <SheetTitle className="text-xl leading-snug font-semibold">{r.title}</SheetTitle>
         <SheetDescription className="sr-only">Requirement {r.id}</SheetDescription>
         {(requirementButtons(r, user).length > 0 || canEdit) && (
           <div className="flex flex-wrap gap-2 pt-1">
@@ -79,10 +79,10 @@ function Body({ id }: { id: string }) {
           </div>
         )}
       </SheetHeader>
-      <div className="space-y-3 px-6 pt-4">
+      <div className="space-y-3 px-6 pt-5">
         {r.sentBackReason && r.status === "in_discussion" && (
-          <div className="flex gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm dark:border-amber-800 dark:bg-amber-950/40">
-            <CornerUpLeft className="mt-0.5 size-4 shrink-0 text-amber-600" /> “{r.sentBackReason}”
+          <div className="flex gap-2 rounded-lg border border-tone-amber-bd bg-tone-amber-bg px-4 py-2.5 text-sm">
+            <CornerUpLeft className="mt-0.5 size-4 shrink-0 text-warning" /> “{r.sentBackReason}”
           </div>
         )}
         <TraceChain b={b} />
@@ -94,12 +94,12 @@ function Body({ id }: { id: string }) {
           ))}
         <VariantsCompare r={r} others={b.variants} onOpen={(x) => router.push(`/requirements/${x}`)} onCite={onCite} />
       </div>
-      <Tabs defaultValue="spec" className="px-6 py-4">
+      <Tabs defaultValue="spec" className="px-6 pt-6 pb-6">
         <TabsList>
           <TabsTrigger value="spec">Spec</TabsTrigger>
           <TabsTrigger value="versions">Versions ({b.versions.length})</TabsTrigger>
           <TabsTrigger value="argument">Argument sheet</TabsTrigger>
-          <TabsTrigger value="chat">Harden with AI</TabsTrigger>
+          <TabsTrigger value="chat">Ask Argus</TabsTrigger>
         </TabsList>
         <TabsContent value="spec" className="pt-3">
           <Spec key={r.id + r.updatedAt} r={r} canEdit={canEdit} onCite={onCite} />
@@ -108,9 +108,9 @@ function Body({ id }: { id: string }) {
           <VersionsPanel versions={b.versions} feedback={b.feedback} />
         </TabsContent>
         <TabsContent value="argument" className="pt-3">
-          <ArgumentSheet b={b} />
+          <ArgumentSheet b={b} canEdit={canEdit} onCite={onCite} />
         </TabsContent>
-        <TabsContent value="chat" className="h-[60vh] overflow-hidden rounded-lg border pt-0">
+        <TabsContent value="chat" className="h-[60vh] overflow-hidden rounded-xl border bg-card pt-0">
           <ChatPanel objectType="requirement" objectId={r.id} proposals={b.proposals} canEdit={canEdit} onCite={onCite} />
         </TabsContent>
       </Tabs>

@@ -34,26 +34,26 @@ export function ShapeForm({ caseId, onCreated, onCancel }: { caseId: string; onC
   const value = (key: ShapeKey, def: string) => answers[key] ?? def;
 
   return (
-    <div className="space-y-4 rounded-xl border border-primary/30 bg-primary/5 p-5">
+    <div className="space-y-4 rounded-xl border border-border-strong bg-recessed p-6">
       <div>
         <h3 className="text-sm font-semibold">Before the draft: {questions.length ? `${questions.length} question${questions.length === 1 ? "" : "s"} only you can answer` : "nothing to ask"}</h3>
         <p className="text-xs text-muted-foreground">
           Drafting with{" "}
           {brief ? (
             <>
-              your brief ({brief.series}
+              your product specs ({brief.series}
               {brief.overlayId ? `, ${regionLabel[brief.region]} overlay` : ""})
             </>
           ) : (
-            "no brief (defaults, tagged as assumptions)"
+            "no product specs (defaults, tagged as assumptions)"
           )}
-          {stance ? `, your stance${stance.ambition ? ` (${ambitionLabel[stance.ambition].toLowerCase()})` : ""}` : ", no stance yet"} and the case evidence.
+          {stance ? `, your context${stance.ambition ? ` (${ambitionLabel[stance.ambition].toLowerCase()})` : ""}` : ", no context yet"} and the case evidence.
           {variantOf && <> Your draft becomes a {regionLabel[brief?.region ?? "global"]} variant of {variantOf}.</>}
         </p>
       </div>
 
       {questions.map((x, i) => (
-        <div key={x.key} className="space-y-1.5 rounded-lg border bg-card p-3">
+        <div key={x.key} className="space-y-2 rounded-lg border bg-card p-4">
           <div className="text-sm font-medium">
             <span className="mr-1.5 text-muted-foreground">{i + 1}.</span>
             {x.question}
@@ -66,13 +66,13 @@ export function ShapeForm({ caseId, onCreated, onCancel }: { caseId: string; onC
           </p>
           <ToggleGroup type="single" variant="outline" size="sm" value={value(x.key, x.default)} onValueChange={(v) => v && setAnswers({ ...answers, [x.key]: v })} className="flex-wrap">
             {x.options.map((o) => (
-              <ToggleGroupItem key={o.value} value={o.value} className="px-3 data-[state=on]:border-primary data-[state=on]:bg-primary/10 data-[state=on]:text-primary">
+              <ToggleGroupItem key={o.value} value={o.value} className="px-3">
                 {o.label}
-                {o.value === x.default && <span className="ml-1 text-[10px] opacity-60">default</span>}
+                {o.value === x.default && <span className="ml-1 text-xs font-normal opacity-70">default</span>}
               </ToggleGroupItem>
             ))}
           </ToggleGroup>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Default: {x.defaultWhy}
             {pending.has(x.key) && " (from your chat answer)"}
           </p>

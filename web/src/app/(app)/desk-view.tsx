@@ -3,8 +3,8 @@
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { AlertTriangle, AtSign, Check, CheckCircle2, CircleDot, ClipboardCheck, CornerUpLeft, Forward, GitCompare, KanbanSquare, MessageSquareReply, Radar, Scale } from "lucide-react";
-import { CaseState as CaseStates, addresseeLabel, briefFieldLabel, caseStateLabel, seriesShort, type Case, type Referral, type Requirement, type RequirementAction, type ResponseOf } from "@/contracts";
+import { AlertTriangle, AtSign, Check, CheckCircle2, CircleDot, ClipboardCheck, CornerUpLeft, Forward, GitCompare, KanbanSquare, MessageSquareReply, Radar, Scale, Waves } from "lucide-react";
+import { CaseState as CaseStates, addresseeLabel, briefFieldLabel, caseStateLabel, seriesShort, verdictLabel, type Case, type Referral, type Requirement, type RequirementAction, type ResponseOf } from "@/contracts";
 import { useApi, useApiMutation } from "@/lib/api/hooks";
 import { showBriefValue } from "@/lib/brief";
 import { fmtDate, fromNow } from "@/lib/format";
@@ -43,16 +43,35 @@ export function DeskView() {
   const rank = (id: string) => scores.cases.get(id)?.rank ?? 999;
   const first = (n?: string) => n?.split(" ")[0] ?? "";
 
+  const openAlerts = alerts.filter((a) => a.status === "open" && (isHead || a.ownerId === user.id));
+  // A competitor ripple is one row per fact (it may touch many items), opening the ripple screen.
+  const rippleRows = Object.values(Object.groupBy(openAlerts.filter((a) => a.rippleId), (a) => a.rippleId!)).map((xs) => {
+    const a = xs![0];
+    const items = new Set(xs!.map((x) => x.requirementId ?? x.caseId));
+    const counts = (["behind", "at_par", "still_ahead"] as const).map((v) => [v, xs!.filter((x) => x.itemVerdict === v).length] as const).filter(([, n]) => n > 0);
+    const summary = counts.map(([v, n]) => `${n} ${verdictLabel[v].toLowerCase()}`).join(" · ");
+    return (
+      <Row
+        key={a.rippleId}
+        icon={<Waves className="text-warning" />}
+        label={a.title.split(":")[0]}
+        hint={`${items.size} of ${isHead ? "the portfolio's" : "your"} items: ${[...items].join(", ")}`}
+        right={<span className="shrink-0 text-xs font-medium text-tone-amber-fg">{summary}</span>}
+        href={`/ripple/${a.rippleId}`}
+      />
+    );
+  });
   const flags = [
-    ...alerts
-      .filter((a) => a.status === "open" && (isHead || a.ownerId === user.id))
+    ...rippleRows,
+    ...openAlerts
+      .filter((a) => !a.rippleId)
       .map((a) => (
         <Row
           key={a.id}
-          icon={<AlertTriangle className="text-amber-500" />}
+          icon={<AlertTriangle className="text-warning" />}
           label={a.caseId ? short("case", a.caseId) : a.title}
           hint={a.title}
-          right={<span className="text-xs text-amber-700 dark:text-amber-400">{a.verdict === "raises_the_bar" ? "Bar raised" : "Contradicts"}</span>}
+          right={<span className="shrink-0 text-xs font-medium text-tone-amber-fg">{a.verdict === "raises_the_bar" ? "Bar raised" : "Contradicts"}</span>}
           href={a.caseId ? `/cases/${a.caseId}` : "/inbox"}
         />
       )),
@@ -60,14 +79,14 @@ export function DeskView() {
       .filter((n) => n.kind === "mention" && !n.read)
       .map((n) => {
         const caseId = n.link.match(/CASE-[A-Z0-9-]+/)?.[0];
-        return <Row key={n.id} icon={<AtSign className="text-primary" />} label={caseId ? short("case", caseId) : n.title} hint={n.body} right={<Muted>{first(name(n.actorId ?? ""))} · {fromNow(n.createdAt)}</Muted>} href={n.link} />;
+        return <Row key={n.id} icon={<AtSign className="text-ember" />} label={caseId ? short("case", caseId) : n.title} hint={n.body} right={<Muted>{first(name(n.actorId ?? ""))} · {fromNow(n.createdAt)}</Muted>} href={n.link} />;
       }),
   ];
 
   const mine = cases.filter((c) => (isHead ? c.state === "ready" : (c.ownerId === user.id || c.coOwnerIds.includes(user.id)) && c.state !== "decided" && c.state !== "observed")).sort((a, b) => rank(a.id) - rank(b.id));
   const toMe = referrals.filter((r) => r.toUserId === user.id && r.status === "pending" && r.kind === "referral");
   const myCases = [
-    ...toMe.map((r) => <Row key={r.id} icon={<Forward className="text-violet-500" />} label={short("case", r.caseId)} hint={r.note} right={<Muted>from {first(name(r.fromUserId))}</Muted>} href="/inbox" />),
+    ...toMe.map((r) => <Row key={r.id} icon={<Forward className="text-tone-violet-dot" />} label={short("case", r.caseId)} hint={r.note} right={<Muted>from {first(name(r.fromUserId))}</Muted>} href="/inbox" />),
     ...mine.map((c) => <Row key={c.id} label={c.shortTitle} hint={c.title} right={<CaseStateDot state={c.state} />} href={`/cases/${c.id}`} />),
   ];
 
@@ -87,7 +106,7 @@ export function DeskView() {
         .map((r) => (
           <Row
             key={r.id}
-            icon={r.sentBackReason ? <CornerUpLeft className="text-amber-600" /> : undefined}
+            icon={r.sentBackReason ? <CornerUpLeft className="text-warning" /> : undefined}
             label={r.shortTitle}
             hint={r.sentBackReason ? `Sent back: ${r.sentBackReason}` : r.title}
             right={<ReqStatusDot status={r.status} />}
@@ -108,9 +127,9 @@ export function DeskView() {
   ];
 
   return (
-    <div className="mx-auto max-w-6xl p-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Good morning, {first(user.name)}</h1>
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+    <div className="mx-auto max-w-[1280px] px-6 pt-7 pb-10">
+      <h1 className="text-2xl leading-tight font-semibold text-foreground md:text-title">Good morning, {first(user.name)}</h1>
+      <div className="mt-7 grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-2 [&>*]:min-w-0">
         <Card icon={<Radar />} title="Agent flags" items={flags} />
         <Card icon={<KanbanSquare />} title={isHead ? "Ready to decide" : "My cases"} items={myCases} more={{ href: "/cases", label: "Board" }}>
           {!isHead && <StageBar cases={mine} />}
@@ -118,7 +137,7 @@ export function DeskView() {
         <Card icon={<ClipboardCheck />} title="Review" items={review} />
         <Card icon={<MessageSquareReply />} title="Follow up" items={followUp}>
           {(answered.length > 0 || open.length > 0) && (
-            <div className="flex gap-4 px-4 pb-1 text-xs text-muted-foreground">
+            <div className="flex gap-4 px-5 pb-1 text-xs text-muted-foreground">
               <span>
                 <b className="font-semibold text-foreground tabular-nums">{answered.length}</b> answers back
               </span>
@@ -138,29 +157,29 @@ function Card({ icon, title, items, more, children }: { icon: ReactNode; title: 
   const [all, setAll] = useState(false);
   const shown = all ? items : items.slice(0, 3);
   return (
-    <section className="flex flex-col rounded-xl border bg-card shadow-xs">
-      <header className="flex items-center gap-2.5 px-4 pt-4 pb-3">
-        <span className="grid size-8 place-items-center rounded-lg bg-primary/10 text-primary [&_svg]:size-4">{icon}</span>
-        <h2 className="text-sm font-semibold">{title}</h2>
-        <span className="ml-auto text-2xl font-semibold tabular-nums">{items.length}</span>
+    <section className="flex flex-col rounded-xl border bg-card">
+      <header className="flex items-center gap-3 px-5 pt-5 pb-3">
+        <span className="grid size-8 place-items-center rounded-lg border bg-recessed text-foreground [&_svg]:size-4 [&_svg]:stroke-[1.75]">{icon}</span>
+        <h2 className="text-lg leading-snug font-semibold">{title}</h2>
+        <span className="ml-auto text-2xl leading-none font-semibold tabular-nums">{items.length}</span>
       </header>
       {children}
       {items.length === 0 ? (
-        <p className="flex items-center gap-2 px-4 pb-4 text-sm text-muted-foreground">
+        <p className="flex items-center gap-2 px-5 pt-1 pb-5 text-sm text-muted-foreground">
           <CheckCircle2 className="size-4 text-positive" /> All clear
         </p>
       ) : (
-        <ul className="px-2 pb-2">{shown}</ul>
+        <ul className="px-3 pb-3">{shown}</ul>
       )}
       {(items.length > 3 || more) && (
-        <div className="mt-auto flex items-center border-t px-4 py-2 text-sm">
+        <div className="mt-auto flex items-center border-t px-5 py-2.5 text-sm">
           {items.length > 3 && (
-            <button onClick={() => setAll(!all)} className="text-primary hover:underline">
+            <button onClick={() => setAll(!all)} className="rounded-sm font-medium text-foreground underline-offset-2 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
               {all ? "Show less" : `+${items.length - 3} more`}
             </button>
           )}
           {more && (
-            <Link href={more.href} className="ml-auto text-muted-foreground hover:text-foreground">
+            <Link href={more.href} className="ml-auto text-muted-foreground transition-colors duration-150 hover:text-foreground">
               {more.label} →
             </Link>
           )}
@@ -172,7 +191,7 @@ function Card({ icon, title, items, more, children }: { icon: ReactNode; title: 
 
 /** One line: icon, short name, one quiet detail on the right. The full text is in the tooltip. */
 function Row({ icon, label, hint, right, href, onClick }: { icon?: ReactNode; label: string; hint?: string; right?: ReactNode; href?: string; onClick?: () => void }) {
-  const cls = "flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left text-sm transition hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none";
+  const cls = "flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left text-sm transition-colors duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
   const body = (
     <>
       <span className="grid size-4 shrink-0 place-items-center [&_svg]:size-4">{icon ?? <span className="size-1.5 rounded-full bg-muted-foreground/40" />}</span>
@@ -207,14 +226,14 @@ function Row({ icon, label, hint, right, href, onClick }: { icon?: ReactNode; la
 
 const Muted = ({ children }: { children: ReactNode }) => <span className="shrink-0 text-xs text-muted-foreground">{children}</span>;
 
-const barColor: Record<string, string> = { slate: "bg-slate-400", sky: "bg-sky-500", violet: "bg-violet-500", amber: "bg-amber-500", emerald: "bg-emerald-500" };
+const barColor: Record<string, string> = { slate: "bg-tone-slate-dot", sky: "bg-tone-sky-dot", violet: "bg-tone-violet-dot", amber: "bg-tone-amber-dot", emerald: "bg-tone-emerald-dot" };
 
 /** Where my open cases stand, as one segmented bar. */
 function StageBar({ cases }: { cases: Case[] }) {
   const stages = CaseStates.options.filter((s) => s !== "observed" && s !== "decided").map((s) => [s, cases.filter((c) => c.state === s).length] as const);
   if (!cases.length) return null;
   return (
-    <div className="space-y-2 px-4 pb-2">
+    <div className="space-y-2 px-5 pb-2">
       <div className="flex h-2 gap-0.5 overflow-hidden rounded-full">
         {stages.map(([s, n]) => n > 0 && <span key={s} className={barColor[caseStateTone[s]]} style={{ flexGrow: n }} />)}
       </div>
@@ -223,7 +242,7 @@ function StageBar({ cases }: { cases: Case[] }) {
           ([s, n]) =>
             n > 0 && (
               <span key={s} className="inline-flex items-center gap-1">
-                <span className={cn("size-1.5 rounded-full", barColor[caseStateTone[s]])} />
+                <span className={cn("size-2 rounded-full", barColor[caseStateTone[s]])} />
                 {n} {caseStateLabel[s].toLowerCase()}
               </span>
             ),
@@ -277,8 +296,8 @@ function BriefConflictRow({ xs, owner }: { xs: Conflict[]; owner: string }) {
   return (
     <li className="flex items-center gap-2 px-2 py-1.5">
       <Link href="/brief" className="flex min-w-0 flex-1 items-center gap-3 rounded-lg py-0.5 text-sm hover:underline" title={fields}>
-        <GitCompare className="size-4 shrink-0 text-fuchsia-500" />
-        <span className="truncate font-medium">{seriesShort[x.series]} brief</span>
+        <GitCompare className="size-4 shrink-0 text-tone-fuchsia-dot" />
+        <span className="truncate font-medium">{seriesShort[x.series]} product specs</span>
         <span className="truncate text-xs text-muted-foreground">
           {owner} differs on {xs.length === 1 ? briefFieldLabel[x.field].toLowerCase() : `${xs.length} fields`}
         </span>
@@ -289,13 +308,13 @@ function BriefConflictRow({ xs, owner }: { xs: Conflict[]; owner: string }) {
       <RationaleDialog
         open={open}
         onOpenChange={setOpen}
-        title={`${seriesShort[x.series]} brief: ${owner}'s regional differences`}
-        description="Accept a difference as a regional variant (the overlay keeps it) or align it to the shared brief. One rationale covers all of them."
+        title={`${seriesShort[x.series]} product specs: ${owner}'s regional differences`}
+        description="Accept a difference as a regional variant (the overlay keeps it) or align it to the shared product specs. One rationale covers all of them."
         confirmLabel={`Decide ${xs.length === 1 ? "it" : `all ${xs.length}`}`}
         pending={resolve.isPending}
         onSubmit={async (rationale) => {
           for (const c of xs) await resolve.mutateAsync({ params: { id: c.overlayId, field: c.field }, body: { resolution: choice[c.field] ?? "regional_variant", rationale } });
-          toast.success(`${xs.length === 1 ? "Brief difference" : `${xs.length} brief differences`} resolved`);
+          toast.success(`${xs.length === 1 ? "Product specs difference" : `${xs.length} product specs differences`} resolved`);
           setOpen(false);
         }}
       >
@@ -320,8 +339,8 @@ function BriefConflictRow({ xs, owner }: { xs: Conflict[]; owner: string }) {
                     type="button"
                     onClick={() => setChoice((s) => ({ ...s, [c.field]: v }))}
                     className={cn(
-                      "rounded-full border px-2.5 py-0.5 text-xs",
-                      (choice[c.field] ?? "regional_variant") === v ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground",
+                      "rounded-full border px-2.5 py-0.5 text-xs transition-colors duration-150",
+                      (choice[c.field] ?? "regional_variant") === v ? "border-primary bg-primary text-primary-foreground" : "border-input text-muted-foreground hover:border-border-strong hover:text-foreground",
                     )}
                   >
                     {label}
@@ -343,7 +362,7 @@ function EscalationRow({ e, c }: { e: Referral; c?: Case }) {
   return (
     <li className="flex items-center gap-2 px-2 py-1.5">
       <Link href={c ? `/cases/${c.id}` : "/cases"} className="flex min-w-0 flex-1 items-center gap-3 rounded-lg py-0.5 text-sm hover:underline">
-        <Scale className="size-4 shrink-0 text-violet-500" />
+        <Scale className="size-4 shrink-0 text-tone-violet-dot" />
         <span className="truncate font-medium">{c?.shortTitle ?? e.caseId}</span>
       </Link>
       <Button size="xs" variant="outline" onClick={() => setOpen(true)}>
@@ -367,7 +386,7 @@ function EscalationRow({ e, c }: { e: Referral; c?: Case }) {
               key={v}
               type="button"
               onClick={() => setResolution(v)}
-              className={cn("rounded-full border px-3 py-1 text-sm", resolution === v ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground")}
+              className={cn("rounded-full border px-3 py-1 text-sm transition-colors duration-150", resolution === v ? "border-primary bg-primary text-primary-foreground" : "border-input text-muted-foreground hover:border-border-strong hover:text-foreground")}
             >
               {label}
             </button>

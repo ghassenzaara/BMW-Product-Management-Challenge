@@ -13,7 +13,8 @@
         "competitor",
         "customer_public",
         "trends",
-        "innovation_scout"
+        "innovation_scout",
+        "pm"
       ]
     },
     "series": {
@@ -58,6 +59,45 @@
     },
     "note": {
       "type": "string"
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "skipped",
+              "failed"
+            ]
+          },
+          "detail": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "status",
+          "detail"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "rippleId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
     }
   },
   "required": [

@@ -21,7 +21,7 @@ export function InnovationView() {
   return (
     <div>
       <PageHeader title="Innovation pool" />
-      <div className="grid gap-4 p-6 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-5 px-6 pt-6 pb-10 md:grid-cols-2 xl:grid-cols-3">
         {data.map((e) => (
           <InnovationCard key={e.case.id} e={e} userId={me.data?.user.id} mySeries={me.data?.user.series ?? []} />
         ))}
@@ -38,22 +38,22 @@ function InnovationCard({ e, userId, mySeries }: { e: InnovationEntry; userId?: 
   const [series, setSeries] = useState<Series>(mySeries[0] ?? "G60");
   const voted = !!userId && e.meta.votes.includes(userId);
   return (
-    <div className="flex flex-col rounded-xl border bg-card p-4 shadow-xs">
+    <div className="flex flex-col rounded-xl border bg-card p-5">
       <div className="flex items-center gap-2">
-        <span className="grid size-8 place-items-center rounded-lg bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400">
-          <Lightbulb className="size-4" />
+        <span className="grid size-8 place-items-center rounded-lg border border-tone-fuchsia-bd bg-tone-fuchsia-bg text-tone-fuchsia-fg">
+          <Lightbulb className="size-4 stroke-[1.75]" />
         </span>
         <span className="flex-1" />
         <Pill t="fuchsia">{horizonLabel[e.meta.horizon]}</Pill>
       </div>
-      <Link href={`/cases/${e.case.id}`} title={e.case.title} className="mt-3 text-base leading-snug font-semibold hover:underline">
+      <Link href={`/cases/${e.case.id}`} title={e.case.title} className="mt-4 text-[17px] leading-snug font-semibold underline-offset-2 hover:underline">
         {e.case.shortTitle}
       </Link>
-      <p className="mt-1 line-clamp-2 text-sm text-muted-foreground" title={e.meta.pitch}>
+      <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-muted-foreground" title={e.meta.pitch}>
         {e.meta.pitch}
       </p>
       {e.meta.pulledInto.length > 0 && <p className="mt-2 text-xs text-muted-foreground">Pulled into {e.meta.pulledInto.length} series</p>}
-      <div className="mt-auto flex items-center gap-2 pt-4">
+      <div className="mt-auto flex items-center gap-2 pt-5">
         <Button size="sm" variant={voted ? "default" : "outline"} onClick={() => vote.mutate({ params: { caseId: e.case.id }, body: {} })}>
           <ThumbsUp className={cn("size-3.5", voted && "fill-current")} /> {e.meta.votes.length}
         </Button>

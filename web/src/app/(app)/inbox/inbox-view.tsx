@@ -44,17 +44,17 @@ export function InboxView() {
           )
         }
       />
-      <div className="space-y-6 p-6">
+      <div className="space-y-6 px-6 pt-6 pb-10">
         {waiting.length > 0 && (
-          <section className="overflow-hidden rounded-xl border border-primary/30 bg-card shadow-xs">
+          <section className="overflow-hidden rounded-xl border border-border-strong bg-card shadow-[inset_2px_0_0_var(--color-ember)]">
             {waiting.map((r) => (
               <ReferralRow key={r.id} r={r} label={shortOf.get(r.caseId) ?? r.caseId} from={name(r.fromUserId)} />
             ))}
           </section>
         )}
 
-        <section className="overflow-hidden rounded-xl border bg-card shadow-xs">
-          {notifications.length === 0 && <p className="p-6 text-center text-sm text-muted-foreground">Nothing yet</p>}
+        <section className="overflow-hidden rounded-xl border bg-card has-[>p]:border-dashed has-[>p]:border-border-strong has-[>p]:bg-card/60">
+          {notifications.length === 0 && <p className="px-6 py-12 text-center text-[15px] font-semibold text-foreground">Nothing yet</p>}
           {notifications.map((n) => {
             const Icon = notificationIcon[n.kind];
             return (
@@ -65,9 +65,9 @@ export function InboxView() {
                       if (!n.read) read.mutate({ body: { ids: [n.id] } });
                       router.push(n.link);
                     }}
-                    className="flex w-full items-center gap-3 border-b px-4 py-3 text-left text-sm transition last:border-0 hover:bg-muted/50"
+                    className="flex w-full items-center gap-3 border-b px-5 py-3 text-left text-sm transition-colors duration-150 last:border-0 hover:bg-muted focus-visible:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset"
                   >
-                    <span className={cn("size-2 shrink-0 rounded-full", n.read ? "bg-transparent" : "bg-primary")} />
+                    <span className={cn("size-2 shrink-0 rounded-full", n.read ? "bg-transparent" : "bg-ember")} />
                     <Icon className="size-4 shrink-0 text-muted-foreground" />
                     <span className={cn("min-w-0 flex-1 truncate", !n.read && "font-medium")}>{n.title}</span>
                     <span className="shrink-0 text-xs text-muted-foreground">{fromNow(n.createdAt)}</span>
@@ -83,13 +83,13 @@ export function InboxView() {
 
         {sent.length > 0 && (
           <section>
-            <button onClick={() => setShowSent(!showSent)} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-              <ChevronRight className={cn("size-4 transition", showSent && "rotate-90")} /> Sent by me · {sent.length}
+            <button onClick={() => setShowSent(!showSent)} className="flex items-center gap-1 rounded-sm text-sm text-muted-foreground transition-colors duration-150 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
+              <ChevronRight className={cn("size-4 transition-transform duration-150", showSent && "rotate-90")} /> Sent by me · {sent.length}
             </button>
             {showSent && (
-              <ul className="mt-2 overflow-hidden rounded-xl border bg-card">
+              <ul className="mt-3 overflow-hidden rounded-xl border bg-card">
                 {sent.map((r) => (
-                  <li key={r.id} className="flex items-center gap-3 border-b px-4 py-2.5 text-sm last:border-0">
+                  <li key={r.id} className="flex items-center gap-3 border-b px-5 py-2.5 text-sm last:border-0">
                     <UserAvatar id={r.toUserId} size="xs" />
                     <Link href={`/cases/${r.caseId}`} className="min-w-0 flex-1 truncate hover:underline">
                       {shortOf.get(r.caseId) ?? r.caseId}
@@ -114,7 +114,7 @@ function ReferralRow({ r, label, from }: { r: Referral; label: string; from: str
     success: (x) => (x.status === "accepted" ? "Accepted: the case is now on your board" : `Referral ${x.status}`),
   });
   return (
-    <div className="flex items-center gap-3 border-b px-4 py-3 last:border-0">
+    <div className="flex items-center gap-3 border-b px-5 py-3.5 last:border-0">
       <UserAvatar id={r.fromUserId} size="sm" />
       <Tooltip delayDuration={400}>
         <TooltipTrigger asChild>

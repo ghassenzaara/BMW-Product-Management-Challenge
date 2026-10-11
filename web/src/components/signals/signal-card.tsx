@@ -11,11 +11,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 
 const kindBorder: Record<Signal["kind"], string> = {
   complaint: "border-l-negative",
-  wish: "border-l-primary",
+  wish: "border-l-tone-blue-dot",
   like: "border-l-positive",
   competitor_fact: "border-l-chart-5",
-  trend: "border-l-sky-500",
-  innovation: "border-l-fuchsia-500",
+  trend: "border-l-tone-sky-dot",
+  innovation: "border-l-tone-fuchsia-dot",
 };
 
 /**
@@ -41,7 +41,7 @@ export function SignalCard({
   return (
     <div
       id={`signal-${s.id}`}
-      className={cn("flex gap-3 rounded-lg border border-l-[3px] bg-card p-3 transition", kindBorder[s.kind], highlighted && "ring-2 ring-primary", selected && "bg-primary/5")}
+      className={cn("flex gap-3 rounded-lg border border-l-[3px] bg-card p-3.5 transition-colors duration-150", kindBorder[s.kind], highlighted && "ring-2 ring-primary", selected && "bg-muted")}
       title={`${s.id} · ${signalKindLabel[s.kind]}`}
     >
       {selectable && <Checkbox checked={selected} onCheckedChange={(v) => onSelect?.(!!v)} className="mt-0.5" aria-label={`Select ${s.id}`} />}
@@ -64,7 +64,7 @@ export function SignalCard({
           <span className="flex-1" />
           <Tooltip>
             <TooltipTrigger asChild>
-              <span className="cursor-help rounded border px-1 font-mono text-[10px]">{s.trust}</span>
+              <span className="cursor-help rounded-sm border border-border-strong px-1.5 font-mono text-xs leading-4 text-foreground/80">{s.trust}</span>
             </TooltipTrigger>
             <TooltipContent>
               Trust {s.trust}: {trustText[s.trust]} · {agentLabel[s.agent]}
@@ -81,7 +81,7 @@ export function SignalCard({
             </Tooltip>
           )}
           {s.url && (
-            <a href={s.url} target="_blank" rel="noreferrer" className="text-primary hover:underline" aria-label="Open source">
+            <a href={s.url} target="_blank" rel="noreferrer" className="rounded-sm text-foreground transition-colors duration-150 hover:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" aria-label="Open source">
               <ExternalLink className="size-3.5" />
             </a>
           )}

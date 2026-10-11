@@ -472,3 +472,156 @@ def segments(conn, case_id: str, vehicle: str | None = None) -> list[dict]:
     out += [{"market": r["market"], "powertrain": r["powertrain"], "verbatims": r["n"]} for r in rows
             if r["n"] >= 3 and r["powertrain"] != "unknown"]
     return sorted(out, key=lambda s: (-s["verbatims"], s["market"], s["powertrain"] or ""))
+
+
+# ---- cases and evidence a PM adds by hand ------------------------------------------------
+
+CASE_DETAILS = ("title", "short_title", "summary", "case_type", "change_depth")
+# item type -> (source id, source name, content type of the record)
+PM_SOURCES = {"csv_row": ("pm_upload", "PM upload (file rows)", "owner"),
+              "link": ("pm_link", "PM link", None),
+              "note": ("pm_note", "PM note", None)}
+EMPTY_BODY = ("## Problem\n\n{summary}\n\n## Who is affected\n\n_To fill._\n\n## Evidence summary\n\n"
+              "_Started by hand. Add evidence: files, links or notes._\n\n## Today's car\n\n_To fill._\n\n"
+              "## Competitors\n\n_To fill._\n\n## Options considered\n\n_None yet._\n\n## Decision log\n")
+
+
+def create_empty_case(conn, user, vehicle: str, topic_id: str, aspect_group: str, title: str, summary: str,
+                      rationale: str, *, scope: str = "global", case_type: str | None = None,
+                      change_depth: str | None = None, request_id=None) -> dict:
+    """A PM starts a case by hand, before any signal. The fixed taxonomy still holds:
+    the PM picks one topic and one aspect group; the car area follows from the topic."""
+    if user.role != "pm" or not user.owns(vehicle):
+        raise Forbidden(f"{vehicle} is not one of your lines")
+    feature = conn.execute("select id, name from feature where topic_id = %s and car_area is not null",
+                           (topic_id,)).fetchone()
+    if feature is None or topic_id == "other":
+        raise ValueError(f"{topic_id} is not a topic of the fixed taxonomy")
+    if not conn.execute("select 1 from aspect_group where code = %s", (aspect_group,)).fetchone():
+        raise ValueError(f"unknown aspect group {aspect_group}")
+    summary = summary.strip() or title
+    body = EMPTY_BODY.format(summary=summary)
+    case = audit.insert(conn, "case_item", {
+        "feature_id": feature["id"], "aspect_group": aspect_group, "title": title,
+        "short_title": " ".join(title.split()[:4]), "summary": summary, "highlights": [summary], "body_md": body,
+        "case_type": case_type, "case_type_source": "pm" if case_type else None,
+        "change_depth": change_depth, "change_depth_source": "pm" if change_depth else None,
+        "created_by": user.actor, "tags": []}, actor=user.actor, rationale=rationale, request_id=request_id)
+    audit.insert(conn, "page_version", {"object_type": "case", "object_id": case["id"], "version": 1,
+                                        "body_md": body, "author": user.actor},
+                 actor=user.actor, key=("object_type", "object_id", "version"), request_id=request_id)
+    _ensure_line(conn, case["id"], vehicle, user.id, actor=user.actor, rationale=rationale, request_id=request_id)
+    audit.update(conn, "case_vehicle", {"case_id": case["id"], "vehicle": vehicle},
+                 {"scope": scope, "workflow": "new"}, actor=user.actor, rationale=rationale, request_id=request_id)
+    audit.insert(conn, "decision", {"object_type": "case", "object_id": case["id"], "vehicle": vehicle,
+                                    "actor": user.actor, "action": "create", "rationale": rationale},
+                 actor=user.actor, request_id=request_id)
+    return case
+
+
+def update_details(conn, case_id: str, vehicle: str, user, changes: dict, rationale: str | None, *,
+                   request_id=None) -> dict:
+    """Names and classification of the case. The topic, and with it the car area, is never edited."""
+    require_editor(user, case_vehicle(conn, case_id, vehicle))
+    changes = {k: v for k, v in changes.items() if k in CASE_DETAILS and v is not None}
+    if "title" in changes and len(changes["title"].strip()) < 3:
+        raise ValueError("a case title has at least 3 characters")
+    for tag in ("case_type", "change_depth"):
+        if tag in changes:
+            changes[f"{tag}_source"] = "pm"
+    row = audit.update(conn, "case_item", {"id": case_id}, changes, actor=user.actor,
+                       rationale=rationale or "case details edited", request_id=request_id)
+    if changes:
+        audit.insert(conn, "decision", {"object_type": "case", "object_id": case_id, "vehicle": vehicle,
+                                        "actor": user.actor, "action": "edit",
+                                        "rationale": rationale or "case details edited"},
+                     actor=user.actor, request_id=request_id)
+    row.pop("embedding", None)
+    return row
+
+
+def add_evidence(conn, case_id: str, vehicle: str, user, items: list[dict], rationale: str, *,
+                 request_id=None) -> dict:
+    """Evidence a PM adds by hand (rows of a file, a link, a note). Each item is stored
+    as a source record and goes through the validation gate like every signal, with the
+    case's topic and aspect group. Only file rows count as customers; a link or a note
+    is market evidence and never raises the customer count."""
+    import hashlib
+
+    from app.signals import service as signal_service
+
+    require_editor(user, case_vehicle(conn, case_id, vehicle))
+    case = conn.execute("select c.aspect_group, f.topic_id, f.name as feature from case_item c join feature f"
+                        " on f.id = c.feature_id where c.id = %s", (case_id,)).fetchone()
+    now = dt.datetime.now(dt.timezone.utc)
+    severity = {"complaint": "difficult_to_use", "wish": "wish"}
+    proposals = []
+    for n, item in enumerate(items, start=1):
+        source_id, source_name, content_type = PM_SOURCES[item["type"]]
+        if not conn.execute("select 1 from source_registry where source_id = %s", (source_id,)).fetchone():
+            audit.insert(conn, "source_registry", {"source_id": source_id, "name": source_name, "level": "model",
+                                                   "access": "added by a PM", "enabled": False},
+                         actor=user.actor, key="source_id", rationale="evidence added by a PM", request_id=request_id)
+        text = item["text"].strip()
+        record_id = f"{source_id}-{uuid.uuid4().hex[:12]}"
+        market = item.get("market") or "unknown"
+        audit.insert(conn, "source_record", {
+            "record_id": record_id, "source_id": source_id, "content_type": content_type, "level": "model",
+            "url": item.get("url") or None, "fetched_at": now, "published_at": now, "vehicle_role": "current",
+            "market": market, "title": item.get("title") or item.get("source") or None, "text_original": text,
+            "content_hash": hashlib.sha256(f"{source_id}|{record_id}|{text}".encode()).hexdigest(),
+            "extra": {"added_by": user.actor, "case_id": case_id, "file": item.get("source"), "row": n}},
+            actor=user.actor, key="record_id", rationale=rationale, request_id=request_id)
+        customer = item["type"] == "csv_row" and item["kind"] in ("complaint", "wish", "like")
+        summary = " ".join((item.get("title") or text).split()[:20])
+        proposals.append({
+            "record_id": record_id, "kind": item["kind"], "severity": severity.get(item["kind"], "none"),
+            "summary": summary if len(summary) >= 3 else f"PM evidence: {summary}",
+            "quote": text, "topic_id": case["topic_id"], "aspect_group": case["aspect_group"],
+            "classified_by": "pm", "feature_hint": case["feature"],
+            "evidence_role": "bmw_customer" if customer else "market",
+            "customer_ref": record_id if customer else None, "market": market,
+            "market_basis": "unknown" if market == "unknown" else "stated", "vehicle": vehicle,
+            "vehicle_role": "current", "extra": {"pm_evidence": item["type"]}})
+    result = signal_service.ingest(conn, proposals, actor=user.actor)
+    valid = [r for r in result["rows"] if r["validation"] == "valid"]
+    if valid:
+        audit.update_many(conn, "signal", [({"id": r["id"]}, {"case_id": case_id}) for r in valid],
+                          actor=user.actor, rationale=f"added to {case_id} by the PM: {rationale}")
+    audit.insert(conn, "decision", {"object_type": "case", "object_id": case_id, "vehicle": vehicle,
+                                    "actor": user.actor, "action": "edit",
+                                    "rationale": f"added {len(valid)} signals by hand: {rationale}"},
+                 actor=user.actor, request_id=request_id)
+    return {"added": [str(r["id"]) for r in valid],
+            "quarantined": [{"record_id": r["record_id"], "reason": r["reject_reason"]}
+                            for r in result["rows"] if r["validation"] != "valid"]}
+
+
+def evidence_integrity(conn, case_id: str, vehicle: str | None = None, max_failures: int = 20) -> dict:
+    """Recheck the chain of a case from the stored rows: every quote is found in its
+    stored source record, and every record still has its text and the hash taken at capture."""
+    from app.signals.gate import find_quote
+
+    rows = conn.execute(
+        "select s.id, s.quote, s.quote_en, s.record_id, r.text_original, r.text_en, r.content_hash, r.deleted_at"
+        " from signal s join source_record r using (record_id) where s.case_id = %s and s.validation = 'valid'"
+        " and (%s::text is null or s.vehicle = %s or s.vehicle is null) order by s.id",
+        (case_id, vehicle, vehicle)).fetchall()
+    quote_failures, record_failures = [], []
+    for r in rows:
+        text = r["text_original"]
+        if r["deleted_at"] is not None or text is None:
+            record_failures.append(f"{r['id']}: record {r['record_id']} was deleted")
+            quote_failures.append(f"{r['id']}: record {r['record_id']} was deleted")
+            continue
+        if not r["content_hash"]:
+            record_failures.append(f"{r['record_id']}: no hash")
+        found = find_quote(r["quote"] or "", text) is not None or bool(
+            r["quote_en"] and r["text_en"] and find_quote(r["quote_en"], r["text_en"]) is not None)
+        if not found:
+            quote_failures.append(f"{r['id']}: quote not found in {r['record_id']}")
+    return {"signals": len(rows), "records": len({r["record_id"] for r in rows}),
+            "quotes_found": len(rows) - len(quote_failures), "quote_failures": quote_failures[:max_failures],
+            "quote_failure_count": len(quote_failures),
+            "records_intact": len(rows) - len(record_failures), "record_failures": record_failures[:max_failures],
+            "record_failure_count": len(record_failures)}

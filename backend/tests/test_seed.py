@@ -1,5 +1,5 @@
 """Phase 2: seed from the provided data. Counts are checked against
-All-context/02-data-provided-by-pm/README.md."""
+docs/02-bmw-data/README.md."""
 
 import pytest
 

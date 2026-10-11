@@ -1,0 +1,1049 @@
+{
+ "base": "http://localhost:3000",
+ "at": "2026-10-11T04:17:42.786Z",
+ "results": [
+  {
+   "name": "login",
+   "title": "Login (persona picker)",
+   "persona": "u-lena",
+   "path": "/login",
+   "shots": [
+    "screens/login_1440_light.png",
+    "screens/login_768_light.png",
+    "screens/login_1440_dark.png",
+    "screens/login_768_dark.png"
+   ],
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "help": "Elements must meet minimum color contrast ratio thresholds",
+     "nodes": 2,
+     "targets": [
+      ".gap-1\\.5.px-2\\.5.py-1:nth-child(1) > .size-5.text-\\[9px\\].shrink-0",
+      ".gap-1\\.5.px-2\\.5.py-1:nth-child(2) > .size-5.text-\\[9px\\].shrink-0"
+     ]
+    },
+    {
+     "id": "landmark-one-main",
+     "impact": "moderate",
+     "help": "Document should have one main landmark",
+     "nodes": 1,
+     "targets": [
+      "html"
+     ]
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "help": "All page content should be contained by landmarks",
+     "nodes": 2,
+     "targets": [
+      ".space-y-2",
+      ".flex-wrap"
+     ]
+    }
+   ],
+   "lighthouse": {
+    "accessibility": 95,
+    "bestPractices": 100,
+    "failing": [
+     "valid-source-maps",
+     "color-contrast"
+    ]
+   }
+  },
+  {
+   "name": "desk-lena",
+   "title": "My desk · Lena",
+   "persona": "u-lena",
+   "path": "/",
+   "shots": [
+    "screens/desk-lena_1440_light.png",
+    "screens/desk-lena_768_light.png",
+    "screens/desk-lena_1440_dark.png",
+    "screens/desk-lena_768_dark.png"
+   ],
+   "axe": [
+    {
+     "id": "label-content-name-mismatch",
+     "impact": "serious",
+     "help": "Elements must have their visible text as part of their accessible name",
+     "nodes": 1,
+     "targets": [
+      ".relative"
+     ]
+    }
+   ],
+   "lighthouse": {
+    "accessibility": 100,
+    "bestPractices": 100,
+    "failing": [
+     "valid-source-maps",
+     "label-content-name-mismatch"
+    ]
+   }
+  },
+  {
+   "name": "desk-katrin",
+   "title": "My desk · Katrin (head)",
+   "persona": "u-katrin",
+   "path": "/",
+   "shots": [
+    "screens/desk-katrin_1440_light.png",
+    "screens/desk-katrin_768_light.png",
+    "screens/desk-katrin_1440_dark.png",
+    "screens/desk-katrin_768_dark.png"
+   ],
+   "axe": [
+    {
+     "id": "label-content-name-mismatch",
+     "impact": "serious",
+     "help": "Elements must have their visible text as part of their accessible name",
+     "nodes": 1,
+     "targets": [
+      ".relative"
+     ]
+    }
+   ],
+   "lighthouse": {
+    "accessibility": 100,
+    "bestPractices": 100,
+    "failing": [
+     "valid-source-maps",
+     "label-content-name-mismatch"
+    ]
+   }
+  },
+  {
+   "name": "inbox-lena",
+   "title": "Inbox · Lena",
+   "persona": "u-lena",
+   "path": "/inbox",
+   "shots": [
+    "screens/inbox-lena_1440_light.png",
+    "screens/inbox-lena_768_light.png",
+    "screens/inbox-lena_1440_dark.png",
+    "screens/inbox-lena_768_dark.png"
+   ],
+   "axe": [
+    {
+     "id": "label-content-name-mismatch",
+     "impact": "serious",
+     "help": "Elements must have their visible text as part of their accessible name",
+     "nodes": 1,
+     "targets": [
+      ".relative"
+     ]
+    }
+   ],
+   "lighthouse": {
+    "accessibility": 100,
+    "bestPractices": 100,
+    "failing": [
+     "valid-source-maps",
+     "label-content-name-mismatch"
+    ]
+   }
+  },
+  {
+   "name": "inbox-empty-sofia",
+   "title": "Inbox · Sofia (sparse / empty state)",
+   "persona": "u-sofia",
+   "path": "/inbox",
+   "shots": [
+    "screens/inbox-empty-sofia_1440_light.png",
+    "screens/inbox-empty-sofia_768_light.png",
+    "screens/inbox-empty-sofia_1440_dark.png",
+    "screens/inbox-empty-sofia_768_dark.png"
+   ],
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "help": "Elements must meet minimum color contrast ratio thresholds",
+     "nodes": 1,
+     "targets": [
+      ".rounded-full"
+     ]
+    }
+   ],
+   "lighthouse": {
+    "accessibility": 95,
+    "bestPractices": 100,
+    "failing": [
+     "valid-source-maps",
+     "color-contrast"
+    ]
+   }
+  },
+  {
+   "name": "cases-board",
+   "title": "Cases board · Lena",
+   "persona": "u-lena",
+   "path": "/cases",
+   "shots": [
+    "screens/cases-board_1440_light.png",
+    "screens/cases-board_768_light.png",
+    "screens/cases-board_1440_dark.png",
+    "screens/cases-board_768_dark.png"
+   ],
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "help": "Elements must meet minimum color contrast ratio thresholds",
+     "nodes": 1,
+     "targets": [
+      "a[href$=\"CASE-G70-0005\"] > .mt-2\\.5.gap-2\\.5.text-xs > .size-5.ring-2.ring-background"
+     ]
+    },
+    {
+     "id": "label-content-name-mismatch",
+     "impact": "serious",
+     "help": "Elements must have their visible text as part of their accessible name",
+     "nodes": 1,
+     "targets": [
+      ".relative"
+     ]
+    },
+    {
+     "id": "nested-interactive",
+     "impact": "serious",
+     "help": "Interactive controls must not be nested",
+     "nodes": 13,
+     "targets": [
+      ".w-60.bg-muted\\/60.flex-col:nth-child(1) > .space-y-2.px-2.pb-3 > div[role=\"button\"][aria-roledescription=\"draggable\"][aria-describedby=\"DndDescribedBy-0\"]",
+      ".w-60.bg-muted\\/60.flex-col:nth-child(2) > .space-y-2.px-2.pb-3 > div[role=\"button\"][aria-roledescription=\"draggable\"][aria-describedby=\"DndDescribedBy-0\"]:nth-child(1)",
+      ".w-60.bg-muted\\/60.flex-col:nth-child(2) > .space-y-2.px-2.pb-3 > div[role=\"button\"][aria-roledescription=\"draggable\"][aria-describedby=\"DndDescribedBy-0\"]:nth-child(2)",
+      ".w-60.bg-muted\\/60.flex-col:nth-child(3) > .space-y-2.px-2.pb-3 > div[role=\"button\"][aria-roledescription=\"draggable\"][aria-describedby=\"DndDescribedBy-0\"]:nth-child(1)",
+      ".w-60.bg-muted\\/60.flex-col:nth-child(3) > .space-y-2.px-2.pb-3 > div[role=\"button\"][aria-roledescription=\"draggable\"][aria-describedby=\"DndDescribedBy-0\"]:nth-child(2)"
+     ]
+    }
+   ],
+   "lighthouse": {
+    "accessibility": 96,
+    "bestPractices": 100,
+    "failing": [
+     "valid-source-maps",
+     "color-contrast",
+     "label-content-name-mismatch"
+    ]
+   }
+  },
+  {
+   "name": "case-evidence",
+   "title": "Case · step 1 Evidence (CASE-G60-0003)",
+   "persona": "u-lena",
+   "path": "/cases/CASE-G60-0003",
+   "shots": [
+    "screens/case-evidence_1440_light.png",
+    "screens/case-evidence_768_light.png",
+    "screens/case-evidence_1440_dark.png",
+    "screens/case-evidence_768_dark.png"
+   ],
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "help": "Elements must meet minimum color contrast ratio thresholds",
+     "nodes": 1,
+     "targets": [
+      ".text-positive"
+     ]
+    },
+    {
+     "id": "label-content-name-mismatch",
+     "impact": "serious",
+     "help": "Elements must have their visible text as part of their accessible name",
+     "nodes": 1,
+     "targets": [
+      "button[aria-label=\"Notifications\"]"
+     ]
+    }
+   ],
+   "lighthouse": {
+    "accessibility": 96,
+    "bestPractices": 100,
+    "failing": [
+     "valid-source-maps",
+     "color-contrast",
+     "label-content-name-mismatch"
+    ]
+   }
+  },
+  {
+   "name": "case-stance",
+   "title": "Case · step 2 Your stance (CASE-G60-0003)",
+   "persona": "u-lena",
+   "path": "/cases/CASE-G60-0003?step=knowledge",
+   "shots": [
+    "screens/case-stance_1440_light.png",
+    "screens/case-stance_768_light.png",
+    "screens/case-stance_1440_dark.png",
+    "screens/case-stance_768_dark.png"
+   ],
+   "axe": [
+    {
+     "id": "heading-order",
+     "impact": "moderate",
+     "help": "Heading levels should only increase by one",
+     "nodes": 1,
+     "targets": [
+      ".mb-2.gap-2.flex > h3"
+     ]
+    },
+    {
+     "id": "label-content-name-mismatch",
+     "impact": "serious",
+     "help": "Elements must have their visible text as part of their accessible name",
+     "nodes": 1,
+     "targets": [
+      ".relative"
+     ]
+    }
+   ],
+   "lighthouse": {
+    "accessibility": 98,
+    "bestPractices": 100,
+    "failing": [
+     "valid-source-maps",
+     "heading-order",
+     "label-content-name-mismatch"
+    ]
+   }
+  },
+  {
+   "name": "case-requirements",
+   "title": "Case · step 3 Requirements (CASE-G60-0013, confirmed)",
+   "persona": "u-lena",
+   "path": "/cases/CASE-G60-0013?step=requirements",
+   "shots": [
+    "screens/case-requirements_1440_light.png",
+    "screens/case-requirements_768_light.png",
+    "screens/case-requirements_1440_dark.png",
+    "screens/case-requirements_768_dark.png"
+   ],
+   "axe": [
+    {
+     "id": "label-content-name-mismatch",
+     "impact": "serious",
+     "help": "Elements must have their visible text as part of their accessible name",
+     "nodes": 1,
+     "targets": [
+      ".relative"
+     ]
+    }
+   ],
+   "lighthouse": {
+    "accessibility": 100,
+    "bestPractices": 100,
+    "failing": [
+     "valid-source-maps",
+     "label-content-name-mismatch"
+    ]
+   }
+  },
+  {
+   "name": "requirement-panel",
+   "title": "Requirement side panel (REQ-G60-0010)",
+   "persona": "u-lena",
+   "path": "/cases/CASE-G60-0013?step=requirements",
+   "shots": [
+    "screens/requirement-panel_1440_light.png",
+    "screens/requirement-panel_768_light.png",
+    "screens/requirement-panel_1440_dark.png",
+    "screens/requirement-panel_768_dark.png"
+   ],
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "help": "Elements must meet minimum color contrast ratio thresholds",
+     "nodes": 2,
+     "targets": [
+      ".bg-destructive\\/10",
+      ".border-primary\\/50 > .text-muted-foreground"
+     ]
+    }
+   ],
+   "lighthouse": null
+  },
+  {
+   "name": "requirement-page",
+   "title": "Requirement page (REQ-G60-0010)",
+   "persona": "u-lena",
+   "path": "/requirements/REQ-G60-0010",
+   "shots": [
+    "screens/requirement-page_1440_light.png",
+    "screens/requirement-page_768_light.png",
+    "screens/requirement-page_1440_dark.png",
+    "screens/requirement-page_768_dark.png"
+   ],
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "help": "Elements must meet minimum color contrast ratio thresholds",
+     "nodes": 2,
+     "targets": [
+      ".bg-destructive\\/10",
+      ".border-primary\\/50 > .text-muted-foreground"
+     ]
+    },
+    {
+     "id": "heading-order",
+     "impact": "moderate",
+     "help": "Heading levels should only increase by one",
+     "nodes": 1,
+     "targets": [
+      "h3"
+     ]
+    },
+    {
+     "id": "label-content-name-mismatch",
+     "impact": "serious",
+     "help": "Elements must have their visible text as part of their accessible name",
+     "nodes": 1,
+     "targets": [
+      "button[data-slot=\"popover-trigger\"]"
+     ]
+    },
+    {
+     "id": "landmark-unique",
+     "impact": "moderate",
+     "help": "Landmarks should have a unique role or role/label/title (i.e. accessible name) combination",
+     "nodes": 1,
+     "targets": [
+      ".border-r"
+     ]
+    }
+   ],
+   "lighthouse": {
+    "accessibility": 95,
+    "bestPractices": 100,
+    "failing": [
+     "valid-source-maps",
+     "color-contrast",
+     "heading-order",
+     "label-content-name-mismatch"
+    ]
+   }
+  },
+  {
+   "name": "replay-score",
+   "title": "Trace replay · beat 3 Case & score",
+   "persona": "u-lena",
+   "path": "/requirements/REQ-G60-0010",
+   "shots": [
+    "screens/replay-score_1440_light.png",
+    "screens/replay-score_768_light.png",
+    "screens/replay-score_1440_dark.png",
+    "screens/replay-score_768_dark.png"
+   ],
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "help": "Elements must meet minimum color contrast ratio thresholds",
+     "nodes": 12,
+     "targets": [
+      ".bg-destructive\\/10",
+      ".border-primary\\/50 > .text-muted-foreground",
+      ".border-dashed.bg-muted\\/30.translate-y-1 > .gap-1\\.5 > .truncate.font-medium",
+      ".border-dashed.bg-muted\\/30.translate-y-1 > .line-clamp-2.mt-1.text-\\[11px\\]",
+      ".translate-y-1.opacity-30.border-solid:nth-child(9) > .gap-1\\.5 > .size-5.ring-background.text-\\[9px\\]"
+     ]
+    },
+    {
+     "id": "heading-order",
+     "impact": "moderate",
+     "help": "Heading levels should only increase by one",
+     "nodes": 1,
+     "targets": [
+      "h3"
+     ]
+    },
+    {
+     "id": "label-content-name-mismatch",
+     "impact": "serious",
+     "help": "Elements must have their visible text as part of their accessible name",
+     "nodes": 2,
+     "targets": [
+      "button[data-slot=\"popover-trigger\"]",
+      "button[aria-label=\"Speed\"]"
+     ]
+    },
+    {
+     "id": "landmark-no-duplicate-banner",
+     "impact": "moderate",
+     "help": "Document should not have more than one banner landmark",
+     "nodes": 1,
+     "targets": [
+      ".flex-col.min-w-0.flex-1 > header"
+     ]
+    },
+    {
+     "id": "landmark-unique",
+     "impact": "moderate",
+     "help": "Landmarks should have a unique role or role/label/title (i.e. accessible name) combination",
+     "nodes": 2,
+     "targets": [
+      ".border-r",
+      ".flex-col.min-w-0.flex-1 > header"
+     ]
+    },
+    {
+     "id": "scrollable-region-focusable",
+     "impact": "serious",
+     "help": "Scrollable region must have keyboard access",
+     "nodes": 1,
+     "targets": [
+      "ol"
+     ]
+    }
+   ],
+   "lighthouse": null
+  },
+  {
+   "name": "replay-chain",
+   "title": "Trace replay · end state (Chain check)",
+   "persona": "u-lena",
+   "path": "/requirements/REQ-G60-0010",
+   "shots": [
+    "screens/replay-chain_1440_light.png",
+    "screens/replay-chain_768_light.png",
+    "screens/replay-chain_1440_dark.png",
+    "screens/replay-chain_768_dark.png"
+   ],
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "help": "Elements must meet minimum color contrast ratio thresholds",
+     "nodes": 3,
+     "targets": [
+      ".bg-destructive\\/10",
+      ".border-primary\\/50 > .text-muted-foreground",
+      ".text-positive"
+     ]
+    },
+    {
+     "id": "heading-order",
+     "impact": "moderate",
+     "help": "Heading levels should only increase by one",
+     "nodes": 1,
+     "targets": [
+      "h3"
+     ]
+    },
+    {
+     "id": "label-content-name-mismatch",
+     "impact": "serious",
+     "help": "Elements must have their visible text as part of their accessible name",
+     "nodes": 3,
+     "targets": [
+      "button[data-slot=\"popover-trigger\"]",
+      "button[aria-label=\"Play (Space)\"]",
+      "button[aria-label=\"Speed\"]"
+     ]
+    },
+    {
+     "id": "landmark-no-duplicate-banner",
+     "impact": "moderate",
+     "help": "Document should not have more than one banner landmark",
+     "nodes": 1,
+     "targets": [
+      ".flex-col.min-w-0.flex-1 > header"
+     ]
+    },
+    {
+     "id": "landmark-unique",
+     "impact": "moderate",
+     "help": "Landmarks should have a unique role or role/label/title (i.e. accessible name) combination",
+     "nodes": 2,
+     "targets": [
+      ".border-r",
+      ".flex-col.min-w-0.flex-1 > header"
+     ]
+    },
+    {
+     "id": "scrollable-region-focusable",
+     "impact": "serious",
+     "help": "Scrollable region must have keyboard access",
+     "nodes": 1,
+     "targets": [
+      "ol"
+     ]
+    }
+   ],
+   "lighthouse": null
+  },
+  {
+   "name": "plan",
+   "title": "Vehicle plan G60",
+   "persona": "u-lena",
+   "path": "/plan/G60",
+   "shots": [
+    "screens/plan_1440_light.png",
+    "screens/plan_768_light.png",
+    "screens/plan_1440_dark.png",
+    "screens/plan_768_dark.png"
+   ],
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "help": "Elements must meet minimum color contrast ratio thresholds",
+     "nodes": 6,
+     "targets": [
+      ".rounded-xl.shadow-xs:nth-child(1) > ul > li > .grid.grid-cols-\\[1fr_90px_120px_130px\\].hover\\:bg-muted\\/50 > .text-positive.font-medium.text-xs",
+      ".rounded-xl.shadow-xs:nth-child(2) > ul > li > .grid.grid-cols-\\[1fr_90px_120px_130px\\].hover\\:bg-muted\\/50 > .text-sky-600.dark\\:text-sky-400.font-medium",
+      ".rounded-xl.shadow-xs:nth-child(3) > ul > li:nth-child(1) > .grid.grid-cols-\\[1fr_90px_120px_130px\\].hover\\:bg-muted\\/50 > .text-sky-600.dark\\:text-sky-400.font-medium",
+      "li:nth-child(2) > .grid.grid-cols-\\[1fr_90px_120px_130px\\].hover\\:bg-muted\\/50 > .text-sky-600.dark\\:text-sky-400.font-medium",
+      ".rounded-xl.shadow-xs:nth-child(4) > ul > li:nth-child(1) > .grid.grid-cols-\\[1fr_90px_120px_130px\\].hover\\:bg-muted\\/50 > .text-sky-600.dark\\:text-sky-400.font-medium"
+     ]
+    },
+    {
+     "id": "label-content-name-mismatch",
+     "impact": "serious",
+     "help": "Elements must have their visible text as part of their accessible name",
+     "nodes": 1,
+     "targets": [
+      ".relative"
+     ]
+    }
+   ],
+   "lighthouse": {
+    "accessibility": 96,
+    "bestPractices": 100,
+    "failing": [
+     "valid-source-maps",
+     "color-contrast",
+     "label-content-name-mismatch"
+    ]
+   }
+  },
+  {
+   "name": "radar",
+   "title": "Signals (radar)",
+   "persona": "u-lena",
+   "path": "/radar",
+   "shots": [
+    "screens/radar_1440_light.png",
+    "screens/radar_768_light.png",
+    "screens/radar_1440_dark.png",
+    "screens/radar_768_dark.png"
+   ],
+   "axe": [
+    {
+     "id": "button-name",
+     "impact": "critical",
+     "help": "Buttons must have discernible text",
+     "nodes": 1,
+     "targets": [
+      ".gap-1\\.5"
+     ]
+    },
+    {
+     "id": "label-content-name-mismatch",
+     "impact": "serious",
+     "help": "Elements must have their visible text as part of their accessible name",
+     "nodes": 1,
+     "targets": [
+      "button[aria-label=\"Notifications\"]"
+     ]
+    }
+   ],
+   "lighthouse": {
+    "accessibility": 93,
+    "bestPractices": 100,
+    "failing": [
+     "valid-source-maps",
+     "button-name",
+     "label-content-name-mismatch"
+    ]
+   }
+  },
+  {
+   "name": "innovation",
+   "title": "Innovation pool · Jonas",
+   "persona": "u-jonas",
+   "path": "/innovation",
+   "shots": [
+    "screens/innovation_1440_light.png",
+    "screens/innovation_768_light.png",
+    "screens/innovation_1440_dark.png",
+    "screens/innovation_768_dark.png"
+   ],
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "help": "Elements must meet minimum color contrast ratio thresholds",
+     "nodes": 2,
+     "targets": [
+      ".rounded-xl.bg-card.p-4:nth-child(2) > .mt-auto.pt-4.gap-2 > .-space-x-1\\.5.flex > .size-5.ring-2.ring-background:nth-child(2)",
+      ".rounded-xl.bg-card.p-4:nth-child(3) > .mt-auto.pt-4.gap-2 > .-space-x-1\\.5.flex > .size-5.ring-2.ring-background:nth-child(1)"
+     ]
+    },
+    {
+     "id": "label-content-name-mismatch",
+     "impact": "serious",
+     "help": "Elements must have their visible text as part of their accessible name",
+     "nodes": 1,
+     "targets": [
+      ".relative"
+     ]
+    }
+   ],
+   "lighthouse": {
+    "accessibility": 95,
+    "bestPractices": 100,
+    "failing": [
+     "valid-source-maps",
+     "color-contrast",
+     "label-content-name-mismatch"
+    ]
+   }
+  },
+  {
+   "name": "settings",
+   "title": "Settings · Lena",
+   "persona": "u-lena",
+   "path": "/settings",
+   "shots": [
+    "screens/settings_1440_light.png",
+    "screens/settings_768_light.png",
+    "screens/settings_1440_dark.png",
+    "screens/settings_768_dark.png"
+   ],
+   "axe": [
+    {
+     "id": "button-name",
+     "impact": "critical",
+     "help": "Buttons must have discernible text",
+     "nodes": 3,
+     "targets": [
+      ".space-y-1\\.5:nth-child(1) > .gap-1\\.5.pr-2.pl-2\\.5",
+      ".space-y-1\\.5:nth-child(2) > .gap-1\\.5.pr-2.pl-2\\.5",
+      ".w-20"
+     ]
+    },
+    {
+     "id": "label-content-name-mismatch",
+     "impact": "serious",
+     "help": "Elements must have their visible text as part of their accessible name",
+     "nodes": 1,
+     "targets": [
+      "button[data-slot=\"popover-trigger\"]"
+     ]
+    },
+    {
+     "id": "label",
+     "impact": "critical",
+     "help": "Form elements must have labels",
+     "nodes": 4,
+     "targets": [
+      ".space-y-1:nth-child(2) > input",
+      ".space-y-1:nth-child(3) > input",
+      ".space-y-1:nth-child(4) > input",
+      "input[value=\"en, de\"]"
+     ]
+    }
+   ],
+   "lighthouse": {
+    "accessibility": 90,
+    "bestPractices": 100,
+    "failing": [
+     "valid-source-maps",
+     "button-name",
+     "label-content-name-mismatch",
+     "label"
+    ]
+   }
+  },
+  {
+   "name": "audit",
+   "title": "Audit trail · Lena",
+   "persona": "u-lena",
+   "path": "/audit",
+   "shots": [
+    "screens/audit_1440_light.png",
+    "screens/audit_768_light.png",
+    "screens/audit_1440_dark.png",
+    "screens/audit_768_dark.png"
+   ],
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "help": "Elements must meet minimum color contrast ratio thresholds",
+     "nodes": 2,
+     "targets": [
+      "li:nth-child(14) > .top-0\\.5.-left-\\[27px\\].absolute > .ring-2.ring-background.text-\\[9px\\]",
+      "li:nth-child(17) > .top-0\\.5.-left-\\[27px\\].absolute > .ring-2.ring-background.text-\\[9px\\]"
+     ]
+    },
+    {
+     "id": "label-content-name-mismatch",
+     "impact": "serious",
+     "help": "Elements must have their visible text as part of their accessible name",
+     "nodes": 1,
+     "targets": [
+      "button[data-slot=\"popover-trigger\"]"
+     ]
+    }
+   ],
+   "lighthouse": {
+    "accessibility": 96,
+    "bestPractices": 100,
+    "failing": [
+     "valid-source-maps",
+     "color-contrast",
+     "label-content-name-mismatch"
+    ]
+   }
+  },
+  {
+   "name": "brief-lena",
+   "title": "Series brief · Lena (shared)",
+   "persona": "u-lena",
+   "path": "/brief",
+   "shots": [
+    "screens/brief-lena_1440_light.png",
+    "screens/brief-lena_768_light.png",
+    "screens/brief-lena_1440_dark.png",
+    "screens/brief-lena_768_dark.png"
+   ],
+   "axe": [
+    {
+     "id": "heading-order",
+     "impact": "moderate",
+     "help": "Heading levels should only increase by one",
+     "nodes": 1,
+     "targets": [
+      ".rounded-xl.bg-card.p-4:nth-child(1) > .gap-2.mb-2.flex-wrap > h3"
+     ]
+    },
+    {
+     "id": "label-content-name-mismatch",
+     "impact": "serious",
+     "help": "Elements must have their visible text as part of their accessible name",
+     "nodes": 1,
+     "targets": [
+      ".relative"
+     ]
+    },
+    {
+     "id": "label",
+     "impact": "critical",
+     "help": "Form elements must have labels",
+     "nodes": 1,
+     "targets": [
+      ".rounded-xl.bg-card.p-4:nth-child(1) > textarea[rows=\"2\"]"
+     ]
+    }
+   ],
+   "lighthouse": {
+    "accessibility": 94,
+    "bestPractices": 100,
+    "failing": [
+     "valid-source-maps",
+     "heading-order",
+     "label-content-name-mismatch",
+     "label"
+    ]
+   }
+  },
+  {
+   "name": "onboarding-wei",
+   "title": "Onboarding · Wei (first login)",
+   "persona": "u-wei",
+   "path": "/brief?onboarding=1",
+   "shots": [
+    "screens/onboarding-wei_1440_light.png",
+    "screens/onboarding-wei_768_light.png",
+    "screens/onboarding-wei_1440_dark.png",
+    "screens/onboarding-wei_768_dark.png"
+   ],
+   "axe": [
+    {
+     "id": "label-content-name-mismatch",
+     "impact": "serious",
+     "help": "Elements must have their visible text as part of their accessible name",
+     "nodes": 1,
+     "targets": [
+      ".relative"
+     ]
+    }
+   ],
+   "lighthouse": {
+    "accessibility": 100,
+    "bestPractices": 100,
+    "failing": [
+     "valid-source-maps",
+     "label-content-name-mismatch"
+    ]
+   }
+  },
+  {
+   "name": "inbox-after-refresh",
+   "title": "Inbox · Lena after Refresh (with items)",
+   "persona": "u-lena",
+   "path": "/inbox",
+   "shots": [
+    "screens/inbox-after-refresh_1440_light.png",
+    "screens/inbox-after-refresh_768_light.png",
+    "screens/inbox-after-refresh_1440_dark.png",
+    "screens/inbox-after-refresh_768_dark.png"
+   ],
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "help": "Elements must meet minimum color contrast ratio thresholds",
+     "nodes": 1,
+     "targets": [
+      ".absolute"
+     ]
+    },
+    {
+     "id": "label-content-name-mismatch",
+     "impact": "serious",
+     "help": "Elements must have their visible text as part of their accessible name",
+     "nodes": 1,
+     "targets": [
+      ".relative"
+     ]
+    }
+   ],
+   "lighthouse": {
+    "accessibility": 95,
+    "bestPractices": 100,
+    "failing": [
+     "valid-source-maps",
+     "color-contrast",
+     "label-content-name-mismatch"
+    ]
+   }
+  },
+  {
+   "name": "ripple",
+   "title": "Ripple screen (RIP-0001)",
+   "persona": "u-lena",
+   "path": "/ripple/RIP-0001",
+   "shots": [
+    "screens/ripple_1440_light.png",
+    "screens/ripple_768_light.png",
+    "screens/ripple_1440_dark.png",
+    "screens/ripple_768_dark.png"
+   ],
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "help": "Elements must meet minimum color contrast ratio thresholds",
+     "nodes": 6,
+     "targets": [
+      ".absolute",
+      ".border-amber-300 > .opacity-80.text-\\[11px\\].gap-1 > .-space-x-1.ml-auto.flex > .ring-background.size-5.text-\\[9px\\]",
+      ".border-red-300 > .opacity-80.text-\\[11px\\].gap-1 > .-space-x-1.ml-auto.flex > .ring-background.size-5.text-\\[9px\\]",
+      ".border-emerald-300 > .opacity-80.text-\\[11px\\].gap-1 > .-space-x-1.ml-auto.flex > .ring-background.size-5.text-\\[9px\\]",
+      ".border-slate-200 > .opacity-80.text-\\[11px\\].gap-1"
+     ]
+    },
+    {
+     "id": "empty-table-header",
+     "impact": "minor",
+     "help": "Table header text should not be empty",
+     "nodes": 1,
+     "targets": [
+      ".w-44"
+     ]
+    },
+    {
+     "id": "label-content-name-mismatch",
+     "impact": "serious",
+     "help": "Elements must have their visible text as part of their accessible name",
+     "nodes": 5,
+     "targets": [
+      ".relative",
+      ".border-amber-300",
+      ".border-red-300",
+      ".border-emerald-300",
+      ".border-slate-200"
+     ]
+    }
+   ],
+   "lighthouse": {
+    "accessibility": 96,
+    "bestPractices": 100,
+    "failing": [
+     "valid-source-maps",
+     "color-contrast",
+     "label-content-name-mismatch"
+    ]
+   }
+  },
+  {
+   "name": "ripple-drawer",
+   "title": "Ripple · impact list drawer",
+   "persona": "u-lena",
+   "path": "/ripple/RIP-0001",
+   "shots": [
+    "screens/ripple-drawer_1440_light.png",
+    "screens/ripple-drawer_768_light.png",
+    "screens/ripple-drawer_1440_dark.png",
+    "screens/ripple-drawer_768_dark.png"
+   ],
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "help": "Elements must meet minimum color contrast ratio thresholds",
+     "nodes": 8,
+     "targets": [
+      ".top-1",
+      ".border-amber-300 > .opacity-80.text-\\[11px\\].gap-1 > .-space-x-1.ml-auto.flex > .ring-background.size-5.text-\\[9px\\]",
+      ".border-red-300 > .opacity-80.text-\\[11px\\].gap-1 > .-space-x-1.ml-auto.flex > .ring-background.size-5.text-\\[9px\\]",
+      ".border-emerald-300 > .opacity-80.text-\\[11px\\].gap-1 > .-space-x-1.ml-auto.flex > .ring-background.size-5.text-\\[9px\\]",
+      ".text-slate-600 > .opacity-80.text-\\[11px\\].gap-1"
+     ]
+    }
+   ],
+   "lighthouse": null
+  },
+  {
+   "name": "desk-katrin-after-refresh",
+   "title": "My desk · Katrin after Refresh (signed-off alert)",
+   "persona": "u-katrin",
+   "path": "/",
+   "shots": [
+    "screens/desk-katrin-after-refresh_1440_light.png",
+    "screens/desk-katrin-after-refresh_768_light.png",
+    "screens/desk-katrin-after-refresh_1440_dark.png",
+    "screens/desk-katrin-after-refresh_768_dark.png"
+   ],
+   "axe": [
+    {
+     "id": "label-content-name-mismatch",
+     "impact": "serious",
+     "help": "Elements must have their visible text as part of their accessible name",
+     "nodes": 1,
+     "targets": [
+      ".relative"
+     ]
+    }
+   ],
+   "lighthouse": {
+    "accessibility": 100,
+    "bestPractices": 100,
+    "failing": [
+     "valid-source-maps",
+     "label-content-name-mismatch"
+    ]
+   }
+  }
+ ]
+}

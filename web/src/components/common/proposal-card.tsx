@@ -16,7 +16,7 @@ const sourceLabel: Record<Proposal["source"], string> = {
   monitor: "from monitor",
   strategy_doc: "from your strategy doc",
   feedback: "from feedback",
-  brief_change: "from a brief change",
+  brief_change: "from a product specs change",
   learning: "learned from your decisions",
 };
 
@@ -45,9 +45,9 @@ function Diff({ before, after }: { before: string; after: string }) {
   const parts = long ? diffLines(before, after) : diffWords(before, after);
   const shown = long ? parts.filter((p, i) => p.added || p.removed || (parts[i - 1]?.added || parts[i - 1]?.removed || parts[i + 1]?.added || parts[i + 1]?.removed)) : parts;
   return (
-    <pre className="max-h-64 overflow-auto rounded-md bg-muted/50 p-2 font-sans text-xs leading-relaxed whitespace-pre-wrap">
+    <pre className="max-h-64 overflow-auto rounded-lg border bg-card p-2.5 font-sans text-xs leading-relaxed whitespace-pre-wrap">
       {shown.map((p, i) => (
-        <span key={i} className={cn(p.added && "bg-emerald-100 text-emerald-900 dark:bg-emerald-900/40 dark:text-emerald-200", p.removed && "bg-red-100 text-red-900 line-through dark:bg-red-900/40 dark:text-red-200", !p.added && !p.removed && long && "text-muted-foreground")}>
+        <span key={i} className={cn(p.added && "bg-tone-emerald-bd text-tone-emerald-fg", p.removed && "bg-tone-red-bd text-tone-red-fg line-through", !p.added && !p.removed && long && "text-muted-foreground")}>
           {long && !p.added && !p.removed ? p.value.split("\n").slice(-3).join("\n") : p.value}
         </span>
       ))}
@@ -58,9 +58,9 @@ function Diff({ before, after }: { before: string; after: string }) {
 export function ProposalCard({ p, canDecide = true }: { p: Proposal; canDecide?: boolean }) {
   const decide = useApiMutation("decideProposal", { success: (r) => (r.status === "accepted" ? "Applied and logged in the audit trail" : "Proposal rejected") });
   return (
-    <div className={cn("rounded-lg border p-3", p.status === "pending" ? "border-primary/40 bg-primary/5" : "opacity-70")}>
-      <div className="flex items-start gap-2">
-        <Sparkles className="mt-0.5 size-4 shrink-0 text-primary" />
+    <div className={cn("rounded-lg border p-3.5", p.status === "pending" ? "border-border-strong bg-recessed" : "opacity-70")}>
+      <div className="flex items-start gap-2.5">
+        <Sparkles className="mt-0.5 size-4 shrink-0 text-ember" />
         <div className="min-w-0 flex-1 space-y-2">
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="text-sm font-medium">{p.summary}</span>
@@ -71,18 +71,18 @@ export function ProposalCard({ p, canDecide = true }: { p: Proposal; canDecide?:
             p.changes.map((c, i) => (
               <div key={i} className="space-y-1">
                 <Diff before={showBriefValue(c.field, c.before)} after={showBriefValue(c.field, c.after)} />
-                {p.citations[0] && <p className="text-[11px] text-muted-foreground italic">&ldquo;{p.citations[0]}&rdquo;</p>}
+                {p.citations[0] && <p className="text-xs text-muted-foreground italic">&ldquo;{p.citations[0]}&rdquo;</p>}
               </div>
             ))}
           {p.kind !== "brief_field" &&
             p.changes.map((c, i) =>
             c.before === null || c.before === undefined ? (
-              <pre key={i} className="max-h-64 overflow-auto rounded-md bg-emerald-50 p-2 font-sans text-xs leading-relaxed whitespace-pre-wrap dark:bg-emerald-950/40">
+              <pre key={i} className="max-h-64 overflow-auto rounded-lg border border-tone-emerald-bd bg-tone-emerald-bg p-2.5 font-sans text-xs leading-relaxed whitespace-pre-wrap">
                 {show(c.after)}
               </pre>
             ) : (
               <div key={i} className="space-y-1">
-                <div className="text-[11px] text-muted-foreground">Field: {c.field}</div>
+                <div className="text-xs text-muted-foreground">Field: {c.field}</div>
                 <Diff before={show(c.before)} after={show(c.after)} />
               </div>
             ),

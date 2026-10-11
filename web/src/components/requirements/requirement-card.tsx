@@ -8,8 +8,8 @@ import { UserAvatar } from "@/components/common/people";
 
 export function RequirementCard({ r, score, rank, className }: { r: Requirement; score?: number; rank?: number; className?: string }) {
   return (
-    <Link href={`/requirements/${r.id}`} className={cn("block rounded-lg border bg-card p-3 shadow-xs transition hover:border-primary/50 hover:shadow-sm", r.status === "rejected" && "opacity-60", className)}>
-      <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+    <Link href={`/requirements/${r.id}`} className={cn("block rounded-lg border bg-card p-3 transition-colors duration-150 hover:border-border-strong", r.status === "rejected" && "opacity-60", className)}>
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
         {rank !== undefined && <span className="font-mono font-semibold text-foreground">#{rank}</span>}
         <span className="font-mono">{r.id}</span>
         <span className="flex-1" />
@@ -23,7 +23,7 @@ export function RequirementCard({ r, score, rank, className }: { r: Requirement;
         <EvidenceBadge level={r.evidenceLevel} />
       </div>
       {score !== undefined && <ScoreBar value={score} className="mt-2.5" />}
-      <div className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground">
+      <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
         <UserAvatar id={r.ownerId} size="xs" />
         <span className="font-mono">← {r.caseId}</span>
         {r.sentBackReason && <Pill t="amber">sent back</Pill>}

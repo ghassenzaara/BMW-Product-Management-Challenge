@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "requirementId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "key": {
+      "type": "string",
+      "enum": [
+        "ev_range",
+        "dc_10_80_min"
+      ]
+    },
+    "gapPctAtDecision": {
+      "type": "number"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "by": {
+      "type": "string",
+      "minLength": 1
+    },
+    "at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "requirementId",
+    "key",
+    "gapPctAtDecision",
+    "reason",
+    "by",
+    "at"
+  ],
+  "additionalProperties": false
+}

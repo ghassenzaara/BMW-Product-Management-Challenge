@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <style>
+    .ink { fill: #09090b; } .ring { stroke: #09090b; } .core { fill: #1e3a8a; }
+    @media (prefers-color-scheme: dark) { .ink { fill: #fafafa; } .ring { stroke: #fafafa; } .core { fill: #8aa4ff; } }
+  </style>
+  <circle class="ring" cx="32" cy="32" r="22" fill="none" stroke-width="2" opacity=".3"/>
+  <g class="ink">
+    <circle cx="32" cy="10" r="4.6"/><circle cx="47.56" cy="16.44" r="4.6"/>
+    <circle cx="54" cy="32" r="4.6"/><circle cx="47.56" cy="47.56" r="4.6"/>
+    <circle cx="32" cy="54" r="4.6"/><circle cx="16.44" cy="47.56" r="4.6"/>
+    <circle cx="10" cy="32" r="4.6"/><circle cx="16.44" cy="16.44" r="4.6"/>
+  </g>
+  <circle class="core" cx="32" cy="32" r="11"/>
+</svg>

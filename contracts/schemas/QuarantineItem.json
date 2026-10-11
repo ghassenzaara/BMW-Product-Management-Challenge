@@ -13,7 +13,8 @@
         "competitor",
         "customer_public",
         "trends",
-        "innovation_scout"
+        "innovation_scout",
+        "pm"
       ]
     },
     "sourceName": {

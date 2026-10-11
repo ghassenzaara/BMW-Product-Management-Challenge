@@ -27,6 +27,59 @@
     },
     "benchmark": {
       "type": "string"
+    },
+    "targetSpec": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "enum": [
+            "ev_range",
+            "dc_10_80_min"
+          ]
+        },
+        "comparator": {
+          "type": "string",
+          "enum": [
+            "gte",
+            "lte"
+          ]
+        },
+        "value": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "cycle": {
+          "type": "string",
+          "enum": [
+            "WLTP",
+            "CLTC",
+            "EPA",
+            "none"
+          ]
+        },
+        "market": {
+          "type": "string",
+          "enum": [
+            "global",
+            "EU",
+            "US",
+            "CN",
+            "RoW"
+          ]
+        }
+      },
+      "required": [
+        "key",
+        "comparator",
+        "value",
+        "unit",
+        "cycle",
+        "market"
+      ],
+      "additionalProperties": false
     }
   },
   "required": [

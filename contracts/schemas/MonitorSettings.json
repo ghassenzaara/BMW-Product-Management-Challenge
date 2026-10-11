@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "muteThresholdPct": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 50
+    },
+    "atParTolerancePct": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 20
+    },
+    "updatedAt": {
+      "type": "string"
+    },
+    "updatedBy": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "muteThresholdPct",
+    "atParTolerancePct",
+    "updatedAt",
+    "updatedBy"
+  ],
+  "additionalProperties": false
+}

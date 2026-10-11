@@ -1,0 +1,14 @@
+{
+  "name": "ux-gate",
+  "private": true,
+  "type": "module",
+  "description": "Screenshots, axe and Lighthouse for the web/ app as a logged-in persona (UX intuitiveness pass).",
+  "scripts": {
+    "gate": "node gate.mjs"
+  },
+  "dependencies": {
+    "axe-core": "^4.10.0",
+    "lighthouse": "^12.0.0",
+    "puppeteer-core": "^23.0.0"
+  }
+}

@@ -199,6 +199,14 @@ def test_requirement_draft_versions_and_sign_off(ws):
                                                "rationale": "after engineering feedback", "cause": "feedback",
                                                "feedback_id": fb["id"]}, headers=h(PM)).json()
     assert v3["body_version"] == 3
+    # The PM's argument sheet is stored without making a version; an empty text clears it.
+    sheet = c.patch(f"/requirements/{rid}", json={"argument_md": "## Why\n\nOwners sweat.", "rationale": "my wording"},
+                    headers=h(PM)).json()
+    assert sheet["argument_md"].startswith("## Why") and sheet["body_version"] == 3
+    assert c.patch(f"/requirements/{rid}", json={"argument_md": "x", "rationale": "y"},
+                   headers=h(PM_CN)).status_code == 403
+    assert c.patch(f"/requirements/{rid}", json={"argument_md": "", "rationale": "back to the generated one"},
+                   headers=h(PM)).json()["argument_md"] is None
     c.post(f"/requirements/{rid}/check", json={"issues": [{"id": "i1", "kind": "vague_word", "severity": "amber",
                                                            "field": "title", "message": "improve"}]}, headers=h(PM))
     page = c.get(f"/requirements/{rid}", headers=h(PM)).json()
@@ -268,3 +276,61 @@ def test_loose_signals_start_a_case_within_one_topic(ws):
     assert page["vehicles"][0]["state"] == "open" and page["figures"]["signals"] == 2
     flow = c.get("/signals/flow", params={"vehicle": "G60"}, headers=h(PM)).json()
     assert sum(f["signals"] for f in flow) == c.get("/signals", params={"vehicle": "G60"}, headers=h(PM)).json()["total"]
+
+
+def test_case_by_hand_pm_evidence_details_and_integrity(ws):
+    c = ws["client"]
+    from tests.test_cases import TOPICS
+
+    body = {"vehicle": "G60", "title": "Rear passengers cannot charge their phones", "summary": "No USB-C in the rear",
+            "rationale": "dealer feedback"}
+    # By hand the fixed taxonomy still holds: one topic and one aspect group, never "other".
+    assert c.post("/cases", json=body, headers=h(PM)).status_code == 422
+    assert c.post("/cases", json={**body, "topic_id": "other", "aspect_group": "comfort"},
+                  headers=h(PM)).status_code == 422
+    made = c.post("/cases", json={**body, "topic_id": TOPICS["Navigation system"], "aspect_group": "comfort",
+                                  "case_type": "new_feature"}, headers=h(PM))
+    assert made.status_code == 201
+    cid = made.json()["id"]
+    page = c.get(f"/cases/{cid}", headers=h(PM)).json()
+    assert page["car_area"] == "infotainment_hmi" and page["aspect_group"] == "comfort"  # car area from the topic
+    assert page["case_type"] == "new_feature" and page["case_type_source"] == "pm"
+    line = page["vehicles"][0]
+    assert line["state"] == "open" and line["workflow"] == "new" and line["owner_id"] == PM
+    assert any(r["id"] == cid for r in c.get("/cases", params={"profile_id": ws["profile"]}, headers=h(PM)).json())
+
+    # Evidence added by hand: a stored record and a gated signal each; only the file row is a customer.
+    url = f"/cases/{cid}/vehicles/G60/evidence"
+    items = [{"type": "note", "text": "Dealers say rear passengers ask for charging.", "kind": "complaint",
+              "market": "USA"},
+             {"type": "link", "text": "The E-Class has two USB-C ports in the rear.", "url": "https://example.com/e",
+              "kind": "competitor_fact", "market": "Europe"},
+             {"type": "csv_row", "text": "My kids cannot charge their tablets in the back.", "source": "clinic.csv",
+              "kind": "complaint", "market": "USA"}]
+    assert c.post(url, json={"items": items, "rationale": "x"}, headers=h(PM_CN)).status_code == 403
+    out = c.post(url, json={"items": items, "rationale": "dealer feedback and a clinic file"}, headers=h(PM)).json()
+    assert len(out["added"]) == 3 and out["quarantined"] == []
+    signals = c.get("/signals", params={"case_id": cid}, headers=h(PM)).json()
+    assert signals["total"] == 3 and {s["source_id"] for s in signals["items"]} == {"pm_note", "pm_link", "pm_upload"}
+    assert all(s["classified_by"] == "pm" and s["car_area"] == ["infotainment_hmi"] for s in signals["items"])
+    page = c.get(f"/cases/{cid}", headers=h(PM)).json()
+    assert page["figures"]["by_vehicle"]["G60"]["distinct_customers"] == 1
+    integrity = c.get(f"/cases/{cid}/integrity", params={"vehicle": "G60"}, headers=h(PM)).json()
+    assert integrity["signals"] == 3 and integrity["quotes_found"] == 3
+    assert integrity["quote_failure_count"] == 0 and integrity["record_failure_count"] == 0
+    records = c.post("/source-records/lookup", json={"record_ids": [s["record_id"] for s in signals["items"]]},
+                     headers=h(PM)).json()
+    assert len(records) == 3 and all(r["content_hash"] and r["text_original"] for r in records)
+
+    # Names and classification are edited with a reason; the topic and the car area are not.
+    details = f"/cases/{cid}/vehicles/G60/details"
+    edited = c.patch(details, json={"short_title": "Rear charging", "change_depth": "part_module",
+                                    "rationale": "clearer name"}, headers=h(PM)).json()
+    assert edited["short_title"] == "Rear charging" and edited["change_depth_source"] == "pm"
+    assert c.patch(details, json={"summary": "x"}, headers=h(PM_CN)).status_code == 403
+
+    # Exports made in the workspace are logged and show in the audit list.
+    assert c.post("/access-log", json={"action": "export", "object_type": "vehicle_plan", "object_id": "G60",
+                                       "detail": "2 requirements exported"}, headers=h(PM)).status_code == 201
+    log = c.get("/audit", headers=h(PM)).json()
+    assert any(e["object_type"] == "vehicle_plan" and e["action"] == "export" for e in log)

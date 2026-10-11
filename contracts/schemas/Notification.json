@@ -20,7 +20,8 @@
         "sign_off_request",
         "sent_back",
         "new_signals",
-        "escalation"
+        "escalation",
+        "fyi"
       ]
     },
     "title": {

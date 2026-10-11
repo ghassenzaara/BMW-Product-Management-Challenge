@@ -9,8 +9,8 @@ One page that merges the official challenge documents with everything BMW people
 - `[PROC]` [process-cycle.md](process-cycle.md)
 - `[DE]` [team discussion 14:24](../03-meetings/2026-10-10_1424_team-discussion-de_summary.md)
 - `[EN]` [team discussion 14:39 with BMW contact](../03-meetings/2026-10-10_1439_team-discussion-en_summary.md)
-- `[PM1]` [group PM interview 16:05](../03-meetings/2026-10-10_1605_pm-interview-group_summary.md)
-- `[PM2]` [interview with Patrick](../03-meetings/2026-10-10_pm-interview-patrick_summary.md)
+- `[PM1]` [group PM interview 16:05](../03-meetings/2026-10-10_1605_pm-interview-2_notes.md)
+- `[PM2]` [interview with Patrick](../03-meetings/2026-10-10_pm-interview_summary.md)
 
 Statements from official documents are **requirements**. Statements from conversations are **user research**: strong signals, but from a handful of people, partly via noisy transcripts.
 
@@ -19,7 +19,7 @@ Statements from official documents are **requirements**. Statements from convers
 ## 1. Who the user is and how they work today
 - The **product manager (PM)** is the user. Engineering receives the output; it is not the user. `[DE][PM2]`
 - PMs own a whole car, or a set of attributes (comfort, speed, seats, UI/UX ...) supported by specialists. Several PMs work on one vehicle. `[PM1][PM2]`
-- Separate product management exists for **China**, the **US** and the **Middle East**. "It's nothing that we can solve from Munich." `[PM2]` In practice one car line has a **China PM** and a **rest-of-world PM**. Their requirements are mostly similar, but China has its own (e.g. the fridge). Our design: each PM logs in to a **personal workspace** (model + region) on **one shared data layer** ([web-intelligence-loop.md §4](../05-solution/web-intelligence-loop.md#4-one-data-layer-a-workspace-per-pm)).
+- Separate product management exists for **China**, the **US** and the **Middle East**. "It's nothing that we can solve from Munich." `[PM2]` In practice one car line has a **China PM** and a **rest-of-world PM**. Their requirements are mostly similar, but China has its own (e.g. the fridge). Our design: each PM logs in to a **personal workspace** (model + region) on **one shared data layer** ([web-intelligence-loop.md §4](../06-solution-concept/web-intelligence-loop.md#4-one-data-layer-a-workspace-per-pm)).
 - Two project types: **model projects** (a new generation) and **option projects** (scalable options, "Lego"/Baukasten shared across series). Plus **market requirements** (Norway: heated steering wheel; Italy: A/C). `[PM1][PM2]`
 - Tools today: Excel, PowerPoint, **Jira**, **Confluence**, SharePoint; **Codebeamer** for the hand-off to engineering. "Brain and hands." `[PM1][PM2]`
 - Biggest pain: **research**, i.e. combining customer feedback, social media, reviews and competitor data, and redoing it every time they are challenged. `[PM1][PM2]`

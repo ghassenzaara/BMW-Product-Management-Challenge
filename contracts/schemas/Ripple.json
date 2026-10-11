@@ -1,0 +1,500 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "runId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "fact": {
+      "type": "object",
+      "properties": {
+        "signalId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "competitor": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string",
+          "enum": [
+            "ev_range",
+            "dc_10_80_min"
+          ]
+        },
+        "value": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "cycle": {
+          "type": "string",
+          "enum": [
+            "WLTP",
+            "CLTC",
+            "EPA",
+            "none"
+          ]
+        },
+        "market": {
+          "type": "string",
+          "enum": [
+            "EU",
+            "US",
+            "CN",
+            "RoW",
+            "unknown"
+          ]
+        },
+        "trust": {
+          "type": "string",
+          "enum": [
+            "A",
+            "B",
+            "C",
+            "D",
+            "E"
+          ]
+        },
+        "sourceName": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "signalId",
+        "competitor",
+        "key",
+        "value",
+        "unit",
+        "cycle",
+        "market",
+        "trust",
+        "sourceName",
+        "summary"
+      ],
+      "additionalProperties": false
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "watch"
+      ]
+    },
+    "statusReason": {
+      "type": "string"
+    },
+    "conversionIds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "tolerancePct": {
+      "type": "number"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "requirement",
+              "case"
+            ]
+          },
+          "objectId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string"
+          },
+          "caseId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "row": {
+            "type": "string",
+            "enum": [
+              "G60",
+              "G60_CN",
+              "G70",
+              "F70"
+            ]
+          },
+          "alsoRows": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "G60",
+                "G60_CN",
+                "G70",
+                "F70"
+              ]
+            }
+          },
+          "carArea": {
+            "type": "string",
+            "enum": [
+              "exterior_design",
+              "interior_comfort",
+              "seats",
+              "climate",
+              "infotainment_hmi",
+              "connectivity_digital",
+              "driver_assistance",
+              "dynamics_powertrain",
+              "range_charging",
+              "practicality",
+              "quality_materials"
+            ]
+          },
+          "ownerId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "coOwnerIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "status": {
+            "type": "string"
+          },
+          "ours": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  },
+                  "unit": {
+                    "type": "string"
+                  },
+                  "cycle": {
+                    "type": "string",
+                    "enum": [
+                      "WLTP",
+                      "CLTC",
+                      "EPA",
+                      "none"
+                    ]
+                  },
+                  "comparator": {
+                    "type": "string",
+                    "enum": [
+                      "gte",
+                      "lte"
+                    ]
+                  },
+                  "market": {
+                    "type": "string"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "value",
+                  "unit",
+                  "cycle",
+                  "comparator",
+                  "market",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "theirsNormalized": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": "number"
+                  },
+                  "unit": {
+                    "type": "string"
+                  },
+                  "cycle": {
+                    "type": "string",
+                    "enum": [
+                      "WLTP",
+                      "CLTC",
+                      "EPA",
+                      "none"
+                    ]
+                  },
+                  "low": {
+                    "type": "number"
+                  },
+                  "high": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "value",
+                  "unit",
+                  "cycle",
+                  "low",
+                  "high"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "conversionId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "gapPct": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "behind",
+              "at_par",
+              "still_ahead",
+              "not_comparable"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          },
+          "rankBefore": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rankAfter": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "movedBecause": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "notified": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "alert",
+                    "fyi",
+                    "head"
+                  ]
+                }
+              },
+              "required": [
+                "userId",
+                "kind"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "muted": {
+            "type": "boolean"
+          },
+          "decision": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "raise_target",
+                      "keep",
+                      "market_variant",
+                      "reopen_case"
+                    ]
+                  },
+                  "by": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "rationale": {
+                    "type": "string"
+                  },
+                  "at": {
+                    "type": "string"
+                  },
+                  "proposalId": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "kind",
+                  "by",
+                  "rationale",
+                  "at",
+                  "proposalId"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "variant": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "by": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "rationale": {
+                    "type": "string"
+                  },
+                  "at": {
+                    "type": "string"
+                  },
+                  "proposalId": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "by",
+                  "rationale",
+                  "at",
+                  "proposalId"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "objectId",
+          "title",
+          "caseId",
+          "row",
+          "alsoRows",
+          "carArea",
+          "ownerId",
+          "coOwnerIds",
+          "status",
+          "ours",
+          "theirsNormalized",
+          "conversionId",
+          "gapPct",
+          "verdict",
+          "reason",
+          "rankBefore",
+          "rankAfter",
+          "movedBecause",
+          "notified",
+          "muted",
+          "decision",
+          "variant"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "createdAt": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "runId",
+    "fact",
+    "status",
+    "statusReason",
+    "conversionIds",
+    "tolerancePct",
+    "items",
+    "createdAt"
+  ],
+  "additionalProperties": false
+}

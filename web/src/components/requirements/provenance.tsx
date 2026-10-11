@@ -10,21 +10,24 @@ import { cn } from "@/lib/utils";
  * says where it came from. Green = customer evidence, blue = the PM's own context, amber = assumption.
  */
 
-const tone: Record<Provenance["source"], { chip: string; bar: string; line: string }> = {
+const tone: Record<Provenance["source"], { chip: string; bar: string; line: string; icon: string }> = {
   evidence: {
-    chip: "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300",
-    bar: "bg-emerald-500",
-    line: "decoration-emerald-400/70",
+    chip: "border-tone-emerald-bd bg-tone-emerald-bg text-tone-emerald-fg",
+    bar: "bg-tone-emerald-dot",
+    line: "decoration-tone-emerald-dot",
+    icon: "text-tone-emerald-fg",
   },
   pm_context: {
-    chip: "border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-800 dark:bg-blue-950/50 dark:text-blue-300",
-    bar: "bg-blue-500",
-    line: "decoration-blue-400/70",
+    chip: "border-tone-blue-bd bg-tone-blue-bg text-tone-blue-fg",
+    bar: "bg-tone-blue-dot",
+    line: "decoration-tone-blue-dot",
+    icon: "text-tone-blue-fg",
   },
   assumption: {
-    chip: "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-300",
-    bar: "bg-amber-400",
-    line: "decoration-amber-400/80 decoration-dashed",
+    chip: "border-tone-amber-bd bg-tone-amber-bg text-tone-amber-fg",
+    bar: "bg-tone-amber-dot",
+    line: "decoration-tone-amber-dot decoration-dashed",
+    icon: "text-tone-amber-fg",
   },
 };
 
@@ -35,25 +38,25 @@ export function provenanceMap(r: Pick<Requirement, "provenance">) {
 }
 
 export function ProvChip({ p, onCite, className }: { p: Provenance | undefined; onCite?: (ref: string) => void; className?: string }) {
-  if (!p) return <span className={cn("rounded-full border border-dashed px-1.5 text-[10px] text-muted-foreground", className)}>untagged</span>;
+  if (!p) return <span className={cn("rounded-full border border-dashed border-border-strong px-2 align-middle text-xs leading-4 text-muted-foreground", className)}>untagged</span>;
   const Icon = icon[p.source];
   const label = p.label.split(" · ").slice(-1)[0];
   return (
     <HoverCard openDelay={150}>
       <HoverCardTrigger asChild>
-        <span className={cn("inline-flex max-w-[16rem] cursor-default items-center gap-1 rounded-full border px-1.5 py-px align-middle text-[10px] leading-4 font-medium", tone[p.source].chip, className)}>
-          <Icon className="size-2.5 shrink-0" />
+        <span className={cn("inline-flex max-w-[16rem] cursor-default items-center gap-1 rounded-full border px-2 py-px align-middle text-xs leading-4 font-medium", tone[p.source].chip, className)}>
+          <Icon className="size-3 shrink-0" />
           <span className="truncate">{p.source === "evidence" ? `${p.signalIds.length || ""} ${p.signalIds.length === 1 ? "record" : "records"}`.trim() : label}</span>
         </span>
       </HoverCardTrigger>
       <HoverCardContent className="w-72 text-xs" side="top">
         <div className="mb-1 font-semibold">{provenanceLabel[p.source]}</div>
         <p>{p.label}</p>
-        {p.ref && <p className="mt-1 font-mono text-[10px] text-muted-foreground">{p.ref}</p>}
+        {p.ref && <p className="mt-1 font-mono text-xs text-muted-foreground">{p.ref}</p>}
         {p.signalIds.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1">
             {p.signalIds.map((id) => (
-              <button key={id} type="button" onClick={() => onCite?.(id)} className="rounded border px-1 font-mono text-[10px] text-primary hover:bg-muted">
+              <button key={id} type="button" onClick={() => onCite?.(id)} className="rounded-sm border px-1.5 font-mono text-xs text-foreground transition-colors duration-150 hover:border-border-strong hover:bg-muted">
                 {id}
               </button>
             ))}
@@ -79,17 +82,17 @@ export function ProvenanceLegend({ r }: { r: Pick<Requirement, "provenance"> }) 
   const total = r.provenance.length || 1;
   return (
     <div className="space-y-1.5">
-      <div className="flex h-1.5 overflow-hidden rounded-full bg-muted">
+      <div className="flex h-1.5 gap-px overflow-hidden rounded-full bg-muted">
         {(Object.keys(n) as Provenance["source"][]).map((k) => (
           <div key={k} className={tone[k].bar} style={{ width: `${(n[k] / total) * 100}%` }} />
         ))}
       </div>
-      <div className="flex flex-wrap gap-3 text-[11px] text-muted-foreground">
+      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
         {(Object.keys(n) as Provenance["source"][]).map((k) => {
           const Icon = icon[k];
           return (
             <span key={k} className="inline-flex items-center gap-1">
-              <Icon className="size-3" />
+              <Icon className={cn("size-3.5", tone[k].icon)} />
               <b className="font-semibold text-foreground">{n[k]}</b> {k === "evidence" ? "from evidence" : k === "pm_context" ? "from your context" : "assumptions"}
             </span>
           );

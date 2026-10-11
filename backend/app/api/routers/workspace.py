@@ -28,6 +28,9 @@ ObjectType = Literal["case", "requirement"]
 Addressee = Literal["engineering", "finance", "design", "quality", "market_pm", "purchasing", "other"]
 Region = Literal["global", "RoW", "CN"]
 Release = Literal["next_gen", "current_car", "ota"]
+CaseType = Literal["new_feature", "fix_improve", "performance_target", "quality_perception", "market_variant",
+                   "brand_differentiator", "regression"]
+ChangeDepth = Literal["trim_option", "part_module", "platform_powertrain", "software_ota"]
 
 
 # ---- people and workspace -----------------------------------------------------------
@@ -160,21 +163,120 @@ class CaseIn(BaseModel):
     vehicle: str
     title: str = Field(min_length=3)
     summary: str = ""
-    signal_ids: list[str] = Field(min_length=1)
+    signal_ids: list[str] = []
     scope: Region = "global"
     rationale: str = Field(min_length=1)
+    # A case started by hand has no signals yet: the PM picks its topic and aspect group.
+    topic_id: str | None = None
+    aspect_group: str | None = None
+    case_type: CaseType | None = None
+    change_depth: ChangeDepth | None = None
 
 
 @router.post("/cases", status_code=201, tags=["cases"])
 def create_case(body: CaseIn, c=Depends(conn), user: User = Depends(current_user)) -> dict:
-    """Start a case from signals that belong to no case yet (one topic and one aspect group)."""
+    """Start a case from signals that belong to no case yet (one topic and one aspect group),
+    or by hand with a topic and an aspect group of the fixed taxonomy (evidence is added after)."""
     from app.api.routers.cases import _refresh
 
-    case = casework.create_case(c, user, body.vehicle, body.signal_ids, body.title, body.summary, body.rationale,
-                                scope=body.scope, request_id=request_id())
+    if body.signal_ids:
+        case = casework.create_case(c, user, body.vehicle, body.signal_ids, body.title, body.summary,
+                                    body.rationale, scope=body.scope, request_id=request_id())
+    elif body.topic_id and body.aspect_group:
+        case = casework.create_empty_case(c, user, body.vehicle, body.topic_id, body.aspect_group, body.title,
+                                          body.summary, body.rationale, scope=body.scope,
+                                          case_type=body.case_type, change_depth=body.change_depth,
+                                          request_id=request_id())
+    else:
+        raise HTTPException(422, "a case needs signals, or a topic and an aspect group when started by hand")
     _refresh(c, case["id"])
     index.refresh_page(c, "case", case["id"])
     return {"id": case["id"], "vehicle": body.vehicle}
+
+
+class CaseDetails(BaseModel):
+    title: str | None = None
+    short_title: str | None = None
+    summary: str | None = None
+    case_type: CaseType | None = None
+    change_depth: ChangeDepth | None = None
+    rationale: str | None = None
+
+
+@router.patch("/cases/{case_id}/vehicles/{vehicle}/details", tags=["cases"])
+def case_details(case_id: str, vehicle: str, body: CaseDetails, c=Depends(conn),
+                 user: User = Depends(current_user)) -> dict:
+    """Names and classification of a case (title, short title, summary, type, change depth).
+    The topic and the car area are fixed by the taxonomy and are not edited here."""
+    row = casework.update_details(c, case_id, vehicle, user, body.model_dump(exclude={"rationale"}),
+                                  body.rationale, request_id=request_id())
+    index.refresh_page(c, "case", case_id)
+    return row
+
+
+class EvidenceItem(BaseModel):
+    type: Literal["csv_row", "link", "note"]
+    text: str = Field(min_length=3)
+    title: str | None = None
+    url: str | None = None
+    source: str | None = None   # file name of an uploaded row
+    kind: Literal["complaint", "wish", "like", "competitor_fact", "trend", "innovation"]
+    market: Literal["USA", "China", "Europe", "Rest of World", "unknown"] = "unknown"
+
+
+class EvidenceIn(BaseModel):
+    items: list[EvidenceItem] = Field(min_length=1, max_length=500)
+    rationale: str = Field(min_length=1)
+
+
+@router.post("/cases/{case_id}/vehicles/{vehicle}/evidence", status_code=201, tags=["cases"])
+def add_evidence(case_id: str, vehicle: str, body: EvidenceIn, c=Depends(conn),
+                 user: User = Depends(current_user)) -> dict:
+    """Evidence a PM adds by hand: each item becomes a stored source record and a signal
+    that passed the validation gate. Only file rows count as customers."""
+    from app.api.routers.cases import _refresh
+
+    out = casework.add_evidence(c, case_id, vehicle, user, [i.model_dump() for i in body.items], body.rationale,
+                                request_id=request_id())
+    _refresh(c, case_id)
+    index.refresh_page(c, "case", case_id)
+    return out
+
+
+@router.get("/cases/{case_id}/integrity", tags=["cases"])
+def case_integrity(case_id: str, vehicle: str | None = None, c=Depends(conn),
+                   user: User = Depends(current_user)) -> dict:
+    """Recheck now: every quote of the case is found in its stored source record, every record is intact."""
+    return casework.evidence_integrity(c, case_id, vehicle)
+
+
+class RecordLookup(BaseModel):
+    record_ids: list[str] = Field(max_length=100)
+
+
+@router.post("/source-records/lookup", tags=["signals"])
+def source_records(body: RecordLookup, c=Depends(conn), user: User = Depends(current_user)) -> list[dict]:
+    """The stored source records behind signals (text, url, hash taken at capture)."""
+    return c.execute(
+        "select r.record_id, r.source_id, coalesce(sr.name, r.source_id) as source_name, r.url, r.title,"
+        " r.text_original, r.content_hash, r.fetched_at from source_record r left join source_registry sr"
+        " on sr.source_id = r.source_id where r.record_id = any(%s) and r.deleted_at is null"
+        " and r.text_original is not null", (body.record_ids,)).fetchall()
+
+
+class AccessIn(BaseModel):
+    action: Literal["export", "view"]
+    object_type: Literal["case", "requirement", "vehicle_plan"]
+    object_id: str = Field(min_length=1)
+    detail: str | None = None
+
+
+@router.post("/access-log", status_code=201, tags=["collaboration"])
+def log_access(body: AccessIn, c=Depends(conn), user: User = Depends(current_user)) -> dict:
+    """Views and exports made in the PM workspace (markdown, hand-over file, deck, replay) are logged too."""
+    seq = audit.write(c, action=body.action, object_type=body.object_type, object_id=body.object_id,
+                      actor=user.actor, rationale=body.detail, request_id=request_id())
+    return {"seq": seq}
 
 
 class WorkIn(BaseModel):
@@ -427,6 +529,8 @@ class RequirementPatch(BaseModel):
     cost_note: str | None = None
     provenance: list[dict] | None = None
     shape_answers: list[dict] | None = None
+    # The PM's edited argument sheet (markdown); an empty text goes back to the generated one.
+    argument_md: str | None = None
     rationale: str = Field(min_length=1)
     expected_version: int | None = None
     cause: Literal["edit", "feedback", "brief_change"] = "edit"
@@ -436,7 +540,19 @@ class RequirementPatch(BaseModel):
 @router.patch("/requirements/{rid}", tags=["requirements"])
 def patch_requirement(rid: str, body: RequirementPatch, c=Depends(conn), user: User = Depends(current_user)) -> dict:
     """Edit the SMART fields: a new version with a reason (409 when someone saved first)."""
-    fields = body.model_dump(exclude={"rationale", "expected_version", "cause", "feedback_id"}, exclude_none=True)
+    fields = body.model_dump(exclude={"rationale", "expected_version", "cause", "feedback_id", "argument_md"},
+                             exclude_none=True)
+    if body.argument_md is not None:
+        # Not part of a version: the argument sheet is the PM's presentation of the same content.
+        current = c.execute("select * from requirement where id = %s", (rid,)).fetchone()
+        if current is None:
+            raise HTTPException(404, f"{rid} not found")
+        if not service.can_edit(user, current):
+            raise HTTPException(403, f"only the owner changes {rid}")
+        row = audit.update(c, "requirement", {"id": rid}, {"argument_md": body.argument_md.strip() or None},
+                           actor=user.actor, rationale=body.rationale, request_id=request_id())
+        if not fields:
+            return row
     if body.cause == "edit":
         row = service.patch(c, rid, user, fields, body.rationale, expected_version=body.expected_version,
                             request_id=request_id())
@@ -626,8 +742,8 @@ def search(q: str, vehicle: str | None = None, c=Depends(conn), user: User = Dep
 # What a person reads in the trail: decisions and changes, not page views or bulk machine writes.
 AUDIT_OBJECTS = ("case", "case_vehicle", "requirement", "requirement_version", "requirement_feedback", "proposal",
                  "referral", "open_question", "meeting_note", "series_brief", "case_stance", "alert", "comment",
-                 "planned_feature", "weight_profile", "brand_profile", "workspace", "innovation_item",
-                 "config")
+                 "planned_feature", "vehicle_plan", "weight_profile", "brand_profile", "workspace",
+                 "innovation_item", "config")
 
 
 @router.get("/audit")

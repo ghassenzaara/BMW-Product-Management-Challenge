@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Bot, Loader2, Send, Users } from "lucide-react";
+import { Loader2, Send, Users } from "lucide-react";
+import { ArgusMark } from "@/components/brand/marks";
 import type { Proposal } from "@/contracts";
 import { useApi, useApiMutation } from "@/lib/api/hooks";
 import { fromNow } from "@/lib/format";
@@ -47,25 +48,25 @@ export function ChatPanel({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-3">
+      <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-4">
         {messages.length === 0 && (
-          <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
-            <Bot className="mb-2 size-5 text-primary" />
-            Ask about this {objectType}. Answers cite the evidence; changes come back as proposals you accept or reject.
+          <div className="rounded-lg border border-dashed border-border-strong bg-recessed p-4 text-sm text-muted-foreground">
+            <ArgusMark className="mb-2 size-5 text-primary" />
+            Ask Argus about this {objectType}. Answers cite the evidence; changes come back as proposals you accept or reject.
           </div>
         )}
         {messages.map((m) => (
           <div key={m.id} className="flex gap-2">
-            <UserAvatar id={m.role === "assistant" ? "agent:assistant" : m.authorId} size="xs" className="mt-0.5" />
+            <UserAvatar id={m.role === "assistant" ? "agent:argus" : m.authorId} size="xs" className="mt-0.5" />
             <div className="min-w-0 flex-1 space-y-2">
-              <div className={m.role === "user" ? "rounded-lg bg-muted px-3 py-2 text-sm" : ""}>
+              <div className={m.role === "user" ? "rounded-lg bg-muted px-3 py-2 text-sm" : "border-l-2 border-border-strong pl-3"}>
                 {m.role === "assistant" ? <Markdown className="prose-chat" onCite={onCite}>{m.content}</Markdown> : m.content}
               </div>
               {m.proposalIds.map((pid) => {
                 const p = byId.get(pid);
                 return p ? <ProposalCard key={pid} p={p} canDecide={canEdit} /> : null;
               })}
-              <div className="text-[10px] text-muted-foreground">{fromNow(m.createdAt)}</div>
+              <div className="text-xs text-muted-foreground">{fromNow(m.createdAt)}</div>
             </div>
           </div>
         ))}
@@ -76,10 +77,10 @@ export function ChatPanel({
         )}
         <div ref={end} />
       </div>
-      <div className="space-y-2 border-t p-3">
+      <div className="space-y-2.5 border-t p-4">
         {segments.length > 0 && (
           <div className="flex flex-wrap items-center gap-1.5" title="Answers use only real BMW verbatims from that segment">
-            <span className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
+            <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
               <Users className="size-3" /> Ask owners:
             </span>
             {segments.map((s) => (
@@ -88,8 +89,8 @@ export function ChatPanel({
                 onClick={() => send(`What do ${s.label} say?`, s.key)}
                 disabled={post.isPending}
                 className={cn(
-                  "rounded-full border px-2 py-0.5 text-[11px] hover:border-primary/60 hover:text-foreground",
-                  s.verbatims ? "border-primary/30 bg-primary/5 text-foreground" : "border-dashed text-muted-foreground",
+                  "rounded-full border px-2 py-0.5 text-xs transition-colors duration-150 hover:border-foreground/40 hover:text-foreground",
+                  s.verbatims ? "border-border-strong bg-card text-foreground" : "border-dashed border-border-strong text-muted-foreground",
                 )}
               >
                 {s.label.replace(/ owners$/, "")} <span className="tabular-nums text-muted-foreground">({s.verbatims})</span>
@@ -99,7 +100,7 @@ export function ChatPanel({
         )}
         <div className="flex flex-wrap gap-1.5">
           {(objectType === "case" ? caseSuggestions : reqSuggestions).map((s) => (
-            <button key={s} onClick={() => send(s)} disabled={post.isPending} className="rounded-full border px-2 py-0.5 text-[11px] text-muted-foreground hover:border-primary/60 hover:text-foreground">
+            <button key={s} onClick={() => send(s)} disabled={post.isPending} className="rounded-full border bg-recessed px-2 py-0.5 text-xs text-muted-foreground transition-colors duration-150 hover:border-foreground/40 hover:text-foreground">
               {s}
             </button>
           ))}

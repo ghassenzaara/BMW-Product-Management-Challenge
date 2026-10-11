@@ -36,11 +36,11 @@ export function AuditView() {
               AI agents
             </ToggleGroupItem>
           </ToggleGroup>
-          <Input value={objectId} onChange={(e) => setObjectId(e.target.value)} placeholder="Object ID, e.g. CASE-G60-0001 or REQ-G60-0004" className="h-8 w-80" />
+          <Input value={objectId} onChange={(e) => setObjectId(e.target.value)} placeholder="Object ID, e.g. CASE-G60-0001 or REQ-G60-0004" className="h-8 w-full sm:w-80" />
           <span className="text-xs text-muted-foreground">{events.length} events</span>
         </div>
       </PageHeader>
-      <div className="p-6 pl-10">
+      <div className="mx-auto max-w-[1280px] p-6 pl-10">
         <AuditTimeline events={events.slice(0, 300)} />
       </div>
     </div>

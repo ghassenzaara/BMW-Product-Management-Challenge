@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, AtSign, Bell, CheckCircle2, CornerUpLeft, Forward, Megaphone, Radar, Scale } from "lucide-react";
+import { AlertTriangle, AtSign, Bell, CheckCircle2, CornerUpLeft, Forward, Info, Megaphone, Radar, Scale } from "lucide-react";
 import type { NotificationKind } from "@/contracts";
 import { useApi, useApiMutation } from "@/lib/api/hooks";
 import { fromNow } from "@/lib/format";
@@ -18,6 +18,7 @@ export const notificationIcon: Record<NotificationKind, typeof Bell> = {
   sent_back: CornerUpLeft,
   new_signals: Radar,
   escalation: Scale,
+  fyi: Info,
 };
 
 export function NotificationBell() {
@@ -28,12 +29,12 @@ export function NotificationBell() {
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
-          <Bell className="size-4" />
-          {unread > 0 && <span className="absolute top-1 right-1 flex size-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">{unread}</span>}
+          <Bell className="size-4" strokeWidth={1.75} />
+          {unread > 0 && <span className="absolute top-0.5 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-ember px-1 text-[10px] leading-none font-semibold text-obsidian tabular-nums ring-2 ring-background">{unread}</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-96 p-0">
-        <div className="flex items-center justify-between border-b px-3 py-2">
+      <PopoverContent align="end" className="w-96 max-w-[calc(100vw-1.5rem)] overflow-hidden p-0">
+        <div className="flex items-center justify-between border-b px-4 py-2.5">
           <span className="text-sm font-semibold">Notifications</span>
           <Button variant="ghost" size="xs" onClick={() => read.mutate({ body: {} })} disabled={!unread}>
             Mark all read
@@ -48,15 +49,15 @@ export function NotificationBell() {
                 key={n.id}
                 href={n.link}
                 onClick={() => !n.read && read.mutate({ body: { ids: [n.id] } })}
-                className={cn("flex gap-3 border-b px-3 py-2.5 last:border-0 hover:bg-muted/60", !n.read && "bg-primary/5")}
+                className={cn("flex gap-3 border-b px-4 py-3 outline-none transition-colors duration-150 last:border-0 hover:bg-muted focus-visible:bg-muted", !n.read && "bg-recessed dark:bg-white/5")}
               >
-                <Icon className={cn("mt-0.5 size-4 shrink-0", n.kind === "alert" ? "text-amber-500" : "text-muted-foreground")} />
+                <Icon className={cn("mt-0.5 size-4 shrink-0", n.kind === "alert" ? "text-warning" : "text-muted-foreground")} strokeWidth={1.75} />
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-medium">{n.title}</span>
-                  <span className="block truncate text-xs text-muted-foreground">{n.body}</span>
-                  <span className="block text-[10px] text-muted-foreground">{fromNow(n.createdAt)}</span>
+                  <span className="mt-0.5 block truncate text-xs text-muted-foreground">{n.body}</span>
+                  <span className="mt-0.5 block text-xs text-muted-foreground">{fromNow(n.createdAt)}</span>
                 </span>
-                {!n.read && <span className="mt-1.5 size-2 shrink-0 rounded-full bg-primary" />}
+                {!n.read && <span className="mt-1.5 size-2 shrink-0 rounded-full bg-ember" />}
               </Link>
             );
           })}

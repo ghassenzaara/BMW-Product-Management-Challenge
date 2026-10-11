@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "signalId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "competitor": {
+      "type": "string"
+    },
+    "key": {
+      "type": "string",
+      "enum": [
+        "ev_range",
+        "dc_10_80_min"
+      ]
+    },
+    "value": {
+      "type": "number"
+    },
+    "unit": {
+      "type": "string"
+    },
+    "cycle": {
+      "type": "string",
+      "enum": [
+        "WLTP",
+        "CLTC",
+        "EPA",
+        "none"
+      ]
+    },
+    "market": {
+      "type": "string",
+      "enum": [
+        "EU",
+        "US",
+        "CN",
+        "RoW",
+        "unknown"
+      ]
+    },
+    "trust": {
+      "type": "string",
+      "enum": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E"
+      ]
+    },
+    "sourceName": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "signalId",
+    "competitor",
+    "key",
+    "value",
+    "unit",
+    "cycle",
+    "market",
+    "trust",
+    "sourceName",
+    "summary"
+  ],
+  "additionalProperties": false
+}

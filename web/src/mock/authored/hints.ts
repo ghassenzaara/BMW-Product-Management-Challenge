@@ -31,6 +31,12 @@ export const solutionHints: Record<string, SolutionHint> = {
   "CASE-G60-0006": { text: "a compact spare wheel as an option", because: "owners complain about being stranded with only a sealant kit" },
 };
 
+/** Segment of each line and of the competitors the monitor knows; a compact car is not compared with a business saloon. */
+export const segments = {
+  series: { G60: "business", G70: "luxury", F70: "compact" } as Record<string, string>,
+  competitors: { "Xiaomi SU7": "business", "Zeekr 007": "business", "Zeekr 001": "business", "Mercedes-Benz CLA": "compact", "Audi A6 e-tron": "business" } as Record<string, string>,
+};
+
 /** Benchmarks from outside the signal base (engineering meetings, tests). Shown as assumptions until a signal backs them. */
 export const benchmarks: Record<string, Benchmark> = {
   "CASE-G60-0005": { competitor: "Mercedes E-Class", metric: "Cool-down 45 → 22 °C", value: 6, unit: "min", lowerIsBetter: true, today: 9, source: "Engineering benchmark (climate sync 10.10)" },

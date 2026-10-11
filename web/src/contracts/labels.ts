@@ -30,14 +30,18 @@ import type {
   SignalKind,
   SourceType,
   TargetCustomer,
+  ImpactVerdict,
+  PortfolioRow,
+  RippleDecisionKind,
+  ClassificationMethod,
 } from "./enums";
 
 /** Display labels for contract enums. UI-only; the API exchanges the keys. */
 
 export const contextLayerLabel: Record<ContextLayer, string> = {
   brand: "Brand",
-  series_brief: "Your brief",
-  case_stance: "Your stance",
+  series_brief: "Your product specs",
+  case_stance: "Your context",
   requirement_shape: "Your answer",
   feedback: "Feedback",
 };
@@ -203,6 +207,7 @@ export const agentLabel: Record<Agent, string> = {
   customer_public: "Customer & public",
   trends: "Trends agent",
   innovation_scout: "Innovation scout",
+  pm: "Added by a PM",
 };
 
 export const sourceTypeLabel: Record<SourceType, string> = {
@@ -218,6 +223,9 @@ export const sourceTypeLabel: Record<SourceType, string> = {
   competitor_official: "Competitor official",
   trend_report: "Trend report",
   trade_fair: "Trade fair",
+  pm_upload: "Uploaded file",
+  pm_link: "Link",
+  pm_note: "PM note",
 };
 
 export const signalKindLabel: Record<SignalKind, string> = {
@@ -250,4 +258,31 @@ export const horizonLabel: Record<InnovationHorizon, string> = {
   next_gen: "Next generation",
   gen_after: "Generation after",
   new_product: "New product",
+};
+
+export const verdictLabel: Record<ImpactVerdict, string> = {
+  behind: "Behind",
+  at_par: "At par",
+  still_ahead: "Still ahead",
+  not_comparable: "Not comparable",
+};
+
+export const portfolioRowLabel: Record<PortfolioRow, string> = {
+  G60: "5 Series (G60)",
+  G60_CN: "5 Series China (G68)",
+  G70: "7 Series (G70)",
+  F70: "1 Series (F70)",
+};
+
+export const rippleDecisionLabel: Record<RippleDecisionKind, string> = {
+  raise_target: "Raise target",
+  keep: "Keep, with reason",
+  market_variant: "Create market variant",
+  reopen_case: "Reopen case",
+};
+
+export const classificationLabel: Record<ClassificationMethod, string> = {
+  bmw_label: "BMW label (VFC lookup)",
+  llm: "Model",
+  manual: "Set by a person",
 };

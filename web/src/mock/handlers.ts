@@ -25,6 +25,7 @@ import type {
 import { BriefFieldKey as BriefFieldKeys, RequirementSnapshot, addresseeLabel, briefFieldLabel, feedbackResponseLabel, shapeKeyLabel } from "@/contracts";
 import { ApiError, audit, checks, db, must, nextId, notify, now, resetStore } from "./store";
 import { computeScores } from "./scoring";
+import { scoreSnapshotNow } from "./snapshot";
 import { getDrafter, type Draft } from "./ai/drafter";
 import { buildInput, changeSummary, feedbackPatch, redraft, regionOf, retagEdits, snapshotOf, snapshotsDiffer, stanceOf } from "./ai/drafting";
 import { briefFieldsUsed, provenanceCounts, provenanceLine, sentences } from "./ai/provenance";
@@ -34,8 +35,11 @@ import { caseSegments, segmentReply } from "./ai/segment";
 import { cite, followUpQuestions, scriptedReply, shapeQuestionsMessage, type ProposalDraft } from "./ai/chat";
 import { extractFromNote } from "./ai/notes";
 import { liveChatEnabled, liveReply } from "./ai/live";
+import { argusReply } from "./ai/argus";
 import { refreshPool } from "./authored/world";
-import { webSpecToSignal } from "./convert";
+import { WEB_CLASSIFIER, sha256, webSnapshotRecord, webSpecToSignal } from "./convert";
+import { buildReplay } from "./replay";
+import { assessFact, decideItem, reassess, SIGNED_STATUSES } from "./ripple";
 import taxonomyData from "./fixtures/taxonomy.json";
 import { FactorKey as FactorKeys } from "@/contracts";
 import { shortFromTitle } from "./authored/short-names";
@@ -84,6 +88,9 @@ function caseSignals(d: Dataset, c: Case) {
   return c.signalIds.map((id) => d.signals.find((s) => s.id === id)).filter((s): s is Signal => !!s);
 }
 
+/** A link or a note a PM added is market evidence or an assumption; only rows of an uploaded file count as customers. */
+const isPmOpinion = (s: Signal) => s.sourceType === "pm_link" || s.sourceType === "pm_note";
+
 function recomputeFigures(d: Dataset, c: Case) {
   const sigs = caseSignals(d, c);
   const markets = new Set<Market>(c.markets);
@@ -91,7 +98,7 @@ function recomputeFigures(d: Dataset, c: Case) {
   const old = new Map(c.figures.perMarket.map((m) => [m.market, m]));
   c.markets = [...markets];
   c.figures.perMarket = [...markets].map((m) => {
-    const inM = sigs.filter((s) => s.market === m && s.sourceType !== "bmw_study" && s.kind !== "competitor_fact");
+    const inM = sigs.filter((s) => s.market === m && s.sourceType !== "bmw_study" && s.kind !== "competitor_fact" && !isPmOpinion(s));
     const complaints = inM.filter((s) => s.kind === "complaint").length;
     const wishes = inM.filter((s) => s.kind === "wish").length;
     const likes = inM.filter((s) => s.kind === "like").length;
@@ -109,7 +116,7 @@ function recomputeFigures(d: Dataset, c: Case) {
       sentiment: total ? Math.round(Math.max(-1, Math.min(1, (likes - complaints - 0.5 * wishes) / total)) * 100) / 100 : (prev?.sentiment ?? 0),
     };
   });
-  const customers = sigs.filter((s) => s.sourceType !== "bmw_study" && !["competitor_fact", "trend"].includes(s.kind)).length;
+  const customers = sigs.filter((s) => s.sourceType !== "bmw_study" && !["competitor_fact", "trend"].includes(s.kind) && !isPmOpinion(s)).length;
   c.factors.customers = Math.round(Math.min(1, Math.log10(1 + customers) / Math.log10(61)) * 100) / 100;
 }
 
@@ -157,7 +164,7 @@ function createRequirement(
 }
 
 /** Apply a new version (feedback, brief change or edit): bump the version, keep the history, re-run the quality check. */
-function applyVersion(d: Dataset, r: Requirement, snapshot: RequirementSnapshot, cause: "feedback" | "brief_change" | "edit", actorId: string, rationale: string, feedbackId?: string) {
+function applyVersion(d: Dataset, r: Requirement, snapshot: RequirementSnapshot, cause: "feedback" | "brief_change" | "edit" | "ripple", actorId: string, rationale: string, feedbackId?: string) {
   const before = snapshotOf(r);
   Object.assign(r, snapshot);
   r.version += 1;
@@ -165,6 +172,15 @@ function applyVersion(d: Dataset, r: Requirement, snapshot: RequirementSnapshot,
   d.requirementVersions.push({ requirementId: r.id, version: r.version, snapshot: snapshotOf(r), cause, feedbackId, rationale, createdAt: now(), createdBy: actorId });
   audit({ actorId, action: "requirement.version_created", objectType: "requirement", objectId: r.id, before: { version: r.version - 1 }, after: { version: r.version, cause, change: changeSummary(before, snapshot) }, rationale });
   saveCheck(ruleCheck(d, r, now()), `After version ${r.version}`);
+}
+
+/** Changing a signed-off target drops it back to PM-approved: the head signs off again. */
+function resetSignOff(d: Dataset, r: Requirement, user: User, why: string) {
+  if (!SIGNED_STATUSES.includes(r.status)) return;
+  const before = r.status;
+  r.status = "pm_approved";
+  audit({ actorId: user.id, action: "requirement.signoff_reset", objectType: "requirement", objectId: r.id, before: { status: before }, after: { status: r.status }, rationale: `Target changed after sign-off: ${why}` });
+  notify({ userId: head(d).id, kind: "sign_off_request", title: "New sign-off needed", body: `${r.id}: ${why}`, link: `/requirements/${r.id}`, actorId: user.id });
 }
 
 /** PMs of the case's series may draft their own (regional) requirement on it, under their own brief. */
@@ -175,7 +191,7 @@ function assertCanDraft(u: User, c: Case) {
 }
 
 function briefById(d: Dataset, id: string) {
-  return must(d.briefs.find((b) => b.id === id), `Brief ${id}`);
+  return must(d.briefs.find((b) => b.id === id), `Product specs ${id}`);
 }
 
 function assertBriefEditor(u: User, b: SeriesBrief) {
@@ -212,7 +228,7 @@ async function briefImpact(d: Dataset, brief: SeriesBrief, values: Partial<Brief
     const current = snapshotOf(r);
     if (!snapshotsDiffer(current, draft)) continue;
     const fields = tagged.length ? tagged : live;
-    const summary = `v${r.version + 1}: ${changeSummary(current, draft)} (brief: ${fields.map((k) => briefFieldLabel[k].toLowerCase()).join(", ")})`;
+    const summary = `v${r.version + 1}: ${changeSummary(current, draft)} (product specs: ${fields.map((k) => briefFieldLabel[k].toLowerCase()).join(", ")})`;
     out.push({ requirementId: r.id, title: r.title, fields, summary, changes: [{ field: "version", before: current, after: draft }], proposalId: null as string | null });
   }
   return out;
@@ -246,7 +262,7 @@ function maybeLearnCost(d: Dataset, user: User) {
     },
   ]);
   audit({ actorId: "agent:learning", action: "proposal.created", objectType: "brief", objectId: brief.id, after: { field: "costEnvelope" }, rationale: `${signals} expensive drafts rejected or cut` });
-  notify({ userId: user.id, kind: "alert", title: "Learned from your decisions", body: "Set cost sensitivity to high? See your series brief.", link: "/brief", actorId: "agent:learning" });
+  notify({ userId: user.id, kind: "alert", title: "Learned from your decisions", body: "Set cost sensitivity to high? See your product specs.", link: "/brief", actorId: "agent:learning" });
 }
 
 function saveCheck(check: RequirementCheck, trigger: string) {
@@ -325,7 +341,7 @@ export const handlers: Handlers = {
   me: ({ user }) => {
     const d = db();
     const brief = user.role === "vehicle_pm" ? resolveBrief(d, user.series[0], user.id) : null;
-    return { user, workspace: workspaceOf(d, user.id), weightProfile: profileOf(d, user.id), brief, needsOnboarding: needsOnboarding(d, user) };
+    return { user, workspace: workspaceOf(d, user.id), weightProfile: profileOf(d, user.id), brief, needsOnboarding: needsOnboarding(d, user), features: { agentRefresh: true, competitorRipple: true } };
   },
 
   // Series briefs (layer 1)
@@ -345,9 +361,9 @@ export const handlers: Handlers = {
   },
   createOverlay: ({ body, user }) => {
     const d = db();
-    const shared = must(sharedBrief(d, body.series), `Shared brief of ${body.series}`);
+    const shared = must(sharedBrief(d, body.series), `Shared product specs of ${body.series}`);
     if (user.role !== "vehicle_pm" || !user.series.includes(body.series)) throw new ApiError(403, `Only a PM of the ${body.series} creates a regional overlay.`);
-    if (shared.ownerId === user.id) throw new ApiError(409, "You own the shared brief; edit it directly.");
+    if (shared.ownerId === user.id) throw new ApiError(409, "You own the shared product specs; edit them directly.");
     const existing = overlayOf(d, body.series, user.id);
     if (existing) return existing;
     const pre = overlayPrefill(user);
@@ -367,7 +383,7 @@ export const handlers: Handlers = {
       synthetic: true,
     };
     d.briefs.push(overlay);
-    audit({ actorId: user.id, action: "brief.created", objectType: "brief", objectId: overlay.id, after: { series: overlay.series, kind: "overlay", region: overlay.region, parentId: shared.id }, rationale: "Onboarding: regional overlay on the shared brief" });
+    audit({ actorId: user.id, action: "brief.created", objectType: "brief", objectId: overlay.id, after: { series: overlay.series, kind: "overlay", region: overlay.region, parentId: shared.id }, rationale: "Onboarding: regional overlay on the shared product specs" });
     return overlay;
   },
   saveBrief: async ({ params, body, user }) => {
@@ -380,7 +396,7 @@ export const handlers: Handlers = {
     if (b.kind === "overlay") {
       for (const k of Object.keys(values) as BriefFieldKey[]) {
         if (JSON.stringify(values[k]) === JSON.stringify(shared.values[k])) delete values[k];
-        else if (!body.reasons[k] && !b.meta[k]?.reason) throw new ApiError(400, `Say why ${briefFieldLabel[k].toLowerCase()} differs from the shared brief.`);
+        else if (!body.reasons[k] && !b.meta[k]?.reason) throw new ApiError(400, `Say why ${briefFieldLabel[k].toLowerCase()} differs from the shared product specs.`);
       }
     }
     const current = resolveBrief(d, b.series, b.ownerId);
@@ -414,7 +430,7 @@ export const handlers: Handlers = {
         objectId: b.id,
         before,
         after: { ...Object.fromEntries(changedFields.map((k) => [k, b.values[k as BriefFieldKey] ?? "(shared value)"])), confirmed: body.confirm ?? [] },
-        rationale: Object.values(body.reasons).filter(Boolean).join(" · ") || (body.confirm?.length ? "Confirmed pre-filled answers" : "Brief edited"),
+        rationale: Object.values(body.reasons).filter(Boolean).join(" · ") || (body.confirm?.length ? "Confirmed pre-filled answers" : "Product specs edited"),
       });
     }
     // Impact: one new-version proposal per affected requirement, never a silent edit.
@@ -423,8 +439,8 @@ export const handlers: Handlers = {
       if (i.proposalId === null && i.changes.length) {
         const r = d.requirements.find((x) => x.id === i.requirementId)!;
         const [p] = saveProposals(d, [{ objectType: "requirement", objectId: r.id, source: "brief_change", kind: "new_version", summary: i.summary, changes: i.changes, citations: [] }]);
-        audit({ actorId: "agent:impact", action: "proposal.created", objectType: "requirement", objectId: r.id, after: { proposalId: p.id, fields: i.fields }, rationale: `Brief ${b.id} changed` });
-        if (r.ownerId !== user.id) notify({ userId: r.ownerId, kind: "alert", title: "A brief change affects your requirement", body: `${r.id}: ${i.summary}`, link: `/requirements/${r.id}`, actorId: "agent:impact" });
+        audit({ actorId: "agent:impact", action: "proposal.created", objectType: "requirement", objectId: r.id, after: { proposalId: p.id, fields: i.fields }, rationale: `Product specs ${b.id} changed` });
+        if (r.ownerId !== user.id) notify({ userId: r.ownerId, kind: "alert", title: "A product specs change affects your requirement", body: `${r.id}: ${i.summary}`, link: `/requirements/${r.id}`, actorId: "agent:impact" });
         created.push({ ...i, proposalId: p.id });
       } else created.push(i);
     }
@@ -441,7 +457,7 @@ export const handlers: Handlers = {
     const b = briefById(d, params.id);
     assertBriefEditor(user, b);
     const current = resolveBrief(d, b.series, b.ownerId);
-    if (!current) throw new ApiError(409, "The shared brief is incomplete; fill it before extracting a regional overlay.");
+    if (!current) throw new ApiError(409, "The shared product specs are incomplete; fill them in before extracting a regional overlay.");
     const drafts = extractFromDoc(body.text, current.values, b.id);
     const proposals = saveProposals(d, drafts);
     audit({ actorId: "agent:brief_extractor", action: "proposal.created", objectType: "brief", objectId: b.id, after: { count: proposals.length, fields: drafts.map((p) => p.changes[0].field) }, rationale: "Extracted from a pasted strategy doc" });
@@ -456,7 +472,7 @@ export const handlers: Handlers = {
   },
   resolveBriefConflict: ({ params, body, user }) => {
     const d = db();
-    if (user.role !== "head") throw new ApiError(403, "Only the head of product line resolves brief conflicts.");
+    if (user.role !== "head") throw new ApiError(403, "Only the head of product line resolves product specs conflicts.");
     const o = briefById(d, params.id);
     const field = BriefFieldKeys.parse(params.field);
     if (o.kind !== "overlay" || o.values[field] === undefined) throw new ApiError(404, `No regional difference on ${field}.`);
@@ -470,7 +486,7 @@ export const handlers: Handlers = {
     o.version += 1;
     touch(o);
     audit({ actorId: user.id, action: "brief.conflict_resolved", objectType: "brief", objectId: o.id, before: { [field]: before }, after: { resolution: body.resolution, field }, rationale: body.rationale });
-    notify({ userId: o.ownerId, kind: "escalation", title: `Brief difference ${body.resolution === "align" ? "aligned" : "accepted as regional"}`, body: `${briefFieldLabel[field]}: ${body.rationale}`, link: "/brief", actorId: user.id });
+    notify({ userId: o.ownerId, kind: "escalation", title: `Product specs difference ${body.resolution === "align" ? "aligned" : "accepted as regional"}`, body: `${briefFieldLabel[field]}: ${body.rationale}`, link: "/brief", actorId: user.id });
     return o;
   },
   users: () => db().users,
@@ -520,7 +536,9 @@ export const handlers: Handlers = {
   refresh: ({ body, user }) => {
     const d = db();
     const startedAt = now();
-    const fresh = refreshPool.filter((spec, i) => !d.signals.some((s) => s.id === `SIG-REFRESH-${i}`)).map((spec) => ({ spec, i: refreshPool.indexOf(spec) }));
+    const pending = refreshPool.map((spec, i) => ({ spec, i })).filter(({ i }) => !d.signals.some((s) => s.id === `SIG-REFRESH-${i}`));
+    const batch = Math.min(...pending.map(({ spec }) => spec.batch ?? 1));
+    const fresh = pending.filter(({ spec }) => (spec.batch ?? 1) === batch);
     const added: Signal[] = [];
     let notes = 0;
     for (const { spec, i } of fresh) {
@@ -536,6 +554,7 @@ export const handlers: Handlers = {
       });
       s.status = c ? "clustered" : "new";
       d.signals.push(s);
+      d.sourceRecords.push(webSnapshotRecord(s));
       added.push(s);
       if (c) {
         c.signalIds.push(s.id);
@@ -546,29 +565,42 @@ export const handlers: Handlers = {
           notify({ userId: uid, kind: "new_signals", title: "New signal", body: `${s.summary} → ${c.id}`, link: `/cases/${c.id}`, actorId: "agent:clusterer" });
           notes++;
         }
-        if (s.kind === "competitor_fact" && s.metric) {
-          const alertId = nextId("AL-", d.alerts);
-          d.alerts.push({
-            id: alertId,
-            ownerId: c.ownerId,
-            caseId: c.id,
-            requirementId: null,
-            verdict: "raises_the_bar",
-            title: `${s.competitor}: ${s.summary}`,
-            detail: `New competitor fact (trust ${s.trust}) may raise the bar for ${c.id}. Today: ${c.figures.equipmentToday}.`,
-            signalIds: [s.id],
-            status: "open",
-            createdAt: now(),
-          });
-          audit({ actorId: "agent:monitor", action: "alert.raised", objectType: "case", objectId: c.id, after: { alertId, verdict: "raises_the_bar" } });
-          notify({ userId: c.ownerId, kind: "alert", title: "Competitor raises the bar", body: s.summary, link: `/cases/${c.id}`, actorId: "agent:monitor" });
-          notes++;
-        }
       }
     }
+    const runId = nextId("RUN-live-", d.agentRuns, 2);
+    audit({ actorId: "agent:fetcher", action: "signals.fetched", objectType: "signal", objectId: runId, after: { newSignals: added.length }, rationale: `Refresh by ${user.id}` });
+
+    // Impact: every competitor fact with a metric is matched against targets across the portfolio.
+    const facts = added.filter((s) => s.kind === "competitor_fact" && s.metric);
+    const notesBefore = d.notifications.length;
+    const ripples = facts.map((s) => assessFact(d, s, runId)).filter((r): r is NonNullable<typeof r> => !!r);
+    notes += d.notifications.length - notesBefore;
+    const active = ripples.filter((r) => r.status === "active");
+    const affected = active.flatMap((r) => r.items);
+    const seriesOf = (rows: string[]) => new Set(rows.map((x) => (x === "G60_CN" ? "G60" : x)));
+    const rowsOf = (rp: (typeof ripples)[number]) => [...new Set(rp.items.flatMap((i) => [i.row, ...i.alsoRows]))];
+    const steps = [
+      { name: "Fetch", status: "ok" as const, detail: added.length ? `${added.length} new records from ${new Set(added.map((s) => s.sourceName)).size} sources (deduped by URL and content hash)` : "No new records: all URLs already seen" },
+      { name: "Classify", status: added.length ? ("ok" as const) : ("skipped" as const), detail: `${added.length} signals mapped onto the fixed taxonomy (${WEB_CLASSIFIER.promptVersion}, scripted in the demo)` },
+      {
+        name: "Gate",
+        status: added.length ? ("ok" as const) : ("skipped" as const),
+        detail: `${added.length} passed (quote in stored snapshot, dated); ${facts.filter((s) => s.trust === "D" || s.trust === "E").length} low-trust competitor facts → watch list only`,
+      },
+      { name: "Match metrics", status: facts.length ? ("ok" as const) : ("skipped" as const), detail: facts.length ? `${facts.length} competitor facts with a metric matched against ${ripples.reduce((n, r) => n + r.items.length, 0)} requirement targets` : "No competitor fact with a metric" },
+      {
+        name: "Assess impact",
+        status: ripples.length ? ("ok" as const) : ("skipped" as const),
+        detail: active.length
+          ? `${affected.length} items in ${seriesOf(active.flatMap(rowsOf)).size} series: ${["behind", "at_par", "still_ahead", "not_comparable"].map((v) => `${affected.filter((i) => i.verdict === v).length} ${v.replace("_", " ")}`).join(", ")}`
+          : ripples.length
+            ? "Low-trust facts only: listed on the watch list"
+            : "Nothing affected",
+      },
+    ];
     const run = {
-      id: nextId("RUN-live-", d.agentRuns, 2),
-      agent: "customer_public" as const,
+      id: runId,
+      agent: "competitor" as const,
       series: body.series,
       startedAt,
       endedAt: now(),
@@ -578,10 +610,22 @@ export const handlers: Handlers = {
       newSignals: added.length,
       llmCostUsd: Math.round((0.3 + added.length * 0.08) * 100) / 100,
       note: added.length ? `Watchlist run triggered by ${user.name}` : "No new findings: all URLs already seen (dedupe by URL and content hash)",
+      steps,
+      rippleId: active[0]?.id ?? null,
     };
     d.agentRuns.push(run);
-    audit({ actorId: "agent:fetcher", action: "signals.fetched", objectType: "signal", objectId: run.id, after: { newSignals: added.length }, rationale: `Refresh by ${user.id}` });
-    return { run, signals: added, notifications: notes };
+    return {
+      run,
+      signals: added,
+      notifications: notes,
+      ripples: ripples.map((rp) => ({
+        id: rp.id,
+        status: rp.status,
+        items: rp.items.length,
+        rows: rowsOf(rp).length,
+        summary: `${rp.fact.competitor} ${rp.fact.value} ${rp.fact.unit} ${rp.fact.cycle} affects ${rp.items.length} items in ${seriesOf(rowsOf(rp)).size} series${rp.status === "watch" ? " (watch list only)" : ""}`,
+      })),
+    };
   },
   quarantine: () => db().quarantine,
 
@@ -596,6 +640,14 @@ export const handlers: Handlers = {
     ),
   createCase: ({ body, user }) => {
     const d = db();
+    const picked = d.signals.filter((s) => body.signalIds.includes(s.id));
+    if (!picked.length && (!body.topicId || !body.aspectGroup)) throw new ApiError(400, "A case started by hand needs a topic and an aspect of the fixed taxonomy.");
+    const topicId = picked.length ? mostFrequentTopic(picked) : body.topicId!;
+    const topic = (taxonomyData as TaxonomyResponse).topics.find((t) => t.id === topicId);
+    if (!picked.length && !topic) throw new ApiError(400, `${body.topicId} is not a topic of the fixed taxonomy.`);
+    // The car area always follows from the topic (signals without a topic keep their own area).
+    const carArea: Case["carArea"] = topic?.carArea ?? picked[0]?.carArea ?? "quality_materials";
+    const aspectGroup = picked.length ? (picked.find((s) => s.topicId === topicId)?.aspectGroup ?? picked[0].aspectGroup) : body.aspectGroup!;
     const prefix = `CASE-${body.series}-${body.scope === "CN" ? "CN-" : ""}`;
     const id = nextId(prefix, d.cases.filter((c) => (body.scope === "CN" ? c.id.includes("-CN-") : !c.id.includes("-CN-"))));
     const c: Case = {
@@ -612,14 +664,15 @@ export const handlers: Handlers = {
       state: "new",
       outcome: null,
       markets: [],
-      carArea: body.carArea,
+      carArea,
       type: body.type,
       changeDepth: body.changeDepth,
-      featureName: body.title,
+      featureName: topic?.shortLabel ?? body.title,
       highlights: [body.summary],
-      topicId: mostFrequentTopic(d.signals.filter((s) => body.signalIds.includes(s.id))),
+      topicId,
+      aspectGroup,
       stances: [],
-      bodyMd: `## Problem\n\n${body.summary}\n\n## Who is affected\n\n_To fill._\n\n## Evidence summary\n\n${body.signalIds.length} signals selected on the radar.\n\n## Today's car\n\n_To fill._\n\n## Competitors\n\n_To fill._\n\n## Brand fit\n\n_AI proposal pending._\n\n## Options considered\n\n_None yet._\n\n## Decision log\n\n- ${now().slice(0, 10)} · Case opened by ${user.name}: ${body.rationale}`,
+      bodyMd: `## Problem\n\n${body.summary}\n\n## Who is affected\n\n_To fill._\n\n## Evidence summary\n\n${body.signalIds.length ? `${body.signalIds.length} signals selected on the radar.` : "_Started by hand. Add evidence: files, links or notes._"}\n\n## Today's car\n\n_To fill._\n\n## Competitors\n\n_To fill._\n\n## Brand fit\n\n_AI proposal pending._\n\n## Options considered\n\n_None yet._\n\n## Decision log\n\n- ${now().slice(0, 10)} · Case opened by ${user.name}: ${body.rationale}`,
       bodyVersion: 1,
       signalIds: body.signalIds,
       figures: { perMarket: [], equipmentToday: "To check against the option list", competitorOffer: [], trend: "" },
@@ -650,6 +703,63 @@ export const handlers: Handlers = {
     d.clusters.push({ id: `CL-${id}`, label: c.title, series: c.series, carArea: c.carArea, size: c.signalIds.length, sentiment: 0, markets: {}, caseId: id, signalIds: c.signalIds });
     audit({ actorId: user.id, action: "case.created", objectType: "case", objectId: id, after: { title: c.title, signals: c.signalIds.length }, rationale: body.rationale });
     return c;
+  },
+  addCaseEvidence: ({ params, body, user }) => {
+    const d = db();
+    const c = findCase(d, params.id);
+    assertCaseEditor(user, c);
+    const severity = { complaint: "difficult_to_use", wish: "wish" } as Partial<Record<Signal["kind"], Signal["severity"]>>;
+    const sourceType = { csv_row: "pm_upload", link: "pm_link", note: "pm_note" } as const;
+    // Trust: a PM's file is first-hand data (C), a link is unverified web (D), a note is an assumption (E).
+    const trust = { csv_row: "C", link: "D", note: "E" } as const;
+    const host = (url?: string) => {
+      try {
+        return url ? new URL(url).hostname.replace(/^www\./, "") : undefined;
+      } catch {
+        return undefined;
+      }
+    };
+    const added: Signal[] = body.items.map((it, i) => {
+      const s: Signal = {
+        id: nextId("SIG-PM-", d.signals),
+        kind: it.kind,
+        severity: severity[it.kind] ?? "none",
+        agent: "pm",
+        sourceType: sourceType[it.type],
+        sourceName: it.type === "csv_row" ? (it.source ?? "Uploaded file") : it.type === "link" ? (host(it.url) ?? "Link") : user.name,
+        trust: trust[it.type],
+        url: it.url || undefined,
+        recordRef: `pm:${it.type === "csv_row" ? `${it.source ?? "upload"}#row${i + 1}` : it.type}@${nextId("SIG-PM-", d.signals)}`,
+        publishedAt: now(),
+        fetchedAt: now(),
+        series: c.series,
+        vehicleRole: "current",
+        powertrain: "unknown",
+        market: it.market,
+        marketBasis: it.market === "unknown" ? "unknown" : "stated",
+        carArea: c.carArea,
+        topicId: c.topicId,
+        aspectGroup: c.aspectGroup ?? null,
+        featureHint: c.featureName,
+        summary: it.title?.trim() || it.text.slice(0, 140),
+        quote: it.text,
+        language: "en",
+        audience: it.type === "link" ? "public" : "owner",
+        caseId: c.id,
+        status: "clustered",
+        classification: { method: "manual", label: `Added by ${user.name}` },
+        synthetic: false,
+      };
+      // The raw text is kept as the signal's source record, so the quote can be checked like any other.
+      d.sourceRecords.push({ ref: s.recordRef!, sourceName: s.sourceName, url: s.url, text: it.text, sha256: sha256(it.text), fetchedAt: s.fetchedAt, synthetic: false });
+      d.signals.push(s);
+      c.signalIds.push(s.id);
+      return s;
+    });
+    recomputeFigures(d, c);
+    touch(c);
+    audit({ actorId: user.id, action: "case.evidence_added", objectType: "case", objectId: c.id, after: { signals: added.map((s) => s.id) }, rationale: body.rationale });
+    return { case: c, added };
   },
   caseBundle: ({ params }) => {
     const d = db();
@@ -685,7 +795,17 @@ export const handlers: Handlers = {
     if (body.patch.bodyMd !== undefined) c.bodyVersion += 1;
     if (body.patch.brandFit) c.factors.brand_fit = body.patch.brandFit.value;
     touch(c);
-    audit({ actorId: user.id, action: onlyWatch ? "case.watch_changed" : "case.edited", objectType: "case", objectId: c.id, before, after: body.patch, rationale: body.rationale });
+    const rankChanging = body.patch.manualRank !== undefined || body.patch.brandFit !== undefined;
+    audit({
+      actorId: user.id,
+      action: onlyWatch ? "case.watch_changed" : "case.edited",
+      objectType: "case",
+      objectId: c.id,
+      before,
+      after: body.patch,
+      rationale: body.rationale,
+      scoreSnapshot: rankChanging ? scoreSnapshotNow(d, c.id, profileOf(d, user.id)) : undefined,
+    });
     return c;
   },
   transitionCase: ({ params, body, user }) => {
@@ -771,7 +891,16 @@ export const handlers: Handlers = {
     }
     c.bodyMd = c.bodyMd.replace("## Decision log", `## Decision log\n\n- ${now().slice(0, 10)} · ${user.name}: ${body.action} (${body.rationale})`).replace("\n\n_No decisions yet._", "");
     touch(c);
-    audit({ actorId: user.id, action: c.state === "decided" && !stateFor[body.action] ? "case.decided" : "case.state_changed", objectType: "case", objectId: c.id, before, after: { state: c.state, outcome: c.outcome, mergedInto: c.mergedInto ?? undefined }, rationale: body.rationale });
+    audit({
+      actorId: user.id,
+      action: c.state === "decided" && !stateFor[body.action] ? "case.decided" : "case.state_changed",
+      objectType: "case",
+      objectId: c.id,
+      before,
+      after: { state: c.state, outcome: c.outcome, mergedInto: c.mergedInto ?? undefined },
+      rationale: body.rationale,
+      scoreSnapshot: body.action === "confirm" ? scoreSnapshotNow(d, c.id, profileOf(d, user.id)) : undefined,
+    });
     return c;
   },
   createQuestion: ({ params, body, user }) => {
@@ -819,7 +948,7 @@ export const handlers: Handlers = {
     assertCanDraft(user, c);
     const before = stanceOf(c, user.id);
     for (const k of Object.keys(body.overrides) as BriefFieldKey[])
-      if ((body.overrides as Record<string, unknown>)[k] !== undefined && !body.overrideReasons[k]) throw new ApiError(400, `Say why this case differs from your brief (${briefFieldLabel[k].toLowerCase()}).`);
+      if ((body.overrides as Record<string, unknown>)[k] !== undefined && !body.overrideReasons[k]) throw new ApiError(400, `Say why this case differs from your product specs (${briefFieldLabel[k].toLowerCase()}).`);
     const stance = { ...body, authorId: user.id, pendingShape: before?.pendingShape ?? [], updatedAt: now() };
     c.stances = [...c.stances.filter((s) => s.authorId !== user.id), stance];
     const parts = [
@@ -829,7 +958,7 @@ export const handlers: Handlers = {
       ...stance.inside.map((x) => x.text),
     ].filter(Boolean);
     c.context.pmInputs = c.context.pmInputs.filter((i) => i.ref !== `stance-${user.id}`);
-    c.context.pmInputs.push({ kind: "note", label: `${user.name}'s stance`, detail: parts.join(" · ") || "No changes to the brief", at: now(), ref: `stance-${user.id}` });
+    c.context.pmInputs.push({ kind: "note", label: `${user.name}'s context`, detail: parts.join(" · ") || "No changes to the product specs", at: now(), ref: `stance-${user.id}` });
     touch(c);
     audit({
       actorId: user.id,
@@ -838,7 +967,7 @@ export const handlers: Handlers = {
       objectId: c.id,
       before: before ? { ambition: before.ambition, overrides: before.overrides } : undefined,
       after: { ambition: stance.ambition, overrides: stance.overrides, takes: stance.evidenceTakes.length, inside: stance.inside.length },
-      rationale: Object.values(stance.overrideReasons).filter(Boolean).join(" · ") || "Stance saved",
+      rationale: Object.values(stance.overrideReasons).filter(Boolean).join(" · ") || "Context saved",
     });
     const message: ChatMessage = {
       id: nextId("MSG-", d.messages),
@@ -988,11 +1117,17 @@ export const handlers: Handlers = {
     assertReqEditor(user, r);
     const before: Record<string, unknown> = {};
     for (const k of Object.keys(body.patch) as (keyof typeof body.patch)[]) before[k] = structuredClone(r[k]);
-    const next = { ...snapshotOf(r), ...body.patch } as RequirementSnapshot;
-    if (body.patch.description !== undefined) next.descriptionParts = sentences(body.patch.description);
-    next.provenance = retagEdits(snapshotOf(r), next, body.rationale);
     audit({ actorId: user.id, action: "requirement.edited", objectType: "requirement", objectId: r.id, before, after: body.patch, rationale: body.rationale });
-    if (body.patch.manualRank !== undefined) r.manualRank = body.patch.manualRank;
+    // Classification and the argument sheet live outside the versioned snapshot.
+    const { manualRank, carArea, changeDepth, argumentMd, ...versioned } = body.patch;
+    if (manualRank !== undefined) r.manualRank = manualRank;
+    if (carArea !== undefined) r.carArea = carArea;
+    if (changeDepth !== undefined) r.changeDepth = changeDepth;
+    if (argumentMd !== undefined) r.argumentMd = argumentMd;
+    if (!Object.keys(versioned).length) return touch(r);
+    const next = { ...snapshotOf(r), ...versioned } as RequirementSnapshot;
+    if (versioned.description !== undefined) next.descriptionParts = sentences(versioned.description);
+    next.provenance = retagEdits(snapshotOf(r), next, body.rationale);
     applyVersion(d, r, RequirementSnapshot.parse(next), "edit", user.id, body.rationale);
     maybeLearnCost(d, user);
     return r;
@@ -1104,7 +1239,16 @@ export const handlers: Handlers = {
         break;
     }
     touch(r);
-    audit({ actorId: user.id, action: "requirement.status_changed", objectType: "requirement", objectId: r.id, before: { status: before, costSize: r.cost.size }, after: { status: r.status, ...(openIssues && { openIssues }) }, rationale: body.rationale });
+    audit({
+      actorId: user.id,
+      action: "requirement.status_changed",
+      objectType: "requirement",
+      objectId: r.id,
+      before: { status: before, costSize: r.cost.size },
+      after: { status: r.status, ...(openIssues && { openIssues }) },
+      rationale: body.rationale,
+      scoreSnapshot: body.action === "sign_off" || body.action === "approve" ? scoreSnapshotNow(d, r.caseId, profileOf(d, user.id)) : undefined,
+    });
     if (body.action === "reject") maybeLearnCost(d, user);
     return r;
   },
@@ -1434,6 +1578,7 @@ export const handlers: Handlers = {
     d.messages.push(reply);
     return { messages: [userMsg, reply], proposals };
   },
+  argusAsk: ({ body, user }) => argusReply(db(), body, user, now()),
   decideProposal: ({ params, body, user }) => {
     const d = db();
     const p = must(d.proposals.find((x) => x.id === params.id), "Proposal");
@@ -1473,8 +1618,9 @@ export const handlers: Handlers = {
       const r = findReq(d, p.objectId);
       assertReqEditor(user, r);
       const fb = d.feedback.find((f) => f.proposalId === p.id);
-      applyVersion(d, r, RequirementSnapshot.parse(p.changes[0].after), p.source === "brief_change" ? "brief_change" : "feedback", user.id, body.rationale ?? p.summary, fb?.id);
+      applyVersion(d, r, RequirementSnapshot.parse(p.changes[0].after), p.source === "brief_change" ? "brief_change" : p.source === "monitor" ? "ripple" : "feedback", user.id, body.rationale ?? p.summary, fb?.id);
       if (fb) fb.resultingVersion = r.version;
+      if (p.source === "monitor") resetSignOff(d, r, user, body.rationale ?? p.summary);
       p.status = "accepted";
     } else {
       const target = p.objectType === "case" ? findCase(d, p.objectId) : findReq(d, p.objectId);
@@ -1509,6 +1655,14 @@ export const handlers: Handlers = {
       }
       if ("context" in target) target.context.pmInputs.push({ kind: "diff", label: "AI proposal accepted", detail: p.summary, at: now(), ref: p.id });
       touch(target);
+      if (p.source === "monitor" && p.objectType === "requirement" && p.kind === "field") {
+        // A competitor-driven change is a new version of the same requirement, with its sign-off reset.
+        const r = target as Requirement;
+        r.version += 1;
+        d.requirementVersions.push({ requirementId: r.id, version: r.version, snapshot: snapshotOf(r), cause: "ripple", rationale: body.rationale ?? p.summary, createdAt: now(), createdBy: user.id });
+        audit({ actorId: user.id, action: "requirement.version_created", objectType: "requirement", objectId: r.id, before: { version: r.version - 1 }, after: { version: r.version, cause: "ripple", change: p.summary }, rationale: body.rationale ?? p.summary });
+        resetSignOff(d, r, user, p.summary);
+      }
       p.status = "accepted";
     }
     p.decidedBy = user.id;
@@ -1615,5 +1769,52 @@ export const handlers: Handlers = {
   reset: () => {
     resetStore();
     return { ok: true as const };
+  },
+
+  // Trace replay
+  requirementReplay: ({ params, user }) => {
+    const d = db();
+    const r = findReq(d, params.id);
+    audit({ actorId: user.id, action: "requirement.replay_viewed", objectType: "requirement", objectId: r.id });
+    return buildReplay(d, r);
+  },
+
+  // Competitor ripple
+  ripples: () => db().ripples,
+  ripple: ({ params }) => {
+    const d = db();
+    return { ripple: must(d.ripples.find((r) => r.id === params.id), `Ripple ${params.id}`), conversions: d.conversions, settings: d.monitorSettings };
+  },
+  decideRippleItem: ({ params, body, user }) => {
+    const d = db();
+    const ripple = must(d.ripples.find((r) => r.id === params.id), `Ripple ${params.id}`);
+    const item = must(ripple.items.find((i) => i.id === params.itemId), `Item ${params.itemId}`);
+    const proposal = decideItem(d, user, ripple, item, body);
+    return { ripple, proposal };
+  },
+  conversions: () => db().conversions,
+  saveConversion: ({ params, body, user }) => {
+    const d = db();
+    if (user.role !== "head") throw new ApiError(403, "Only the head of product line changes the team's conversion factor. Try another factor on the ripple screen instead.");
+    const c = must(d.conversions.find((x) => x.id === params.id), `Conversion ${params.id}`);
+    if (body.factor < c.range[0] || body.factor > c.range[1]) throw new ApiError(400, `Factor ${body.factor} is outside the stated range ${c.range[0]}–${c.range[1]}. Widen the range with a source first.`);
+    const before = c.factor;
+    c.factor = body.factor;
+    c.updatedAt = now();
+    c.updatedBy = user.id;
+    reassess(d);
+    audit({ actorId: user.id, action: "conversion.updated", objectType: "settings", objectId: c.id, before: { factor: before }, after: { factor: c.factor, isAssumption: c.isAssumption }, rationale: body.rationale });
+    return c;
+  },
+  monitorSettings: () => db().monitorSettings,
+  saveMonitorSettings: ({ body, user }) => {
+    const d = db();
+    const before = { ...d.monitorSettings };
+    if (body.muteThresholdPct !== undefined) d.monitorSettings.muteThresholdPct = body.muteThresholdPct;
+    if (body.atParTolerancePct !== undefined) d.monitorSettings.atParTolerancePct = body.atParTolerancePct;
+    d.monitorSettings.updatedAt = now();
+    d.monitorSettings.updatedBy = user.id;
+    audit({ actorId: user.id, action: "settings.updated", objectType: "settings", objectId: "monitor", before: { muteThresholdPct: before.muteThresholdPct, atParTolerancePct: before.atParTolerancePct }, after: { muteThresholdPct: d.monitorSettings.muteThresholdPct, atParTolerancePct: d.monitorSettings.atParTolerancePct }, rationale: body.rationale });
+    return d.monitorSettings;
   },
 };

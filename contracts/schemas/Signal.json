@@ -33,7 +33,8 @@
         "competitor",
         "customer_public",
         "trends",
-        "innovation_scout"
+        "innovation_scout",
+        "pm"
       ]
     },
     "sourceType": {
@@ -50,7 +51,10 @@
         "news",
         "competitor_official",
         "trend_report",
-        "trade_fair"
+        "trade_fair",
+        "pm_upload",
+        "pm_link",
+        "pm_note"
       ]
     },
     "sourceName": {
@@ -250,6 +254,32 @@
         "unclustered",
         "quarantined"
       ]
+    },
+    "classification": {
+      "type": "object",
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": [
+            "bmw_label",
+            "llm",
+            "manual"
+          ]
+        },
+        "label": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "promptVersion": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "method"
+      ],
+      "additionalProperties": false
     },
     "synthetic": {
       "type": "boolean"

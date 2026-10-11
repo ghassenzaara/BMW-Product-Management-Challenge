@@ -24,7 +24,7 @@ export function FeedbackDialog({ r, open, onOpenChange }: { r: Requirement; open
           <DialogTitle>Feedback on {r.id}</DialogTitle>
           <DialogDescription>Your response is context too: the drafter proposes the next version, you accept or reject it.</DialogDescription>
         </DialogHeader>
-        <div className="space-y-3">
+        <div className="space-y-4">
           <div className="space-y-1.5">
             <Label>From</Label>
             <Select value={from} onValueChange={(v) => setFrom(v as Addressee)}>
@@ -48,7 +48,7 @@ export function FeedbackDialog({ r, open, onOpenChange }: { r: Requirement; open
             <Label>Your response</Label>
             <ToggleGroup type="single" variant="outline" size="sm" value={response} onValueChange={(v) => v && setResponse(v as FeedbackResponse)}>
               {(["accept", "compromise", "push_back"] as const).map((x) => (
-                <ToggleGroupItem key={x} value={x} className="px-3 data-[state=on]:border-primary data-[state=on]:bg-primary/10 data-[state=on]:text-primary">
+                <ToggleGroupItem key={x} value={x} className="px-3">
                   {feedbackResponseLabel[x]}
                 </ToggleGroupItem>
               ))}

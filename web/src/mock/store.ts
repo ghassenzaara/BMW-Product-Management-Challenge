@@ -1,5 +1,5 @@
 import seed from "./fixtures/seed.json";
-import type { ActorType, AuditEvent, Dataset, Notification, ObjectType, RequirementCheck } from "@/contracts";
+import type { ActorType, AuditEvent, Dataset, Notification, ObjectType, RequirementCheck, ScoreSnapshot } from "@/contracts";
 
 /**
  * In-memory store behind the mock REST API. One process-wide instance
@@ -58,6 +58,7 @@ export function audit(e: {
   after?: unknown;
   rationale?: string;
   actorType?: ActorType;
+  scoreSnapshot?: ScoreSnapshot;
 }): AuditEvent {
   const d = db();
   const event: AuditEvent = {

@@ -15,20 +15,20 @@ export function CaseCard({ c, score, rank, dragging }: { c: Case; score?: number
       href={`/cases/${c.id}`}
       title={c.title}
       className={cn(
-        "block rounded-lg border bg-card p-3 text-left shadow-xs transition hover:border-primary/50 hover:shadow-sm",
-        dragging && "rotate-1 shadow-lg ring-2 ring-primary/40",
+        "block rounded-lg border bg-card p-3 text-left transition-colors duration-150 hover:border-border-strong",
+        dragging && "rotate-1 border-border-strong shadow-md",
         c.outcome === "rejected" && "opacity-60",
       )}
     >
       <div className="flex items-start gap-2">
         <span className="min-w-0 flex-1 text-sm leading-snug font-semibold">{c.shortTitle}</span>
         {c.newSignalCount > 0 && (
-          <span className="flex items-center gap-0.5 rounded bg-primary/10 px-1 text-[11px] text-primary" title="New signals">
+          <span className="flex items-center gap-0.5 rounded-full border border-border px-1.5 text-xs leading-5 font-semibold text-foreground tabular-nums before:mr-0.5 before:size-1.5 before:rounded-full before:bg-ember before:content-['']" title="New signals">
             <Sparkles className="size-3" />
             {c.newSignalCount}
           </span>
         )}
-        {c.marketConflict && c.state !== "decided" && <AlertTriangle className="size-3.5 shrink-0 text-amber-500" aria-label="Market conflict" />}
+        {c.marketConflict && c.state !== "decided" && <AlertTriangle className="size-3.5 shrink-0 text-warning" aria-label="Market conflict" />}
         {c.originCaseId && <GitBranch className="size-3.5 shrink-0 text-muted-foreground" aria-label="Linked case" />}
       </div>
       {c.outcome && (

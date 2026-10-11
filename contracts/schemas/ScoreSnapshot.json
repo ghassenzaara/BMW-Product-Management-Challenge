@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "caseId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "profileId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "profileName": {
+      "type": "string"
+    },
+    "profileVersion": {
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    },
+    "weights": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "enum": [
+          "customers",
+          "severity",
+          "satisfaction_gap",
+          "competitor_gap",
+          "market_volume",
+          "regression",
+          "trend",
+          "brand_fit"
+        ]
+      },
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "required": [
+        "customers",
+        "severity",
+        "satisfaction_gap",
+        "competitor_gap",
+        "market_volume",
+        "regression",
+        "trend",
+        "brand_fit"
+      ]
+    },
+    "factors": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "enum": [
+          "customers",
+          "severity",
+          "satisfaction_gap",
+          "competitor_gap",
+          "market_volume",
+          "regression",
+          "trend",
+          "brand_fit"
+        ]
+      },
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "required": [
+        "customers",
+        "severity",
+        "satisfaction_gap",
+        "competitor_gap",
+        "market_volume",
+        "regression",
+        "trend",
+        "brand_fit"
+      ]
+    },
+    "contributions": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "enum": [
+          "customers",
+          "severity",
+          "satisfaction_gap",
+          "competitor_gap",
+          "market_volume",
+          "regression",
+          "trend",
+          "brand_fit"
+        ]
+      },
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "required": [
+        "customers",
+        "severity",
+        "satisfaction_gap",
+        "competitor_gap",
+        "market_volume",
+        "regression",
+        "trend",
+        "brand_fit"
+      ]
+    },
+    "score": {
+      "type": "number"
+    },
+    "rank": {
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    },
+    "of": {
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    },
+    "at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "caseId",
+    "profileId",
+    "profileName",
+    "profileVersion",
+    "weights",
+    "factors",
+    "contributions",
+    "score",
+    "rank",
+    "of",
+    "at"
+  ],
+  "additionalProperties": false
+}

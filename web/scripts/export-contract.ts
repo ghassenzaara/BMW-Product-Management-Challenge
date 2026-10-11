@@ -76,7 +76,7 @@ for (const [name, schema] of named) components[name] ??= schemaOf(schema);
 const doc = {
   openapi: "3.1.0",
   info: {
-    title: "Requirement Studio API",
+    title: "Argon API",
     version: "0.1.0",
     description:
       "Contract between the UI and the backend. Source of truth: web/src/contracts (Zod). Regenerate with `npm run export-contract` in web/. Reference implementation (mock): web/src/mock.",

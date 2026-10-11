@@ -49,9 +49,9 @@ export function RequirementActionDialog({
       }}
     >
       {issues.length > 0 && (
-        <div className="space-y-1.5 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm dark:border-amber-800 dark:bg-amber-950/40">
+        <div className="space-y-2 rounded-lg border border-tone-amber-bd bg-tone-amber-bg px-4 py-3 text-sm">
           <p className="flex items-center gap-1.5 font-medium">
-            <TriangleAlert className="size-4 text-amber-600" />
+            <TriangleAlert className="size-4 text-warning" />
             The quality check found {red.length ? `${red.length} issue${red.length === 1 ? "" : "s"} to fix` : `${issues.length} point${issues.length === 1 ? "" : "s"} to review`}
           </p>
           <ul className="space-y-1 pl-1">

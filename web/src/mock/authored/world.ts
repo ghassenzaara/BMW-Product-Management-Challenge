@@ -1,6 +1,8 @@
 import type {
   Alert,
   Comment,
+  CycleConversion,
+  MonitorSettings,
   InnovationMeta,
   Notification,
   OpenQuestion,
@@ -33,6 +35,73 @@ export const requirementTags: Record<string, { sentences: AuthoredTag[]; scope: 
   "REQ-G60-CN-0003": { sentences: ["assumption", "brief.givens"], scope: "pm", release: "brief.givens", cost: "assumption" },
   "REQ-G70-0001": { sentences: ["evidence", "brief.givens"], scope: "brief.marketWeights", release: "brief.givens", cost: "pm" },
   "REQ-F70-0001": { sentences: ["evidence", "pm"], scope: "pm", release: "brief.givens", cost: "pm" },
+  "REQ-G60-0010": { sentences: ["evidence", "pm", "stance", "brief.givens"], scope: "brief.marketWeights", release: "brief.givens", cost: "assumption" },
+  "REQ-G70-0002": { sentences: ["pm", "assumption", "brief.givens"], scope: "brief.marketWeights", release: "brief.givens", cost: "assumption" },
+  "REQ-F70-0002": { sentences: ["assumption", "assumption"], scope: "pm", release: "brief.givens", cost: "assumption" },
+};
+
+/**
+ * Cycle conversions for the competitor ripple. No source in the repo gives a factor, so both rows
+ * are labelled team assumptions with a range; the PM sees the band and can try another factor.
+ */
+export const conversions: CycleConversion[] = [
+  {
+    id: "CONV-CLTC-WLTP",
+    from: "CLTC",
+    to: "WLTP",
+    factor: 0.85,
+    range: [0.8, 0.9],
+    source: "No published conversion between the cycles. Team rule of thumb: CLTC reads roughly 10–20% higher than WLTP for the same car. Assumption until engineering gives a measured value.",
+    isAssumption: true,
+    updatedAt: "2026-10-01T09:00:00Z",
+    updatedBy: "u-katrin",
+  },
+  {
+    id: "CONV-EPA-WLTP",
+    from: "EPA",
+    to: "WLTP",
+    factor: 1.12,
+    range: [1.08, 1.18],
+    source: "No published conversion. Team rule of thumb: EPA reads roughly 8–18% lower than WLTP. Assumption.",
+    isAssumption: true,
+    updatedAt: "2026-10-01T09:00:00Z",
+    updatedBy: "u-katrin",
+  },
+];
+
+export const monitorSettings: MonitorSettings = { muteThresholdPct: 3, atParTolerancePct: 3, updatedAt: "2026-10-01T09:00:00Z", updatedBy: "u-katrin" };
+
+/** Default weight profile before Katrin raised the competitor-gap weight (25.09.); replay snapshots before that date use it. */
+export const balancedV1Change = { at: "2026-09-25T09:00:00Z", field: "competitor_gap" as const, before: 0.3, after: 0.5, rationale: "Competitors move faster than our model cycle; the competitor gap counts more" };
+
+/**
+ * Life of the replay hero REQ-G60-0010 beyond the generic status path: v1 matched the A6 e-tron,
+ * engineering pushed back, v2 is what Gen6 delivers at SOP. The confirm score uses the default
+ * profile as it was then ("Balanced v1": competitor gap weighed less).
+ */
+export const heroStory = {
+  requirementId: "REQ-G60-0010",
+  v1: {
+    title: "The 5 Series successor reaches at least 760 km WLTP in the long-range BEV variant",
+    description:
+      "Business drivers say the i5 needs a charging stop too early on motorway trips. The long-range BEV variant of the successor reaches at least 760 km WLTP, matching the Audi A6 e-tron. All markets, next generation.",
+    target: "≥ 760 km WLTP",
+    value: 760,
+    at: "2026-09-12T11:00:00Z",
+  },
+  feedback: {
+    id: "FB-0001",
+    from: "engineering" as const,
+    text: "760 km needs the next cell generation; with the Gen6 cells at SOP we can commit to 690 km WLTP.",
+    response: "accept" as const,
+    pmRationale: "690 km plus faster charging beats waiting a generation; we close the gap with charging speed.",
+    at: "2026-09-19T09:00:00Z",
+  },
+  rationales: {
+    in_discussion: "Discussed with powertrain: 760 km depends on the cell generation",
+    pm_approved: "690 km WLTP agreed with engineering; charging speed covers the rest",
+    signed_off: "Fits the 5 Series plan; range target signed off for the next generation",
+  } as Record<string, string>,
 };
 
 export const requirementSpecs: ReqSpec[] = [
@@ -87,6 +156,40 @@ export const requirementSpecs: ReqSpec[] = [
     plannedFeatureId: "pf-g60-tailgate",
     createdAt: "2026-09-12T11:00:00Z",
     updatedAt: "2026-10-09T15:00:00Z",
+  },
+  {
+    id: "REQ-G60-0010",
+    caseId: "CASE-G60-0013",
+    series: "G60",
+    title: "The 5 Series successor reaches at least 690 km WLTP in the long-range BEV variant",
+    description:
+      "Business drivers say the i5 needs a charging stop too early on motorway trips. The long-range BEV variant of the successor reaches at least 690 km WLTP. Engineering can deliver 690 km with the Gen6 cells at SOP; 760 km needs the next cell generation. All markets, next generation.",
+    marketScope: "global",
+    variantOf: null,
+    status: "signed_off",
+    releaseTarget: "next_gen",
+    carArea: "range_charging",
+    changeDepth: "platform_powertrain",
+    metrics: [
+      {
+        id: "m1",
+        question: "WLTP range, long-range BEV variant",
+        target: "≥ 690 km WLTP",
+        unit: "km",
+        basis: "evidence",
+        benchmark: "Audi A6 e-tron 756 km · Mercedes CLA 792 km WLTP (illustrative)",
+        targetSpec: { key: "ev_range", comparator: "gte", value: 690, unit: "km", cycle: "WLTP", market: "global" },
+      },
+      { id: "m2", question: "Range 'not OK' verbatims after launch", target: "−50% vs. today", basis: "assumption" },
+    ],
+    acceptanceCriteria: ["The published WLTP figure of the long-range variant meets the target", "Must not degrade: rear-wheel-drive driving dynamics (protect list)"],
+    assumptions: ["Gen6 cells arrive in time for SOP (engineering, 18.09.)", "760 km WLTP only with the next cell generation"],
+    evidenceLevel: "medium",
+    cost: { size: "L", eurBand: "> €50M programme", source: "ai_estimate", note: "Battery package; engineering owns feasibility." },
+    ownerId: "u-lena",
+    plannedFeatureId: "pf-g60-range",
+    createdAt: "2026-09-12T11:00:00Z",
+    updatedAt: "2026-10-02T15:00:00Z",
   },
   {
     id: "REQ-G60-0009",
@@ -179,7 +282,15 @@ export const requirementSpecs: ReqSpec[] = [
     carArea: "range_charging",
     changeDepth: "platform_powertrain",
     metrics: [
-      { id: "m1", question: "CLTC range, long-range variant", target: "750 km", unit: "km", basis: "assumption", benchmark: "Xiaomi SU7 Max 800 km CLTC (B) · NIO ET7 next gen 850 km (E, announced)" },
+      {
+        id: "m1",
+        question: "CLTC range, long-range variant",
+        target: "750 km",
+        unit: "km",
+        basis: "assumption",
+        benchmark: "Zeekr 001 750 km CLTC (B) · NIO ET7 next gen 850 km (E, announced)",
+        targetSpec: { key: "ev_range", comparator: "gte", value: 750, unit: "km", cycle: "CLTC", market: "CN" },
+      },
     ],
     acceptanceCriteria: ["Homologated CLTC value"],
     assumptions: ["Battery roadmap not yet shared by engineering"],
@@ -211,6 +322,71 @@ export const requirementSpecs: ReqSpec[] = [
     plannedFeatureId: "pf-g70-mirror",
     createdAt: "2026-09-10T10:00:00Z",
     updatedAt: "2026-10-02T10:00:00Z",
+  },
+  {
+    id: "REQ-G70-0002",
+    caseId: "CASE-G70-0005",
+    series: "G70",
+    title: "The shared battery module gives the 5 and 7 Series at least 750 km WLTP",
+    description:
+      "One battery Baukasten for the 5 and 7 Series successors. The long-range variant reaches at least 750 km WLTP in both lines. All markets, next generation.",
+    marketScope: "global",
+    variantOf: null,
+    status: "pm_approved",
+    releaseTarget: "next_gen",
+    carArea: "range_charging",
+    changeDepth: "platform_powertrain",
+    metrics: [
+      {
+        id: "m1",
+        question: "WLTP range, long-range variant (G60 and G70)",
+        target: "≥ 750 km WLTP",
+        unit: "km",
+        basis: "assumption",
+        benchmark: "Mercedes EQS ~780 km WLTP (illustrative)",
+        targetSpec: { key: "ev_range", comparator: "gte", value: 750, unit: "km", cycle: "WLTP", market: "global" },
+      },
+    ],
+    acceptanceCriteria: ["Same module in G60 and G70", "The published WLTP figure meets the target in both lines"],
+    assumptions: ["The 7 Series package takes the larger module"],
+    evidenceLevel: "medium",
+    cost: { size: "L", eurBand: "> €50M programme (shared)", source: "ai_estimate", note: "Shared by two lines." },
+    ownerId: "u-daniel",
+    plannedFeatureId: null,
+    createdAt: "2026-09-16T10:00:00Z",
+    updatedAt: "2026-10-03T10:00:00Z",
+  },
+  {
+    id: "REQ-F70-0002",
+    caseId: "CASE-F70-0005",
+    series: "F70",
+    title: "A 1 Series BEV successor reaches at least 520 km WLTP (assumption)",
+    description:
+      "If the 1 Series successor gets a BEV variant, it reaches at least 520 km WLTP. The provided F70 data is ICE only, so this target rests on segment trends, not on customer records.",
+    marketScope: "global",
+    variantOf: null,
+    status: "draft",
+    releaseTarget: "next_gen",
+    carArea: "range_charging",
+    changeDepth: "platform_powertrain",
+    metrics: [
+      {
+        id: "m1",
+        question: "WLTP range, BEV variant",
+        target: "≥ 520 km WLTP",
+        unit: "km",
+        basis: "assumption",
+        benchmark: "Compact premium BEVs 450–550 km WLTP (trend report, illustrative)",
+        targetSpec: { key: "ev_range", comparator: "gte", value: 520, unit: "km", cycle: "WLTP", market: "global" },
+      },
+    ],
+    acceptanceCriteria: ["The published WLTP figure meets the target"],
+    assumptions: ["A BEV variant of the 1 Series successor is itself an assumption"],
+    evidenceLevel: "low",
+    cost: { size: "L", eurBand: "Platform decision", source: "ai_estimate", note: "Depends on the BEV decision." },
+    ownerId: "u-sofia",
+    plannedFeatureId: null,
+    createdAt: "2026-09-28T10:00:00Z",
   },
   {
     id: "REQ-F70-0001",
@@ -253,7 +429,7 @@ export const questions: OpenQuestion[] = [
   // China
   { id: "Q-0011", objectType: "case", objectId: "CASE-G60-CN-0001", addressee: "finance", contact: "Controlling China", question: "Margin impact of a China trim with ventilation and rear screen as standard?", why: "Decide between China trim and global upgrade.", status: "open", askedBy: "u-wei", createdAt: "2026-10-03T03:00:00Z", dueDate: "2026-10-17", fieldsAffected: ["cost"] },
   { id: "Q-0012", objectType: "case", objectId: "CASE-G60-CN-0001", addressee: "market_pm", contact: "Lena Hofmann (RoW)", question: "Would RoW accept the richer content as a global standard?", why: "One car vs China variant.", status: "answered", answer: "Not for Europe: value for money is already 7.36 and price would rise. A China-specific trim is fine for RoW.", answerSource: "chat", answeredAt: "2026-10-06T12:00:00Z", askedBy: "u-wei", createdAt: "2026-10-04T03:00:00Z", fieldsAffected: [] },
-  { id: "Q-0013", objectType: "case", objectId: "CASE-G60-CN-0003", addressee: "engineering", question: "Is 800 km CLTC feasible with the next-gen long-range battery?", why: "Parity with Xiaomi SU7 Max.", status: "open", askedBy: "u-wei", createdAt: "2026-10-01T03:00:00Z", dueDate: "2026-10-20", fieldsAffected: ["metrics"] },
+  { id: "Q-0013", objectType: "case", objectId: "CASE-G60-CN-0003", addressee: "engineering", question: "Is 800 km CLTC feasible with the next-gen long-range battery?", why: "A lead over Zeekr 001 (750 km CLTC) and the NIO announcement.", status: "open", askedBy: "u-wei", createdAt: "2026-10-01T03:00:00Z", dueDate: "2026-10-20", fieldsAffected: ["metrics"] },
   { id: "Q-0014", objectType: "case", objectId: "CASE-G60-0006", addressee: "market_pm", contact: "BMW NA product planning", question: "Would a dealer-fit compact spare satisfy US customers?", why: "US-only evidence; avoid a global change.", status: "open", askedBy: "u-lena", createdAt: "2026-10-07T08:00:00Z", dueDate: "2026-10-21", fieldsAffected: [] },
   { id: "Q-0015", objectType: "requirement", objectId: "REQ-G60-0004", addressee: "quality", question: "Current first-try success rate measured in field data?", why: "Baseline for the 95% target.", status: "answered", answer: "About 72% in the field sample (synthetic).", answerSource: "manual", answeredAt: "2026-09-20T10:00:00Z", askedBy: "u-lena", createdAt: "2026-09-13T10:00:00Z", fieldsAffected: ["metrics"] },
 ];
@@ -318,7 +494,7 @@ export const plans: VehiclePlan[] = [
       { id: "pf-g60-tailgate", carArea: "practicality", name: "Hands-free tailgate", today: "optional", todayDetail: "Travel package 7LK · €1,900", action: "improve", requirementIds: ["REQ-G60-0004"], release: "lci", protected: false, note: "Reliability fix in the mid-life update." },
       { id: "pf-g60-charging-tray", carArea: "connectivity_digital", name: "Wireless charging tray", today: "standard", todayDetail: "Standard", action: "improve", requirementIds: ["REQ-G60-0009"], release: "next_gen", protected: false, note: "Active cooling." },
       { id: "pf-g60-cooler", carArea: "interior_comfort", name: "Rear-console cooler (China)", today: "absent", todayDetail: "Not offered", action: "new", requirementIds: ["REQ-G60-CN-0002"], release: "next_gen", protected: false, note: "China market variant; shared module with 7 Series." },
-      { id: "pf-g60-range", carArea: "range_charging", name: "Electric range", today: "standard", todayDetail: "i5 eDrive40 WLTP 513–627 km", action: "improve", requirementIds: ["REQ-G60-CN-0003"], release: "next_gen", protected: false, note: "China CLTC target drafted; RoW target pending CASE-G60-0003." },
+      { id: "pf-g60-range", carArea: "range_charging", name: "Electric range", today: "standard", todayDetail: "i5 eDrive40 WLTP 513–627 km", action: "improve", requirementIds: ["REQ-G60-0010", "REQ-G60-CN-0003"], release: "next_gen", protected: false, note: "Global WLTP target signed off (REQ-G60-0010); China CLTC target drafted." },
       { id: "pf-g60-dc", carArea: "range_charging", name: "DC fast charging", today: "standard", todayDetail: "Up to 205 kW", action: "improve", requirementIds: [], release: "next_gen", protected: false, note: "Pending engineering answer (Q-0005)." },
       { id: "pf-g60-vent", carArea: "seats", name: "Front seat ventilation", today: "optional", todayDetail: "Comfort package 7VB · €2,750", action: "keep", requirementIds: [], release: "next_gen", protected: false, note: "China asks for standard (CASE-G60-CN-0001, escalation possible)." },
       { id: "pf-g60-massage", carArea: "seats", name: "Seat massage", today: "absent", todayDetail: "Not offered on 5 Series", action: "keep", requirementIds: [], release: "next_gen", protected: false, note: "Parked: low brand fit (CASE-G60-0007)." },
@@ -354,32 +530,13 @@ export const plans: VehiclePlan[] = [
   },
 ];
 
-/** Alerts reference web signals by the seed's deterministic id: SIG-<caseId>-W<index>. */
+/**
+ * Alerts reference web signals by the seed's deterministic id: SIG-<caseId>-W<index>.
+ * Competitor facts raise alerts only through a ripple, on requirements with a target (mock/ripple.ts);
+ * low-trust facts (D, E) only reach the watch list as an FYI. What stays here is evidence that
+ * contradicts a case direction.
+ */
 export const alerts: Alert[] = [
-  {
-    id: "AL-0001",
-    ownerId: "u-lena",
-    caseId: "CASE-G60-0003",
-    requirementId: null,
-    verdict: "raises_the_bar",
-    title: "Mercedes CLA: ~790 km WLTP and 320 kW raise the bar for the i5 successor",
-    detail: "The competitor agent found a trust-B competitor fact that beats today's i5 (WLTP 513–627 km, 205 kW). Your range options in CASE-G60-0003 may be outdated.",
-    signalIds: ["SIG-CASE-G60-0003-W0"],
-    status: "open",
-    createdAt: "2026-10-10T21:04:00Z",
-  },
-  {
-    id: "AL-0002",
-    ownerId: "u-wei",
-    caseId: "CASE-G60-CN-0003",
-    requirementId: "REQ-G60-CN-0003",
-    verdict: "raises_the_bar",
-    title: "Xiaomi SU7 Max at 800 km CLTC beats your 750 km target",
-    detail: "Your draft REQ-G60-CN-0003 targets 750 km CLTC. A trust-B fact shows 800 km on sale today; NIO announced 850 km (trust E, assumption).",
-    signalIds: ["SIG-CASE-G60-CN-0003-W0", "SIG-CASE-G60-CN-0003-W1"],
-    status: "open",
-    createdAt: "2026-10-10T22:30:00Z",
-  },
   {
     id: "AL-0003",
     ownerId: "u-lena",
@@ -404,11 +561,10 @@ export const comments: Comment[] = [
 ];
 
 export const notifications: Notification[] = [
-  { id: "N-0001", userId: "u-lena", kind: "alert", title: "Competitor raises the bar", body: "Mercedes CLA ~790 km WLTP vs your range case", link: "/cases/CASE-G60-0003", actorId: "agent:monitor", read: false, createdAt: "2026-10-10T21:04:00Z" },
   { id: "N-0002", userId: "u-lena", kind: "mention", title: "Jonas mentioned you", body: "Same pattern in F70 and G70. Let's make this one Baukasten requirement…", link: "/cases/CASE-G60-0001", actorId: "u-jonas", read: false, createdAt: "2026-10-09T15:20:00Z" },
   { id: "N-0003", userId: "u-lena", kind: "question_answered", title: "Engineering answered", body: "8 buttons fit the centre stack (CASE-G60-0001)", link: "/cases/CASE-G60-0001", actorId: "u-lena", read: true, createdAt: "2026-10-08T10:00:00Z" },
   { id: "N-0004", userId: "u-lena", kind: "new_signals", title: "4 new signals", body: "Luggage case gained 4 signals overnight", link: "/cases/CASE-G60-0011", actorId: "agent:clusterer", read: false, createdAt: "2026-10-11T05:00:00Z" },
-  { id: "N-0005", userId: "u-wei", kind: "alert", title: "Your CLTC target is outdated", body: "Xiaomi SU7 Max 800 km CLTC vs 750 km", link: "/requirements/REQ-G60-CN-0003", actorId: "agent:monitor", read: false, createdAt: "2026-10-10T22:30:00Z" },
+  { id: "N-0005", userId: "u-wei", kind: "fyi", title: "On the watch list: NIO announcement", body: "NIO ET7 next gen targets 850 km CLTC (announced, trust E)", link: "/requirements/REQ-G60-CN-0003", actorId: "agent:monitor", read: false, createdAt: "2026-10-10T22:30:00Z" },
   { id: "N-0006", userId: "u-wei", kind: "referral", title: "Daniel accepted your referral", body: "Rear-console cooler → CASE-G70-0004", link: "/cases/CASE-G70-0004", actorId: "u-daniel", read: true, createdAt: "2026-09-24T08:00:00Z" },
   { id: "N-0007", userId: "u-wei", kind: "mention", title: "Lena mentioned you", body: "For Europe this would push the price up…", link: "/cases/CASE-G60-CN-0001", actorId: "u-lena", read: true, createdAt: "2026-10-06T11:40:00Z" },
   { id: "N-0008", userId: "u-jonas", kind: "referral", title: "Sofia referred a case to you", body: "Touch screen operation on the 1 Series", link: "/inbox", actorId: "u-sofia", read: false, createdAt: "2026-10-08T09:00:00Z" },
@@ -455,9 +611,9 @@ export const chatSeeds: ChatSeed[] = [
     objectId: "CASE-G60-CN-0003",
     role: "assistant",
     content:
-      "On sale today: **Xiaomi SU7 Max 800 km CLTC** (trust B) [SIG-CASE-G60-CN-0003-W0]. Announced: NIO's next ET7 targets **850 km CLTC** (trust E, treat as an assumption) [SIG-CASE-G60-CN-0003-W1]. Your draft target of 750 km would sit below the on-sale benchmark. Note that the i5's published figures are **WLTP** (513–627 km); I don't mix cycles.",
+      "On sale today: **Zeekr 001 750 km CLTC** (trust B) [SIG-CASE-G60-CN-0003-W0]. Announced: NIO's next ET7 targets **850 km CLTC** (trust E, treat as an assumption) [SIG-CASE-G60-CN-0003-W1]. Your draft target of 750 km reaches parity with what is on sale, not a lead. Note that the i5's published figures are **WLTP** (513–627 km); I don't mix cycles.",
     citations: [
-      { ref: "SIG-CASE-G60-CN-0003-W0", label: "Xiaomi SU7 Max · CLTC" },
+      { ref: "SIG-CASE-G60-CN-0003-W0", label: "Zeekr 001 · CLTC" },
       { ref: "SIG-CASE-G60-CN-0003-W1", label: "NIO ET7 · announcement" },
     ],
     createdAt: "2026-10-10T23:00:06Z",
@@ -487,7 +643,8 @@ export const unclusteredSelectors: VerbatimSelector[] = [
 ];
 
 /** Signals that arrive when the PM clicks "Refresh now" (one mock fetch run). */
-export const refreshPool: (WebSignalSpec & { caseId: string | null })[] = [
+/** Batch 1 arrives on the first Refresh, batch 2 on the next one (a repeat fact for the mute rule). */
+export const refreshPool: (WebSignalSpec & { caseId: string | null; batch?: number })[] = [
   {
     caseId: "CASE-G60-0001",
     agent: "customer_public",
@@ -507,21 +664,60 @@ export const refreshPool: (WebSignalSpec & { caseId: string | null })[] = [
     reachUnit: "upvotes",
   },
   {
-    caseId: "CASE-G60-0003",
+    caseId: "CASE-G60-CN-0003",
     agent: "competitor",
     sourceType: "competitor_official",
-    sourceName: "Volvo Cars · ES90 product page",
-    url: "https://www.volvocars.com/",
+    sourceName: "Xiaomi · SU7 spec page",
+    url: "https://www.mi.com/",
     trust: "B",
     kind: "competitor_fact",
-    market: "EU",
+    market: "CN",
     marketBasis: "stated",
     audience: "public",
-    competitor: "Volvo ES90",
-    publishedAt: "2026-10-09",
-    summary: "Volvo ES90: ~700 km WLTP, 10–80% in about 20 min on 800 V (illustrative)",
-    quote: "Up to 700 km WLTP range and 10 to 80 percent charging in around 20 minutes.",
-    metric: { name: "WLTP range", value: 700, unit: "km", cycle: "WLTP" },
+    competitor: "Xiaomi SU7",
+    publishedAt: "2026-10-10",
+    summary: "Xiaomi SU7 (2027 model year): 800 km CLTC on the long-range trim (illustrative)",
+    quote: "CLTC range up to 800 km on the long-range version.",
+    metric: { name: "CLTC range", value: 800, unit: "km", cycle: "CLTC" },
+  },
+  {
+    caseId: "CASE-G60-CN-0003",
+    agent: "customer_public",
+    sourceType: "social",
+    sourceName: "Weibo · owner post",
+    url: "https://weibo.com/",
+    trust: "D",
+    kind: "competitor_fact",
+    market: "CN",
+    marketBasis: "inferred",
+    language: "zh",
+    audience: "owner",
+    competitor: "Zeekr 007",
+    publishedAt: "2026-10-10",
+    summary: "Owner claims 900 km CLTC on a Zeekr 007 (single post, unverified)",
+    quote: "我的极氪007开到了900公里CLTC。",
+    quoteEn: "My Zeekr 007 got to 900 km CLTC.",
+    reach: 2100,
+    reachUnit: "likes",
+    metric: { name: "CLTC range", value: 900, unit: "km", cycle: "CLTC" },
+  },
+  {
+    batch: 2,
+    caseId: "CASE-G60-CN-0003",
+    agent: "competitor",
+    sourceType: "competitor_official",
+    sourceName: "Xiaomi · SU7 spec page (update)",
+    url: "https://www.mi.com/",
+    trust: "B",
+    kind: "competitor_fact",
+    market: "CN",
+    marketBasis: "stated",
+    audience: "public",
+    competitor: "Xiaomi SU7",
+    publishedAt: "2026-10-11",
+    summary: "Xiaomi SU7 spec update: 810 km CLTC on the long-range trim (illustrative)",
+    quote: "CLTC range up to 810 km on the long-range version after the software update.",
+    metric: { name: "CLTC range", value: 810, unit: "km", cycle: "CLTC" },
   },
   {
     caseId: "CASE-G60-CN-0001",

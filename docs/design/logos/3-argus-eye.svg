@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argus">
+  <path d="M5 33 C15 17 49 17 59 33 C49 49 15 49 5 33 Z" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="4.5" stroke-linejoin="round"/>
+  <circle cx="32" cy="33" r="10.5" fill="var(--logo-glow, #7c5cff)"/>
+  <circle cx="32" cy="33" r="4.2" fill="#09090b"/>
+  <circle cx="35.2" cy="29.6" r="1.6" fill="#fff"/>
+  <path d="M53 5.5 C53.8 9.6 55.4 11.2 59.5 12 C55.4 12.8 53.8 14.4 53 18.5 C52.2 14.4 50.6 12.8 46.5 12 C50.6 11.2 52.2 9.6 53 5.5 Z" fill="var(--logo-accent, #1e3a8a)"/>
+</svg>

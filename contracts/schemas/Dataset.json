@@ -373,7 +373,8 @@
               "competitor",
               "customer_public",
               "trends",
-              "innovation_scout"
+              "innovation_scout",
+              "pm"
             ]
           },
           "sourceType": {
@@ -390,7 +391,10 @@
               "news",
               "competitor_official",
               "trend_report",
-              "trade_fair"
+              "trade_fair",
+              "pm_upload",
+              "pm_link",
+              "pm_note"
             ]
           },
           "sourceName": {
@@ -591,6 +595,32 @@
               "quarantined"
             ]
           },
+          "classification": {
+            "type": "object",
+            "properties": {
+              "method": {
+                "type": "string",
+                "enum": [
+                  "bmw_label",
+                  "llm",
+                  "manual"
+                ]
+              },
+              "label": {
+                "type": "string"
+              },
+              "model": {
+                "type": "string"
+              },
+              "promptVersion": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "method"
+            ],
+            "additionalProperties": false
+          },
           "synthetic": {
             "type": "boolean"
           }
@@ -729,7 +759,8 @@
               "competitor",
               "customer_public",
               "trends",
-              "innovation_scout"
+              "innovation_scout",
+              "pm"
             ]
           },
           "series": {
@@ -774,6 +805,45 @@
           },
           "note": {
             "type": "string"
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "ok",
+                    "skipped",
+                    "failed"
+                  ]
+                },
+                "detail": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "status",
+                "detail"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "rippleId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -807,7 +877,8 @@
               "competitor",
               "customer_public",
               "trends",
-              "innovation_scout"
+              "innovation_scout",
+              "pm"
             ]
           },
           "sourceName": {
@@ -862,6 +933,29 @@
             "type": [
               "string",
               "null"
+            ]
+          },
+          "aspectGroup": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "function",
+                  "usability",
+                  "reliability",
+                  "performance",
+                  "efficiency_range",
+                  "design",
+                  "comfort",
+                  "space",
+                  "quality",
+                  "sound",
+                  "price"
+                ]
+              },
+              {
+                "type": "null"
+              }
             ]
           },
           "stances": {
@@ -2191,6 +2285,59 @@
                 },
                 "benchmark": {
                   "type": "string"
+                },
+                "targetSpec": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string",
+                      "enum": [
+                        "ev_range",
+                        "dc_10_80_min"
+                      ]
+                    },
+                    "comparator": {
+                      "type": "string",
+                      "enum": [
+                        "gte",
+                        "lte"
+                      ]
+                    },
+                    "value": {
+                      "type": "number"
+                    },
+                    "unit": {
+                      "type": "string"
+                    },
+                    "cycle": {
+                      "type": "string",
+                      "enum": [
+                        "WLTP",
+                        "CLTC",
+                        "EPA",
+                        "none"
+                      ]
+                    },
+                    "market": {
+                      "type": "string",
+                      "enum": [
+                        "global",
+                        "EU",
+                        "US",
+                        "CN",
+                        "RoW"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "comparator",
+                    "value",
+                    "unit",
+                    "cycle",
+                    "market"
+                  ],
+                  "additionalProperties": false
                 }
               },
               "required": [
@@ -2288,6 +2435,12 @@
           },
           "sentBackReason": {
             "type": "string"
+          },
+          "argumentMd": {
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "createdAt": {
             "type": "string"
@@ -2750,7 +2903,8 @@
               "sign_off_request",
               "sent_back",
               "new_signals",
-              "escalation"
+              "escalation",
+              "fyi"
             ]
           },
           "title": {
@@ -2854,6 +3008,50 @@
           },
           "createdAt": {
             "type": "string"
+          },
+          "rippleId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "itemVerdict": {
+            "type": "string",
+            "enum": [
+              "behind",
+              "at_par",
+              "still_ahead",
+              "not_comparable"
+            ]
+          },
+          "comparison": {
+            "type": "object",
+            "properties": {
+              "ours": {
+                "type": "string"
+              },
+              "theirs": {
+                "type": "string"
+              },
+              "normalized": {
+                "type": "string"
+              },
+              "factor": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "isAssumption": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "ours",
+              "theirs",
+              "normalized",
+              "factor",
+              "isAssumption"
+            ],
+            "additionalProperties": false
           }
         },
         "required": [
@@ -3274,6 +3472,59 @@
                     },
                     "benchmark": {
                       "type": "string"
+                    },
+                    "targetSpec": {
+                      "type": "object",
+                      "properties": {
+                        "key": {
+                          "type": "string",
+                          "enum": [
+                            "ev_range",
+                            "dc_10_80_min"
+                          ]
+                        },
+                        "comparator": {
+                          "type": "string",
+                          "enum": [
+                            "gte",
+                            "lte"
+                          ]
+                        },
+                        "value": {
+                          "type": "number"
+                        },
+                        "unit": {
+                          "type": "string"
+                        },
+                        "cycle": {
+                          "type": "string",
+                          "enum": [
+                            "WLTP",
+                            "CLTC",
+                            "EPA",
+                            "none"
+                          ]
+                        },
+                        "market": {
+                          "type": "string",
+                          "enum": [
+                            "global",
+                            "EU",
+                            "US",
+                            "CN",
+                            "RoW"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "key",
+                        "comparator",
+                        "value",
+                        "unit",
+                        "cycle",
+                        "market"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "required": [
@@ -3457,7 +3708,8 @@
               "draft",
               "feedback",
               "brief_change",
-              "edit"
+              "edit",
+              "ripple"
             ]
           },
           "feedbackId": {
@@ -3579,6 +3831,689 @@
         "additionalProperties": false
       }
     },
+    "sourceRecords": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ref": {
+            "type": "string"
+          },
+          "sourceName": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string"
+          },
+          "fetchedAt": {
+            "type": "string"
+          },
+          "synthetic": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ref",
+          "sourceName",
+          "text",
+          "sha256",
+          "fetchedAt",
+          "synthetic"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "conversions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "from": {
+            "type": "string",
+            "enum": [
+              "WLTP",
+              "CLTC",
+              "EPA",
+              "none"
+            ]
+          },
+          "to": {
+            "type": "string",
+            "enum": [
+              "WLTP",
+              "CLTC",
+              "EPA",
+              "none"
+            ]
+          },
+          "factor": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "range": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              {
+                "type": "number",
+                "exclusiveMinimum": 0
+              }
+            ],
+            "items": false,
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "source": {
+            "type": "string"
+          },
+          "isAssumption": {
+            "type": "boolean"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "updatedBy": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "from",
+          "to",
+          "factor",
+          "range",
+          "source",
+          "isAssumption",
+          "updatedAt",
+          "updatedBy"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "ripples": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "runId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "fact": {
+            "type": "object",
+            "properties": {
+              "signalId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "competitor": {
+                "type": "string"
+              },
+              "key": {
+                "type": "string",
+                "enum": [
+                  "ev_range",
+                  "dc_10_80_min"
+                ]
+              },
+              "value": {
+                "type": "number"
+              },
+              "unit": {
+                "type": "string"
+              },
+              "cycle": {
+                "type": "string",
+                "enum": [
+                  "WLTP",
+                  "CLTC",
+                  "EPA",
+                  "none"
+                ]
+              },
+              "market": {
+                "type": "string",
+                "enum": [
+                  "EU",
+                  "US",
+                  "CN",
+                  "RoW",
+                  "unknown"
+                ]
+              },
+              "trust": {
+                "type": "string",
+                "enum": [
+                  "A",
+                  "B",
+                  "C",
+                  "D",
+                  "E"
+                ]
+              },
+              "sourceName": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "signalId",
+              "competitor",
+              "key",
+              "value",
+              "unit",
+              "cycle",
+              "market",
+              "trust",
+              "sourceName",
+              "summary"
+            ],
+            "additionalProperties": false
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "watch"
+            ]
+          },
+          "statusReason": {
+            "type": "string"
+          },
+          "conversionIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "tolerancePct": {
+            "type": "number"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "requirement",
+                    "case"
+                  ]
+                },
+                "objectId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "title": {
+                  "type": "string"
+                },
+                "caseId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "row": {
+                  "type": "string",
+                  "enum": [
+                    "G60",
+                    "G60_CN",
+                    "G70",
+                    "F70"
+                  ]
+                },
+                "alsoRows": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "G60",
+                      "G60_CN",
+                      "G70",
+                      "F70"
+                    ]
+                  }
+                },
+                "carArea": {
+                  "type": "string",
+                  "enum": [
+                    "exterior_design",
+                    "interior_comfort",
+                    "seats",
+                    "climate",
+                    "infotainment_hmi",
+                    "connectivity_digital",
+                    "driver_assistance",
+                    "dynamics_powertrain",
+                    "range_charging",
+                    "practicality",
+                    "quality_materials"
+                  ]
+                },
+                "ownerId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "coOwnerIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "status": {
+                  "type": "string"
+                },
+                "ours": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "value": {
+                          "type": "number"
+                        },
+                        "unit": {
+                          "type": "string"
+                        },
+                        "cycle": {
+                          "type": "string",
+                          "enum": [
+                            "WLTP",
+                            "CLTC",
+                            "EPA",
+                            "none"
+                          ]
+                        },
+                        "comparator": {
+                          "type": "string",
+                          "enum": [
+                            "gte",
+                            "lte"
+                          ]
+                        },
+                        "market": {
+                          "type": "string"
+                        },
+                        "text": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "value",
+                        "unit",
+                        "cycle",
+                        "comparator",
+                        "market",
+                        "text"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "theirsNormalized": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "value": {
+                          "type": "number"
+                        },
+                        "unit": {
+                          "type": "string"
+                        },
+                        "cycle": {
+                          "type": "string",
+                          "enum": [
+                            "WLTP",
+                            "CLTC",
+                            "EPA",
+                            "none"
+                          ]
+                        },
+                        "low": {
+                          "type": "number"
+                        },
+                        "high": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "value",
+                        "unit",
+                        "cycle",
+                        "low",
+                        "high"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "conversionId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "gapPct": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "verdict": {
+                  "type": "string",
+                  "enum": [
+                    "behind",
+                    "at_par",
+                    "still_ahead",
+                    "not_comparable"
+                  ]
+                },
+                "reason": {
+                  "type": "string"
+                },
+                "rankBefore": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "rankAfter": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "movedBecause": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "notified": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "userId": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "alert",
+                          "fyi",
+                          "head"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "userId",
+                      "kind"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "muted": {
+                  "type": "boolean"
+                },
+                "decision": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "raise_target",
+                            "keep",
+                            "market_variant",
+                            "reopen_case"
+                          ]
+                        },
+                        "by": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "rationale": {
+                          "type": "string"
+                        },
+                        "at": {
+                          "type": "string"
+                        },
+                        "proposalId": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "by",
+                        "rationale",
+                        "at",
+                        "proposalId"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "variant": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "by": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "rationale": {
+                          "type": "string"
+                        },
+                        "at": {
+                          "type": "string"
+                        },
+                        "proposalId": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "by",
+                        "rationale",
+                        "at",
+                        "proposalId"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "kind",
+                "objectId",
+                "title",
+                "caseId",
+                "row",
+                "alsoRows",
+                "carArea",
+                "ownerId",
+                "coOwnerIds",
+                "status",
+                "ours",
+                "theirsNormalized",
+                "conversionId",
+                "gapPct",
+                "verdict",
+                "reason",
+                "rankBefore",
+                "rankAfter",
+                "movedBecause",
+                "notified",
+                "muted",
+                "decision",
+                "variant"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "runId",
+          "fact",
+          "status",
+          "statusReason",
+          "conversionIds",
+          "tolerancePct",
+          "items",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "rippleMutes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "requirementId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "key": {
+            "type": "string",
+            "enum": [
+              "ev_range",
+              "dc_10_80_min"
+            ]
+          },
+          "gapPctAtDecision": {
+            "type": "number"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "by": {
+            "type": "string",
+            "minLength": 1
+          },
+          "at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "requirementId",
+          "key",
+          "gapPctAtDecision",
+          "reason",
+          "by",
+          "at"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "monitorSettings": {
+      "type": "object",
+      "properties": {
+        "muteThresholdPct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 50
+        },
+        "atParTolerancePct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 20
+        },
+        "updatedAt": {
+          "type": "string"
+        },
+        "updatedBy": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "muteThresholdPct",
+        "atParTolerancePct",
+        "updatedAt",
+        "updatedBy"
+      ],
+      "additionalProperties": false
+    },
     "audit": {
       "type": "array",
       "items": {
@@ -3616,7 +4551,9 @@
               "plan",
               "profile",
               "workspace",
-              "brief"
+              "brief",
+              "ripple",
+              "settings"
             ]
           },
           "objectId": {
@@ -3627,6 +4564,150 @@
           "after": {},
           "rationale": {
             "type": "string"
+          },
+          "scoreSnapshot": {
+            "type": "object",
+            "properties": {
+              "caseId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "profileId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "profileName": {
+                "type": "string"
+              },
+              "profileVersion": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "weights": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "enum": [
+                    "customers",
+                    "severity",
+                    "satisfaction_gap",
+                    "competitor_gap",
+                    "market_volume",
+                    "regression",
+                    "trend",
+                    "brand_fit"
+                  ]
+                },
+                "additionalProperties": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "required": [
+                  "customers",
+                  "severity",
+                  "satisfaction_gap",
+                  "competitor_gap",
+                  "market_volume",
+                  "regression",
+                  "trend",
+                  "brand_fit"
+                ]
+              },
+              "factors": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "enum": [
+                    "customers",
+                    "severity",
+                    "satisfaction_gap",
+                    "competitor_gap",
+                    "market_volume",
+                    "regression",
+                    "trend",
+                    "brand_fit"
+                  ]
+                },
+                "additionalProperties": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "required": [
+                  "customers",
+                  "severity",
+                  "satisfaction_gap",
+                  "competitor_gap",
+                  "market_volume",
+                  "regression",
+                  "trend",
+                  "brand_fit"
+                ]
+              },
+              "contributions": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "enum": [
+                    "customers",
+                    "severity",
+                    "satisfaction_gap",
+                    "competitor_gap",
+                    "market_volume",
+                    "regression",
+                    "trend",
+                    "brand_fit"
+                  ]
+                },
+                "additionalProperties": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "required": [
+                  "customers",
+                  "severity",
+                  "satisfaction_gap",
+                  "competitor_gap",
+                  "market_volume",
+                  "regression",
+                  "trend",
+                  "brand_fit"
+                ]
+              },
+              "score": {
+                "type": "number"
+              },
+              "rank": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "of": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "at": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "caseId",
+              "profileId",
+              "profileName",
+              "profileVersion",
+              "weights",
+              "factors",
+              "contributions",
+              "score",
+              "rank",
+              "of",
+              "at"
+            ],
+            "additionalProperties": false
           }
         },
         "required": [
@@ -3667,6 +4748,11 @@
     "briefs",
     "requirementVersions",
     "feedback",
+    "sourceRecords",
+    "conversions",
+    "ripples",
+    "rippleMutes",
+    "monitorSettings",
     "audit"
   ],
   "additionalProperties": false

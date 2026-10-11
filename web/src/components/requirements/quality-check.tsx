@@ -19,18 +19,18 @@ export function QualityCheck({ r, check }: { r: Requirement; check: RequirementC
   const [open, setOpen] = useState(red > 0);
 
   return (
-    <div className={cn("rounded-lg border bg-card text-sm", red ? "border-red-300 dark:border-red-900" : amber ? "border-amber-300 dark:border-amber-800" : "")}>
-      <div className="flex items-center gap-2 px-3 py-2">
+    <div className={cn("rounded-lg border bg-card text-sm", red ? "border-tone-red-dot/70" : amber ? "border-tone-amber-dot/80" : "")}>
+      <div className="flex items-center gap-2 px-4 py-2.5">
         <button type="button" className="flex min-w-0 flex-1 items-center gap-2 text-left" onClick={() => setOpen((o) => !o)} disabled={!issues.length}>
-          {red ? <CircleX className="size-4 shrink-0 text-red-600" /> : amber ? <TriangleAlert className="size-4 shrink-0 text-amber-500" /> : <CircleCheck className="size-4 shrink-0 text-emerald-600" />}
+          {red ? <CircleX className="size-4 shrink-0 text-negative" /> : amber ? <TriangleAlert className="size-4 shrink-0 text-warning" /> : <CircleCheck className="size-4 shrink-0 text-positive" />}
           <span className="font-medium">Quality check</span>
-          <span className="truncate text-muted-foreground">
+          <span className={cn("truncate", red ? "font-medium text-tone-red-fg" : amber ? "font-medium text-tone-amber-fg" : "text-muted-foreground")}>
             {!check ? "not run yet" : issues.length ? [red && `${red} to fix`, amber && `${amber} to review`].filter(Boolean).join(" · ") : "ready for engineering"}
           </span>
           {issues.length > 0 && <ChevronDown className={cn("ml-auto size-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-180")} />}
         </button>
         {check && (
-          <span className="hidden text-[11px] text-muted-foreground sm:inline" title={check.engine === "rules+llm" ? "Rules plus LLM review" : "Rules only"}>
+          <span className="hidden text-xs text-muted-foreground sm:inline" title={check.engine === "rules+llm" ? "Rules plus LLM review" : "Rules only"}>
             {check.engine === "rules+llm" ? "rules + AI" : "rules"} · {fromNow(check.ranAt)}
           </span>
         )}
@@ -39,7 +39,7 @@ export function QualityCheck({ r, check }: { r: Requirement; check: RequirementC
         </Button>
       </div>
       {open && issues.length > 0 && (
-        <ul className="space-y-2 border-t px-3 py-2">
+        <ul className="space-y-2.5 border-t px-4 py-3">
           {issues.map((i) => (
             <li key={i.id} className="flex gap-2">
               <Pill t={i.severity === "red" ? "red" : "amber"} className="mt-0.5 shrink-0">
@@ -49,7 +49,7 @@ export function QualityCheck({ r, check }: { r: Requirement; check: RequirementC
                 <p>
                   {i.message}{" "}
                   {i.relatedId && (
-                    <Link href={i.relatedId.startsWith("REQ-") ? `/requirements/${i.relatedId}` : `/plan/${r.series}`} className="font-mono text-xs text-primary hover:underline">
+                    <Link href={i.relatedId.startsWith("REQ-") ? `/requirements/${i.relatedId}` : `/plan/${r.series}`} className="font-mono text-xs text-foreground underline decoration-border-strong underline-offset-2 transition-colors duration-150 hover:decoration-foreground">
                       {i.relatedId}
                     </Link>
                   )}
@@ -58,7 +58,7 @@ export function QualityCheck({ r, check }: { r: Requirement; check: RequirementC
               </div>
             </li>
           ))}
-          <li className="text-[11px] text-muted-foreground">The same checks engineering runs in Codebeamer. You can approve with open issues; your reason is logged.</li>
+          <li className="text-xs text-muted-foreground">The same checks engineering runs in Codebeamer. You can approve with open issues; your reason is logged.</li>
         </ul>
       )}
     </div>

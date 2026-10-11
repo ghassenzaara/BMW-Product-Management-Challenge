@@ -22,6 +22,7 @@ import { useApi, useApiMutation } from "@/lib/api/hooks";
 import { downloadDeck } from "@/lib/deck";
 import { download } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { CarPreview } from "@/components/car/car-preview";
 import { PageHeader, PageSkeleton } from "@/components/common/page";
 import { Pill, ReqStatusDot, type Tone } from "@/components/common/badges";
 import { RationaleDialog } from "@/components/common/rationale-dialog";
@@ -31,7 +32,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 const actionTone: Record<PlanAction, Tone> = { keep: "slate", new: "emerald", improve: "sky", remove: "red" };
-const actionText: Record<PlanAction, string> = { keep: "text-muted-foreground", new: "text-positive", improve: "text-sky-600 dark:text-sky-400", remove: "text-negative" };
+const actionText: Record<PlanAction, string> = { keep: "text-muted-foreground", new: "text-tone-emerald-fg", improve: "text-tone-sky-fg", remove: "text-tone-red-fg" };
 const releaseShort = { next_gen: "Next gen", lci: "LCI", ota: "OTA" } as const;
 
 type Filter = "active" | "progress" | "signed_off" | "planned" | "rejected";
@@ -118,13 +119,14 @@ export function PlanView() {
             <button
               key={id}
               onClick={() => setFilter(id)}
-              className={cn("rounded-full border px-3 py-1 text-sm transition", filter === id ? "border-primary bg-primary text-primary-foreground" : "bg-card hover:border-primary/60")}
+              className={cn("rounded-full border px-3 py-1 text-sm transition-colors duration-150", filter === id ? "border-primary bg-primary text-primary-foreground" : "border-input bg-card hover:border-border-strong hover:bg-muted")}
             >
               {label} <span className="tabular-nums opacity-70">{reqs.filter((r) => t(r.status)).length}</span>
             </button>
           ))}
         </div>
       </PageHeader>
+      <CarPreview series={series} reqs={shown} onOpenRequirement={setReqId} />
       <div className="space-y-4 p-6">
         {areas.map((area) => (
           <AreaBlock
@@ -164,14 +166,14 @@ function AreaBlock({
   const [open, setOpen] = useState(false);
   if (!reqs.length && !unchanged.length) return null;
   return (
-    <section className="overflow-hidden rounded-xl border bg-card shadow-xs">
-      <h2 className="border-b px-4 py-2.5 text-sm font-semibold">{carAreaLabel[area]}</h2>
+    <section className="overflow-hidden rounded-xl border bg-card">
+      <h2 className="border-b px-5 py-3 text-[15px] font-semibold">{carAreaLabel[area]}</h2>
       <ul className="divide-y">
         {reqs.map((r) => {
           const f = featureOf.get(r.id);
           return (
             <li key={r.id}>
-              <button onClick={() => onOpen(r.id)} title={r.title} className="grid w-full grid-cols-[1fr_90px_120px_130px] items-center gap-3 px-4 py-2.5 text-left transition hover:bg-muted/50">
+              <button onClick={() => onOpen(r.id)} title={r.title} className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 px-5 py-2.5 text-left transition-colors duration-150 hover:bg-muted/60 md:grid-cols-[minmax(0,1fr)_90px_120px_130px]">
                 <span className="truncate text-sm font-medium">{r.shortTitle}</span>
                 <span className={cn("text-xs font-medium", f ? actionText[f.action] : "text-muted-foreground")}>{f ? planActionLabel[f.action] : "–"}</span>
                 <span className="text-xs text-muted-foreground">
@@ -185,11 +187,11 @@ function AreaBlock({
       </ul>
       {unchanged.length > 0 && (
         <div className={cn(reqs.length > 0 && "border-t")}>
-          <button onClick={() => setOpen(!open)} className="flex w-full items-center gap-1.5 px-4 py-2 text-xs text-muted-foreground hover:text-foreground">
-            <ChevronRight className={cn("size-3.5 transition", open && "rotate-90")} /> Today&apos;s equipment · {unchanged.length}
+          <button onClick={() => setOpen(!open)} className="flex w-full items-center gap-1.5 px-5 py-2.5 text-xs text-muted-foreground transition-colors duration-150 hover:bg-muted/60 hover:text-foreground">
+            <ChevronRight className={cn("size-3.5 transition-transform duration-150", open && "rotate-90")} /> Today&apos;s equipment · {unchanged.length}
           </button>
           {open && (
-            <ul className="divide-y border-t bg-muted/20">
+            <ul className="divide-y border-t bg-recessed">
               {unchanged.map((f) => (
                 <FeatureRow key={f.id} f={f} canEdit={canEdit} series={series} />
               ))}
@@ -205,7 +207,7 @@ function FeatureRow({ f, canEdit, series }: { f: PlannedFeature; canEdit: boolea
   const [action, setAction] = useState<PlanAction | null>(null);
   const patch = useApiMutation("patchPlanFeature", { success: "Plan updated" });
   return (
-    <li className="flex items-center gap-3 px-4 py-2 text-sm">
+    <li className="flex items-center gap-3 px-5 py-2 text-sm">
       {f.protected ? <Lock className="size-3.5 text-positive" aria-label="Protected strength" /> : <span className="size-3.5" />}
       <span className="min-w-0 flex-1 truncate">{f.name}</span>
       <span className="hidden truncate text-xs text-muted-foreground md:block">{f.todayDetail}</span>

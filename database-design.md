@@ -10,7 +10,7 @@ Chain: **source record → signal → case (problem) → PM confirms per vehicle
 - Every table has `created_at timestamptz default now()`. Mutable tables also have `updated_at`.
 - Every write goes through the backend's single write path (`audit.py`), which writes the change and its `audit_event` in the same transaction.
 - **No hard deletes** of evidence, cases or requirements. A delete is a tombstone: content columns set to null, `deleted_at` set, row kept, audit event written.
-- Field names and values follow `All-context/05-web-sources/fetching-sources.md` section 7.
+- Field names and values follow `docs/05-web-sources/fetching-sources.md` section 7.
 - Vehicle, market, competitors, weights and thresholds are rows, never constants in code.
 
 ### Shared value sets (Postgres domains)
@@ -62,6 +62,7 @@ Unique (`bmw_vehicle`, `brand`, `model`).
 
 ### `source_registry`
 Every source ID of fetching-sources section 3, parsed once, plus the internal sources `bmw_feedback`, `bmw_study`, `bmw_sales`, `option_list`.
+Evidence a PM adds by hand uses three more sources, registered on first use and never fetched: `pm_upload` (rows of a file; the only ones that count as customers), `pm_link` and `pm_note` (market evidence). Their records and signals go through the validation gate like every other.
 
 | Column | Type | Notes |
 |---|---|---|
@@ -463,6 +464,7 @@ The answer to a confirmed case, for one BMW line.
 | `status` | text | `draft`, `in_discussion`, `approved`, `rejected`, `deleted` |
 | `rank_score` | numeric | **cache only**, for the default weight profile of the config that matches `vehicle` (and `market` when split). The rank for any profile is computed on read (view `requirement_rank`) |
 | `manual_rank`, `manual_rank_reason` | int, text | |
+| `argument_md` | text, nullable | the PM's edited argument sheet (migration 0017); null = generated from the requirement and its evidence. Not part of a version |
 | `model`, `prompt_version` | text | generator |
 | `deleted_at` | timestamptz | tombstone |
 

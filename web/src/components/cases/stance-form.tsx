@@ -2,12 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Bot, Pencil, Plus, Trash2, Undo2 } from "lucide-react";
+import { CircleHelp, Pencil, Undo2 } from "lucide-react";
+import { ArgusMark } from "@/components/brand/marks";
 import {
   ambitionLabel,
   costSensitivityLabel,
-  evidenceEffectLabel,
-  insideKindLabel,
   marketLabel,
   releaseLabel,
   targetCustomerLabel,
@@ -15,10 +14,7 @@ import {
   type Case,
   type CaseStance,
   type CostSensitivity,
-  type EvidenceEffect,
-  type InsideKind,
   type Market,
-  type Powertrain,
   type ReleaseTarget,
   type ResolvedBrief,
   type TargetCustomer,
@@ -28,29 +24,27 @@ import { fromNow } from "@/lib/format";
 import { Pill } from "@/components/common/badges";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
-type Take = CaseStance["evidenceTakes"][number];
-type Inside = CaseStance["inside"][number];
 type Overrides = CaseStance["overrides"];
 
 const uid = () => Math.random().toString(36).slice(2, 8);
 
 /**
- * Step 2 of a case: the PM's stance (layer 2). Everything the series brief already says is
- * inherited and shown; the PM only adds what is different for this case (with a reason),
- * their reading of the evidence, inside knowledge and the ambition. Three questions at most.
+ * Step 2 of a case: the PM's stance (layer 2). Everything the product specs (series brief) already
+ * say is inherited and shown; the PM only adds what is different for this case (with a reason),
+ * one free-text note for the AI (priorities and inside knowledge) and the ambition.
  */
 export function StanceForm({ c, brief, userId, canEdit, onSaved }: { c: Case; brief: ResolvedBrief | null; userId: string; canEdit: boolean; onSaved: () => void }) {
   const mine = c.stances.find((s) => s.authorId === userId) ?? null;
   const [overrides, setOverrides] = useState<Overrides>(mine?.overrides ?? {});
   const [reasons, setReasons] = useState<CaseStance["overrideReasons"]>(mine?.overrideReasons ?? {});
-  const [takes, setTakes] = useState<Take[]>(mine?.evidenceTakes ?? []);
-  const [inside, setInside] = useState<Inside[]>(mine?.inside ?? []);
+  const [notes, setNotes] = useState(() => [...(mine?.evidenceTakes ?? []).map((t) => t.text), ...(mine?.inside ?? []).map((x) => x.text)].filter((t) => t.trim()).join("\n"));
   const [ambition, setAmbition] = useState<Ambition | null>(mine?.ambition ?? null);
   const [editing, setEditing] = useState<"costEnvelope" | "targetCustomer" | "givens" | null>(null);
-  const save = useApiMutation("saveCaseStance", { success: "Stance saved. Your AI colleague has a question." });
+  const save = useApiMutation("saveCaseStance", { success: "Context saved. Argus has a question." });
   const v = brief?.values;
   const missingReason = (Object.keys(overrides) as (keyof Overrides)[]).some((k) => overrides[k] && !reasons[k]?.trim());
 
@@ -63,17 +57,17 @@ export function StanceForm({ c, brief, userId, canEdit, onSaved }: { c: Case; br
     });
 
   return (
-    <div className="space-y-5 rounded-xl border bg-card p-5 shadow-xs">
+    <div className="space-y-6 rounded-xl border bg-card p-6">
       {/* Inherited from the brief */}
       <div>
         <div className="mb-2 flex items-center gap-2">
-          <h3 className="text-sm font-semibold">Inherited from your brief</h3>
+          <h3 className="text-sm font-semibold">Inherited from your product specs</h3>
           {v ? (
-            <Link href="/brief" className="text-xs text-primary hover:underline">
-              Open brief
+            <Link href="/brief" className="text-xs font-medium text-foreground underline decoration-muted-foreground underline-offset-2 transition-colors duration-150 hover:decoration-foreground">
+              Open product specs
             </Link>
           ) : (
-            <span className="text-xs text-muted-foreground">No series brief for you, so the drafter uses defaults (shown as assumptions).</span>
+            <span className="text-xs text-muted-foreground">No product specs for you yet, so the drafter uses defaults (shown as assumptions).</span>
           )}
         </div>
         {v && (
@@ -112,7 +106,7 @@ export function StanceForm({ c, brief, userId, canEdit, onSaved }: { c: Case; br
           </div>
         )}
         {v && editing && (
-          <div className="mt-3 space-y-2 rounded-lg border border-dashed p-3">
+          <div className="mt-3 space-y-3 rounded-lg border border-dashed border-border-strong bg-recessed p-4">
             {editing === "costEnvelope" && (
               <Choice<CostSensitivity>
                 label="Cost sensitivity for this case"
@@ -143,7 +137,7 @@ export function StanceForm({ c, brief, userId, canEdit, onSaved }: { c: Case; br
                   }}
                 >
                   {(["next_gen", "lci", "ota"] as const).map((r) => (
-                    <ToggleGroupItem key={r} value={r} className="px-3 data-[state=on]:border-primary data-[state=on]:bg-primary/10 data-[state=on]:text-primary">
+                    <ToggleGroupItem key={r} value={r} className="px-3">
                       {releaseLabel[r]}
                     </ToggleGroupItem>
                   ))}
@@ -152,8 +146,8 @@ export function StanceForm({ c, brief, userId, canEdit, onSaved }: { c: Case; br
             )}
             {overrides[editing] && (
               <div className="flex items-center gap-2">
-                <Input value={reasons[editing] ?? ""} onChange={(e) => setReasons({ ...reasons, [editing]: e.target.value })} placeholder="Why is this case different from your brief?" aria-label="Override reason" />
-                <Button size="icon-xs" variant="ghost" aria-label="Back to the brief value" onClick={() => setOverride(editing, undefined)}>
+                <Input value={reasons[editing] ?? ""} onChange={(e) => setReasons({ ...reasons, [editing]: e.target.value })} placeholder="Why is this case different from your product specs?" aria-label="Override reason" />
+                <Button size="icon-xs" variant="ghost" aria-label="Back to the product specs value" onClick={() => setOverride(editing, undefined)}>
                   <Undo2 className="size-3.5" />
                 </Button>
               </div>
@@ -162,69 +156,23 @@ export function StanceForm({ c, brief, userId, canEdit, onSaved }: { c: Case; br
         )}
       </div>
 
-      {/* Q1: take on the evidence */}
-      <Question n={1} title="Your take on the evidence" hint='e.g. "focus on BEV owners" or "discount fleet drivers". The drafter counts the evidence your way and says so.'>
-        {takes.map((t, i) => (
-          <div key={t.id} className="flex flex-wrap items-center gap-2">
-            <ToggleGroup type="single" variant="outline" size="sm" value={t.effect} disabled={!canEdit} onValueChange={(x) => x && setTakes(takes.map((y, j) => (j === i ? { ...y, effect: x as EvidenceEffect } : y)))}>
-              {(["focus", "discount"] as const).map((e) => (
-                <ToggleGroupItem key={e} value={e} className="px-2.5 data-[state=on]:border-primary data-[state=on]:bg-primary/10 data-[state=on]:text-primary">
-                  {evidenceEffectLabel[e]}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
-            <FilterSelect take={t} disabled={!canEdit} onChange={(next) => setTakes(takes.map((y, j) => (j === i ? next : y)))} />
-            <Input className="min-w-48 flex-1" value={t.text} disabled={!canEdit} onChange={(e) => setTakes(takes.map((y, j) => (j === i ? { ...y, text: e.target.value } : y)))} placeholder="Why, in one line" />
-            {canEdit && (
-              <Button size="icon-xs" variant="ghost" aria-label="Remove" onClick={() => setTakes(takes.filter((_, j) => j !== i))}>
-                <Trash2 className="size-3.5" />
-              </Button>
-            )}
-          </div>
-        ))}
-        {canEdit && takes.length < 2 && (
-          <Button size="xs" variant="ghost" onClick={() => setTakes([...takes, { id: `ET-${uid()}`, text: "", effect: "focus" }])}>
-            <Plus className="size-3" /> Add a take
-          </Button>
-        )}
+      {/* Q1: what the AI should know (priorities + inside knowledge, one point per line) */}
+      <Question n={1} title="What should the AI know about this case?" hint="Your priorities and what you know that the data can't show. One point per line." help={<NotesHelp />}>
+        <Textarea
+          rows={4}
+          value={notes}
+          disabled={!canEdit}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder={"Focus on BEV owners in Europe, they buy the most\nEngineering is already testing a fix for the next facelift"}
+          aria-label="What the AI should know"
+        />
       </Question>
 
-      {/* Q2: inside knowledge */}
-      <Question n={2} title="What do you know that the data can't show?" hint="Past decisions, supplier tech, engineering already on it. It becomes a tagged assumption in the draft.">
-        {inside.map((x, i) => (
-          <div key={x.id} className="flex flex-wrap items-center gap-2">
-            <Select value={x.kind} disabled={!canEdit} onValueChange={(k) => setInside(inside.map((y, j) => (j === i ? { ...y, kind: k as InsideKind } : y)))}>
-              <SelectTrigger size="sm" className="w-48">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {(Object.keys(insideKindLabel) as InsideKind[]).map((k) => (
-                  <SelectItem key={k} value={k}>
-                    {insideKindLabel[k]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Input className="min-w-48 flex-1" value={x.text} disabled={!canEdit} onChange={(e) => setInside(inside.map((y, j) => (j === i ? { ...y, text: e.target.value } : y)))} placeholder="e.g. Battery team is sampling next-gen cells" />
-            {canEdit && (
-              <Button size="icon-xs" variant="ghost" aria-label="Remove" onClick={() => setInside(inside.filter((_, j) => j !== i))}>
-                <Trash2 className="size-3.5" />
-              </Button>
-            )}
-          </div>
-        ))}
-        {canEdit && inside.length < 3 && (
-          <Button size="xs" variant="ghost" onClick={() => setInside([...inside, { id: `IN-${uid()}`, kind: "engineering_on_it", text: "" }])}>
-            <Plus className="size-3" /> Add
-          </Button>
-        )}
-      </Question>
-
-      {/* Q3: ambition */}
-      <Question n={3} title="How far do you want to go on this problem?" hint={v ? `Left empty, your brief decides (${v.changeAmbition.level}, ${targetCustomerLabel[v.targetCustomer.who].toLowerCase()}).` : "Left empty, the drafter picks from the evidence."}>
+      {/* Q2: ambition */}
+      <Question n={2} title="How far do you want to go on this problem?" hint={v ? `Left empty, your product specs decide (${v.changeAmbition.level}, ${targetCustomerLabel[v.targetCustomer.who].toLowerCase()}).` : "Left empty, the drafter picks from the evidence."}>
         <ToggleGroup type="single" variant="outline" size="sm" value={ambition ?? ""} disabled={!canEdit} onValueChange={(x) => setAmbition((x || null) as Ambition | null)}>
           {(["fix", "match", "beat"] as const).map((a) => (
-            <ToggleGroupItem key={a} value={a} className="px-3 data-[state=on]:border-primary data-[state=on]:bg-primary/10 data-[state=on]:text-primary">
+            <ToggleGroupItem key={a} value={a} className="px-3">
               {ambitionLabel[a]}
             </ToggleGroupItem>
           ))}
@@ -233,7 +181,7 @@ export function StanceForm({ c, brief, userId, canEdit, onSaved }: { c: Case; br
 
       <div className="flex items-center gap-3">
         {mine && <span className="text-xs text-muted-foreground">Saved {fromNow(mine.updatedAt)}</span>}
-        {missingReason && <span className="text-xs text-amber-700 dark:text-amber-400">Every override needs a reason.</span>}
+        {missingReason && <span className="text-xs font-medium text-warning">Every override needs a reason.</span>}
         <span className="flex-1" />
         {canEdit && (
           <Button
@@ -244,8 +192,12 @@ export function StanceForm({ c, brief, userId, canEdit, onSaved }: { c: Case; br
                 body: {
                   overrides,
                   overrideReasons: Object.fromEntries(Object.entries(reasons).filter(([k]) => k in overrides)),
-                  evidenceTakes: takes.filter((t) => t.text.trim()),
-                  inside: inside.filter((x) => x.text.trim()),
+                  evidenceTakes: [],
+                  inside: notes
+                    .split("\n")
+                    .map((t) => t.trim())
+                    .filter(Boolean)
+                    .map((text) => ({ id: `IN-${uid()}`, kind: "other" as const, text })),
                   ambition,
                 },
               });
@@ -253,7 +205,7 @@ export function StanceForm({ c, brief, userId, canEdit, onSaved }: { c: Case; br
               onSaved();
             }}
           >
-            <Bot className="size-4" /> Save stance and ask the AI
+            <ArgusMark className="size-4" /> Save context and ask Argus
           </Button>
         )}
       </div>
@@ -263,12 +215,12 @@ export function StanceForm({ c, brief, userId, canEdit, onSaved }: { c: Case; br
 
 function InheritedChip({ label, value, origin, overridden, onEdit }: { label: string; value: string; origin: string; overridden?: boolean; onEdit?: () => void }) {
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs ${overridden ? "border-violet-300 bg-violet-50 dark:border-violet-800 dark:bg-violet-950/40" : "bg-muted/40"}`}>
+    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs ${overridden ? "border-tone-violet-bd bg-tone-violet-bg" : "bg-recessed"}`}>
       <span className="text-muted-foreground">{label}</span>
       <span className="font-medium">{value}</span>
-      <Pill className="px-1 py-0 text-[10px]">{overridden ? "this case" : origin === "overlay" ? "regional" : origin === "data" ? "from data" : origin === "brand" ? "brand" : "brief"}</Pill>
+      <Pill className="px-1.5 py-0">{overridden ? "this case" : origin === "overlay" ? "regional" : origin === "data" ? "from data" : origin === "brand" ? "brand" : "specs"}</Pill>
       {onEdit && (
-        <button type="button" onClick={onEdit} aria-label={`Override ${label}`} className="text-muted-foreground hover:text-foreground">
+        <button type="button" onClick={onEdit} aria-label={`Override ${label}`} className="rounded-sm text-muted-foreground transition-colors duration-150 hover:text-foreground">
           <Pencil className="size-3" />
         </button>
       )}
@@ -276,17 +228,50 @@ function InheritedChip({ label, value, origin, overridden, onEdit }: { label: st
   );
 }
 
-function Question({ n, title, hint, children }: { n: number; title: string; hint: string; children: React.ReactNode }) {
+function Question({ n, title, hint, help, children }: { n: number; title: string; hint: string; help?: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
       <div>
-        <div className="text-sm font-medium">
-          <span className="mr-1.5 text-muted-foreground">{n}.</span>
+        <div className="flex items-center gap-1.5 text-sm font-medium">
+          <span className="text-muted-foreground">{n}.</span>
           {title}
+          {help && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <button type="button" aria-label="What to write here" className="rounded-full text-muted-foreground transition-colors duration-150 hover:text-foreground">
+                  <CircleHelp className="size-4" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-80 text-sm">
+                {help}
+              </PopoverContent>
+            </Popover>
+          )}
         </div>
         <p className="text-xs text-muted-foreground">{hint}</p>
       </div>
       {children}
+    </div>
+  );
+}
+
+function NotesHelp() {
+  return (
+    <div className="space-y-2.5">
+      <p className="font-medium">Write it like a note to a colleague, one point per line.</p>
+      <div className="space-y-1">
+        <p className="text-xs font-medium text-muted-foreground">Who matters most</p>
+        <p className="text-xs">&ldquo;Focus on BEV owners in Europe&rdquo; · &ldquo;Ignore fleet drivers, they don&apos;t choose the car&rdquo;</p>
+      </div>
+      <div className="space-y-1">
+        <p className="text-xs font-medium text-muted-foreground">What you know that the data doesn&apos;t</p>
+        <p className="text-xs">&ldquo;Engineering is already testing a fix&rdquo; · &ldquo;We tried this in 2019 and customers didn&apos;t pay for it&rdquo; · &ldquo;A supplier has the part ready&rdquo;</p>
+      </div>
+      <div className="space-y-1">
+        <p className="text-xs font-medium text-muted-foreground">Limits</p>
+        <p className="text-xs">&ldquo;Must work without new hardware&rdquo; · &ldquo;Keep it under the price of the comfort package&rdquo;</p>
+      </div>
+      <p className="text-xs text-muted-foreground">The AI uses every line when it drafts the requirements and marks it as your assumption, so engineers can see where it came from.</p>
     </div>
   );
 }
@@ -297,48 +282,11 @@ function Choice<T extends string>({ label, value, options, onChange }: { label: 
       <div className="text-xs font-medium text-muted-foreground">{label}</div>
       <ToggleGroup type="single" variant="outline" size="sm" value={value} onValueChange={(x) => x && onChange(x as T)}>
         {options.map(([id, text]) => (
-          <ToggleGroupItem key={id} value={id} className="px-3 data-[state=on]:border-primary data-[state=on]:bg-primary/10 data-[state=on]:text-primary">
+          <ToggleGroupItem key={id} value={id} className="px-3">
             {text}
           </ToggleGroupItem>
         ))}
       </ToggleGroup>
     </div>
-  );
-}
-
-const filters: [string, string, Partial<Take>][] = [
-  ["none", "All records", {}],
-  ["BEV", "BEV owners", { powertrain: "BEV" }],
-  ["ICE", "ICE owners", { powertrain: "ICE" }],
-  ["PHEV", "PHEV owners", { powertrain: "PHEV" }],
-  ["US", "USA", { market: "US" }],
-  ["EU", "Europe", { market: "EU" }],
-  ["CN", "China", { market: "CN" }],
-  ["fleet", "Mentions 'fleet'", { keyword: "fleet" }],
-  ["lease", "Mentions 'lease'", { keyword: "lease" }],
-];
-
-function FilterSelect({ take, disabled, onChange }: { take: Take; disabled: boolean; onChange: (t: Take) => void }) {
-  const current = filters.find(([, , f]) => (f.powertrain ?? null) === (take.powertrain ?? null) && (f.market ?? null) === (take.market ?? null) && (f.keyword ?? null) === (take.keyword ?? null))?.[0] ?? "none";
-  return (
-    <Select
-      value={current}
-      disabled={disabled}
-      onValueChange={(key) => {
-        const f = filters.find(([k]) => k === key)![2];
-        onChange({ id: take.id, text: take.text, effect: take.effect, powertrain: f.powertrain as Powertrain | undefined, market: f.market as Market | undefined, keyword: f.keyword });
-      }}
-    >
-      <SelectTrigger size="sm" className="w-40">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        {filters.map(([k, label]) => (
-          <SelectItem key={k} value={k}>
-            {label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
   );
 }

@@ -3,7 +3,7 @@
  *
  *   npm run seed
  *
- * Reads the real processed BMW data (docs/02-data/processed/*.csv) and the
+ * Reads the real processed BMW data (docs/02-bmw-data/processed/*.csv) and the
  * hand-written content in src/mock/authored/, and writes
  * src/mock/fixtures/seed.json. Every record is validated against the Zod
  * contract; the script fails on any invalid record.
@@ -25,8 +25,11 @@ import {
   type ChatMessage,
   type Market,
   type MarketFigure,
+  type FeedbackEntry,
   type Proposal,
   type Requirement,
+  type ScoreSnapshot,
+  type SourceRecord,
   type RequirementStatus,
   type RequirementVersion,
   type Series,
@@ -42,8 +45,12 @@ import type { StudyRef, VerbatimSelector } from "../src/mock/authored/types";
 import {
   NOW,
   alerts,
+  balancedV1Change,
   chatSeeds,
   comments,
+  conversions,
+  heroStory,
+  monitorSettings,
   innovation,
   notifications,
   plans,
@@ -54,11 +61,12 @@ import {
   requirementTags,
   unclusteredSelectors,
 } from "../src/mock/authored/world";
-import { webSpecToSignal } from "../src/mock/convert";
+import { WEB_CLASSIFIER, sha256, webSnapshotRecord, webSpecToSignal } from "../src/mock/convert";
+import { caseScore } from "../src/mock/scoring";
 import { caseShortTitles, requirementShortTitles, shortFromTitle } from "../src/mock/authored/short-names";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const dataDir = resolve(here, "../../docs/02-data/processed");
+const dataDir = resolve(here, "../../docs/02-bmw-data/processed");
 const outFile = resolve(here, "../src/mock/fixtures/seed.json");
 const taxonomyFile = resolve(here, "../../taxonomy/taxonomy.json");
 const taxonomyOut = resolve(here, "../src/mock/fixtures/taxonomy.json");
@@ -182,6 +190,10 @@ function verbatimSignal(r: Row, caseId: string | null, carArea: CarArea | null, 
   // One finding = one topic: prefer a topic in the case's car area.
   const pick = pairs.find((p) => carArea && topicArea.get(p.topicId) === carArea) ?? pairs[0] ?? null;
   const area: CarArea = carArea ?? (pick ? topicArea.get(pick.topicId)! : "interior_comfort");
+  const bmwLabel = r.topics
+    .split("|")
+    .map((seg) => seg.trim())
+    .find((seg) => pick && taxonomy.vfc_level2_to_topic[seg.split(" : ")[0].trim()] === pick.topicId);
   return {
     id: r.id,
     kind,
@@ -209,6 +221,9 @@ function verbatimSignal(r: Row, caseId: string | null, carArea: CarArea | null, 
     audience: source === "C" || source === "D" ? "owner" : "owner",
     caseId,
     status: caseId ? "clustered" : "unclustered",
+    classification: bmwLabel
+      ? { method: "bmw_label", label: bmwLabel }
+      : { method: "llm", label: "no_class_found: to classify from the text (not run in the demo)", ...WEB_CLASSIFIER },
     synthetic: false,
   };
 }
@@ -232,6 +247,7 @@ function studySignal(ref: StudyRef, id: string, caseId: string, series: Series, 
     audience: "owner" as const,
     caseId,
     status: "clustered" as const,
+    classification: { method: "bmw_label" as const, label: `Study attribute: ${ref.attribute.trim()}` },
     synthetic: false,
   };
   if (ref.market === "US") {
@@ -438,6 +454,86 @@ const requirementVersions: RequirementVersion[] = requirements.map((r): Requirem
   createdBy: r.ownerId,
 }));
 
+// The replay hero has a real history: v1 matched the A6 e-tron, engineering feedback gave v2.
+const feedback: FeedbackEntry[] = [];
+{
+  const hero = requirements.find((r) => r.id === heroStory.requirementId)!;
+  const v1Parts = sentences(heroStory.v1.description);
+  const v1 = RequirementSnapshot.parse({
+    ...hero,
+    title: heroStory.v1.title,
+    description: heroStory.v1.description,
+    descriptionParts: v1Parts,
+    metrics: hero.metrics.map((m) => (m.targetSpec ? { ...m, target: heroStory.v1.target, targetSpec: { ...m.targetSpec, value: heroStory.v1.value } } : m)),
+    assumptions: ["Next-generation cells arrive in time for SOP"],
+    provenance: authoredProvenance(hero, v1Parts, requirementTags[hero.id], topSignals(hero.caseId)),
+  });
+  const first = requirementVersions.find((v) => v.requirementId === hero.id)!;
+  Object.assign(first, { snapshot: v1, rationale: `Drafted from confirmed ${hero.caseId}: match the best competitor (Audi A6 e-tron)`, createdAt: heroStory.v1.at, createdBy: "agent:requirement_writer" });
+  const fb = heroStory.feedback;
+  requirementVersions.push({ requirementId: hero.id, version: 2, snapshot: RequirementSnapshot.parse(hero), cause: "feedback", feedbackId: fb.id, rationale: fb.pmRationale, createdAt: addDays(fb.at, 0.001), createdBy: hero.ownerId });
+  hero.version = 2;
+  feedback.push({ id: fb.id, requirementId: hero.id, from: fb.from, text: fb.text, response: fb.response, pmRationale: fb.pmRationale, signalIds: [], proposalId: null, resultingVersion: 2, createdAt: fb.at, createdBy: hero.ownerId });
+}
+
+// ---------- Source records (the raw text every quote must be found in) ----------
+const sourceRecords: SourceRecord[] = [];
+{
+  const seen = new Set<string>();
+  const add = (rec: Omit<SourceRecord, "sha256">) => {
+    if (seen.has(rec.ref)) return;
+    seen.add(rec.ref);
+    sourceRecords.push({ ...rec, sha256: sha256(rec.text) });
+  };
+  const rowText = (row: Row) => Object.entries(row).map(([k, v]) => `${k}: ${v}`).join("\n");
+  for (const s of signals.values()) {
+    if (!s.recordRef) continue;
+    if (s.sourceType === "bmw_feedback") {
+      const row = verbatimById.get(s.id);
+      if (row) add({ ref: s.recordRef, sourceName: "feedback_verbatims.csv", text: rowText(row), fetchedAt: s.fetchedAt, synthetic: false });
+    } else if (s.sourceType === "bmw_study") {
+      const [file, key] = s.recordRef.split("#");
+      const [attribute, a, b] = key.split("|");
+      const row =
+        file === "study_us_2025.csv"
+          ? studyUs.find((r) => r.attribute === attribute && r.model === a)
+          : studyCnEu.find((r) => r.attribute.trim() === attribute && r.market === a && r.model === b);
+      if (row) add({ ref: s.recordRef, sourceName: file, text: rowText(row), fetchedAt: s.fetchedAt, synthetic: false });
+    } else {
+      add(webSnapshotRecord(s));
+    }
+  }
+}
+
+// ---------- Score snapshots: the case score as it was on a decision day ----------
+const defaultProfile = weightProfiles.find((p) => p.id === "wp-balanced")!;
+function weightsOn(at: string) {
+  return at < balancedV1Change.at ? { ...defaultProfile.weights, [balancedV1Change.field]: balancedV1Change.before } : defaultProfile.weights;
+}
+function snapshotOf(caseId: string, at: string): ScoreSnapshot {
+  const weights = weightsOn(at);
+  const ranked = cases
+    .filter((c) => c.state !== "observed" && !(c.state === "decided" && (c.outcome === "rejected" || c.outcome === "merged")))
+    .map((c) => ({ c, ...caseScore(c, weights) }))
+    .sort((a, b) => b.score - a.score);
+  const i = ranked.findIndex((x) => x.c.id === caseId);
+  const me = ranked[i];
+  const r3 = (n: number) => Math.round(n * 1000) / 1000;
+  return {
+    caseId,
+    profileId: defaultProfile.id,
+    profileName: defaultProfile.name,
+    profileVersion: at < balancedV1Change.at ? 1 : 2,
+    weights,
+    factors: me.c.factors,
+    contributions: Object.fromEntries(Object.entries(me.contributions).map(([k, v]) => [k, r3(v)])) as ScoreSnapshot["contributions"],
+    score: r3(me.score),
+    rank: i + 1,
+    of: ranked.length,
+    at,
+  };
+}
+
 // ---------- Series briefs (layer 1) ----------
 const briefs: SeriesBrief[] = briefSpecs.map((spec): SeriesBrief => {
   const plan = plans.find((p) => p.series === spec.series);
@@ -616,25 +712,64 @@ for (const c of cases) {
     });
   }
   if (c.state === "decided") {
-    audit.push({ at: end, ...human(c.ownerId), action: "case.decided", objectType: "case", objectId: c.id, before: { state: "ready" }, after: { state: "decided", outcome: c.outcome }, rationale: c.outcomeNote ?? "Decided" });
+    audit.push({
+      at: end,
+      ...human(c.ownerId),
+      action: "case.decided",
+      objectType: "case",
+      objectId: c.id,
+      before: { state: "ready" },
+      after: { state: "decided", outcome: c.outcome },
+      rationale: c.outcomeNote ?? "Decided",
+      scoreSnapshot: c.outcome === "confirmed" ? snapshotOf(c.id, end) : undefined,
+    });
   }
 }
 
+audit.push({
+  at: balancedV1Change.at,
+  ...human("u-katrin"),
+  action: "weight_profile.updated",
+  objectType: "profile",
+  objectId: defaultProfile.id,
+  before: { [balancedV1Change.field]: balancedV1Change.before, version: 1 },
+  after: { [balancedV1Change.field]: balancedV1Change.after, version: 2 },
+  rationale: balancedV1Change.rationale,
+});
+
 const reqPath: RequirementStatus[] = ["draft", "in_discussion", "pm_approved", "signed_off", "planned", "exported"];
+const reqCase = (r: Requirement) => cases.find((c) => c.id === r.caseId)!;
 for (const r of requirements) {
-  audit.push({ at: r.createdAt, ...ai("agent:requirement_writer"), action: "requirement.drafted", objectType: "requirement", objectId: r.id, after: { title: r.title }, rationale: `Generated from confirmed ${r.caseId}` });
+  const isHero = r.id === heroStory.requirementId;
+  audit.push({
+    at: isHero ? heroStory.v1.at : r.createdAt,
+    ...ai("agent:requirement_writer"),
+    action: "requirement.drafted",
+    objectType: "requirement",
+    objectId: r.id,
+    after: { title: isHero ? heroStory.v1.title : r.title, version: 1 },
+    rationale: `Generated from confirmed ${r.caseId}`,
+  });
+  if (isHero) {
+    const fb = heroStory.feedback;
+    audit.push({ at: addDays(heroStory.v1.at, 0.001), ...human(r.ownerId), action: "requirement.shape_answered", objectType: "requirement", objectId: r.id, after: { benchmark: "match" }, rationale: "Benchmark: match the best competitor (Audi A6 e-tron)" });
+    audit.push({ at: fb.at, ...human(r.ownerId), action: "requirement.feedback_recorded", objectType: "requirement", objectId: r.id, after: { feedbackId: fb.id, from: fb.from, response: fb.response, text: fb.text }, rationale: fb.pmRationale });
+    audit.push({ at: addDays(fb.at, 0.001), ...human(r.ownerId), action: "requirement.version_created", objectType: "requirement", objectId: r.id, before: { version: 1, target: heroStory.v1.target }, after: { version: 2, target: r.metrics[0].target, cause: "feedback" }, rationale: "Engineering feedback accepted: 760 → 690 km WLTP" });
+  }
   const idx = reqPath.indexOf(r.status);
+  const at = (i: number) => (isHero ? ({ 1: "2026-09-15T10:00:00Z", 2: "2026-09-22T10:00:00Z", 3: r.updatedAt } as Record<number, string>)[i] : between(r.createdAt, r.updatedAt, i / (idx + 1)));
   for (let i = 1; i <= idx; i++) {
     const actor = reqPath[i] === "signed_off" ? "u-katrin" : r.ownerId;
     audit.push({
-      at: between(r.createdAt, r.updatedAt, i / (idx + 1)),
+      at: at(i),
       ...human(actor),
       action: "requirement.status_changed",
       objectType: "requirement",
       objectId: r.id,
       before: { status: reqPath[i - 1] },
       after: { status: reqPath[i] },
-      rationale: ["Discussed with engineering", "Targets agreed", "Fits the product line plan", "Added to vehicle plan", "Exported"][i - 1],
+      rationale: (isHero ? heroStory.rationales[reqPath[i]] : undefined) ?? ["Discussed with engineering", "Targets agreed", "Fits the product line plan", "Added to vehicle plan", "Exported"][i - 1],
+      scoreSnapshot: reqPath[i] === "signed_off" ? snapshotOf(reqCase(r).id, at(i)) : undefined,
     });
   }
 }
@@ -684,7 +819,12 @@ const dataset = {
   alerts,
   briefs,
   requirementVersions,
-  feedback: [],
+  feedback,
+  sourceRecords,
+  conversions,
+  ripples: [],
+  rippleMutes: [],
+  monitorSettings,
   audit: sortedAudit,
 };
 

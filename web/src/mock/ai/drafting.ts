@@ -46,6 +46,7 @@ export function buildInput(
     previous: opts.previous ?? null,
     plan: d.plans.find((p) => p.series === c.series) ?? null,
     siblings: d.requirements.filter((r) => r.caseId === c.id && r.id !== opts.excludeRequirementId && r.status !== "rejected"),
+    conversions: d.conversions,
   };
 }
 

@@ -66,6 +66,50 @@
     },
     "createdAt": {
       "type": "string"
+    },
+    "rippleId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "itemVerdict": {
+      "type": "string",
+      "enum": [
+        "behind",
+        "at_par",
+        "still_ahead",
+        "not_comparable"
+      ]
+    },
+    "comparison": {
+      "type": "object",
+      "properties": {
+        "ours": {
+          "type": "string"
+        },
+        "theirs": {
+          "type": "string"
+        },
+        "normalized": {
+          "type": "string"
+        },
+        "factor": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "isAssumption": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ours",
+        "theirs",
+        "normalized",
+        "factor",
+        "isAssumption"
+      ],
+      "additionalProperties": false
     }
   },
   "required": [

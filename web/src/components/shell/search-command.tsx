@@ -30,10 +30,10 @@ export function SearchCommand() {
 
   return (
     <>
-      <Button variant="outline" size="sm" className="w-56 justify-start gap-2 text-muted-foreground" onClick={() => setOpen(true)}>
-        <Search className="size-3.5" />
-        <span className="flex-1 text-left">Search cases, IDs, people</span>
-        <kbd className="rounded border px-1 text-[10px]">Ctrl K</kbd>
+      <Button variant="outline" size="sm" className="w-64 min-w-0 shrink justify-start gap-2 font-normal text-muted-foreground max-md:w-auto max-md:flex-1" onClick={() => setOpen(true)}>
+        <Search className="size-3.5" strokeWidth={1.75} />
+        <span className="min-w-0 flex-1 truncate text-left">Search cases, IDs, people</span>
+        <kbd className="rounded-sm border bg-recessed px-1.5 font-sans text-xs leading-4 text-muted-foreground max-md:hidden">Ctrl K</kbd>
       </Button>
       <CommandDialog open={open} onOpenChange={setOpen} title="Search">
         <Command shouldFilter={false}>

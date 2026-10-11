@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Argon Logo Options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f4f5; --card: #ffffff; --fg: #09090b; --muted: #66666f; --border: #ececee;
+    --ember: #ff5a00; --violet: #7c5cff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #09090b; --card: #18181b; --fg: #fafafa; --muted: #a1a1aa; --border: rgb(255 255 255 / .09); }
+  }
+  :root[data-theme="dark"] { --bg: #09090b; --card: #18181b; --fg: #fafafa; --muted: #a1a1aa; --border: rgb(255 255 255 / .09); }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font-family: "DM Sans", system-ui, sans-serif; line-height: 1.5; }
+  main { max-width: 1120px; margin: 0 auto; padding: 40px 16px 64px; }
+  h1 { font-size: 32px; font-weight: 600; margin: 0 0 6px; letter-spacing: -.01em; }
+  .lead { color: var(--muted); margin: 0 0 32px; max-width: 680px; }
+  h2 { font-size: 20px; font-weight: 600; margin: 0; }
+  .num { color: var(--muted); font-weight: 500; margin-right: 6px; }
+
+  .option { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+  .head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; margin-bottom: 4px; }
+  .tag { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); }
+  .why { color: var(--muted); margin: 0 0 20px; max-width: 760px; font-size: 15px; }
+
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+
+  /* Each swatch sets the logo colours for its own theme, independent of the page theme. */
+  .swatch { border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 24px; }
+  .swatch.light { background: #ffffff; border: 1px solid #ececee; color: #09090b; --logo-ink: #09090b; --logo-on: #ffffff; --logo-accent: #ff5a00; --logo-glow: #7c5cff; --sub: #66666f; }
+  .swatch.dark  { background: #09090b; border: 1px solid #27272a; color: #fafafa; --logo-ink: #fafafa; --logo-on: #09090b; --logo-accent: #ff5a00; --logo-glow: #9b85ff; --sub: #a1a1aa; }
+  .swatch-label { font-size: 12px; font-weight: 600; color: var(--sub); text-transform: uppercase; letter-spacing: .06em; }
+
+  .hero { display: flex; align-items: center; justify-content: center; min-height: 150px; }
+  .hero svg { width: 128px; height: 128px; }
+
+  .sizes { display: flex; align-items: end; gap: 20px; flex-wrap: wrap; }
+  .size { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 11px; color: var(--sub); }
+
+  .lockup { display: flex; align-items: center; gap: 10px; }
+  .lockup svg { width: 32px; height: 32px; flex-shrink: 0; }
+  .lockup b { font-size: 22px; font-weight: 600; letter-spacing: -.01em; }
+  .lockup .pair { display: flex; align-items: center; gap: 8px; margin-left: auto; font-size: 13px; color: var(--sub); }
+  .lockup .pair svg { width: 20px; height: 20px; }
+
+  /* The Argus bubble as it sits bottom-right in the app. */
+  .app { position: relative; height: 170px; border-radius: 10px; overflow: hidden; }
+  .swatch.light .app { background: #f4f4f5; border: 1px solid #ececee; }
+  .swatch.dark .app { background: #18181b; border: 1px solid #27272a; }
+  .app .row { height: 10px; border-radius: 5px; margin: 16px 16px 0; opacity: .12; background: currentColor; }
+  .app .row.s { width: 55%; } .app .row.m { width: 75%; }
+  .bubble { position: absolute; right: 16px; bottom: 16px; width: 52px; height: 52px; border-radius: 999px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgb(0 0 0 / .18); }
+  .swatch.light .bubble { background: #09090b; --logo-ink: #ffffff; --logo-on: #09090b; }
+  .swatch.dark .bubble { background: #fafafa; --logo-ink: #09090b; --logo-on: #fafafa; }
+  .bubble svg { width: 30px; height: 30px; }
+  .hint { position: absolute; right: 78px; bottom: 28px; font-size: 12px; font-weight: 500; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+  .swatch.light .hint { background: #fff; border: 1px solid #ececee; }
+  .swatch.dark .hint { background: #09090b; border: 1px solid #27272a; }
+
+  .verdict { margin-top: 28px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; }
+  .verdict p { margin: 8px 0 0; color: var(--muted); max-width: 760px; }
+  .verdict b { color: var(--fg); }
+  code { font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Argon logo options</h1>
+  <p class="lead">Three directions, each shown in light and dark mode, at real sizes (sidebar 28 px, favicon 16 px), as a lockup with the wordmark, and with the Argus bubble as it sits bottom-right in the app. Colours are the app's own: obsidian, white and ember, plus argon's violet glow for Argus.</p>
+
+  <section class="option">
+    <div class="head"><h2><span class="num">1</span>Element tile</h2><span class="tag">Argon</span><span class="tag">Safest</span></div>
+    <p class="why">A rounded tile with <b>18</b>, argon's atomic number, and a geometric <b>Ar</b>, like a periodic-table tile. The ember dot is one energised electron. Closest to today's "Ar" square in the sidebar.</p>
+    <div class="grid"><div class="swatch light">
+      <span class="swatch-label">light</span>
+      <div class="hero"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argon">
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="var(--logo-ink, #09090b)"/>
+  <text x="11" y="17" font-family="DM Sans, Arial, sans-serif" font-size="9" font-weight="600" fill="var(--logo-on, #fff)" opacity=".7">18</text>
+  <g fill="none" stroke="var(--logo-on, #fff)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M13 48 L23.5 21 L34 48"/>
+    <path d="M17.5 39 H29.5"/>
+    <path d="M42 48 V31 M42 37 C42 32 45.5 29 51 29"/>
+  </g>
+  <circle cx="51" cy="13" r="3.2" fill="var(--logo-accent, #ff5a00)"/>
+</svg></div>
+      <div class="sizes"><div class="size"><svg width="64" height="64" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argon">
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="var(--logo-ink, #09090b)"/>
+  <text x="11" y="17" font-family="DM Sans, Arial, sans-serif" font-size="9" font-weight="600" fill="var(--logo-on, #fff)" opacity=".7">18</text>
+  <g fill="none" stroke="var(--logo-on, #fff)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M13 48 L23.5 21 L34 48"/>
+    <path d="M17.5 39 H29.5"/>
+    <path d="M42 48 V31 M42 37 C42 32 45.5 29 51 29"/>
+  </g>
+  <circle cx="51" cy="13" r="3.2" fill="var(--logo-accent, #ff5a00)"/>
+</svg><span>64 px</span></div><div class="size"><svg width="28" height="28" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argon">
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="var(--logo-ink, #09090b)"/>
+  <text x="11" y="17" font-family="DM Sans, Arial, sans-serif" font-size="9" font-weight="600" fill="var(--logo-on, #fff)" opacity=".7">18</text>
+  <g fill="none" stroke="var(--logo-on, #fff)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M13 48 L23.5 21 L34 48"/>
+    <path d="M17.5 39 H29.5"/>
+    <path d="M42 48 V31 M42 37 C42 32 45.5 29 51 29"/>
+  </g>
+  <circle cx="51" cy="13" r="3.2" fill="var(--logo-accent, #ff5a00)"/>
+</svg><span>28 px</span></div><div class="size"><svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argon">
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="var(--logo-ink, #09090b)"/>
+  <text x="11" y="17" font-family="DM Sans, Arial, sans-serif" font-size="9" font-weight="600" fill="var(--logo-on, #fff)" opacity=".7">18</text>
+  <g fill="none" stroke="var(--logo-on, #fff)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M13 48 L23.5 21 L34 48"/>
+    <path d="M17.5 39 H29.5"/>
+    <path d="M42 48 V31 M42 37 C42 32 45.5 29 51 29"/>
+  </g>
+  <circle cx="51" cy="13" r="3.2" fill="var(--logo-accent, #ff5a00)"/>
+</svg><span>16 px</span></div></div>
+      <div class="lockup"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argon">
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="var(--logo-ink, #09090b)"/>
+  <text x="11" y="17" font-family="DM Sans, Arial, sans-serif" font-size="9" font-weight="600" fill="var(--logo-on, #fff)" opacity=".7">18</text>
+  <g fill="none" stroke="var(--logo-on, #fff)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M13 48 L23.5 21 L34 48"/>
+    <path d="M17.5 39 H29.5"/>
+    <path d="M42 48 V31 M42 37 C42 32 45.5 29 51 29"/>
+  </g>
+  <circle cx="51" cy="13" r="3.2" fill="var(--logo-accent, #ff5a00)"/>
+</svg><b>Argon</b><span class="pair">with Argus <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argus">
+  <path d="M5 33 C15 17 49 17 59 33 C49 49 15 49 5 33 Z" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="4.5" stroke-linejoin="round"/>
+  <circle cx="32" cy="33" r="10.5" fill="var(--logo-glow, #7c5cff)"/>
+  <circle cx="32" cy="33" r="4.2" fill="#09090b"/>
+  <circle cx="35.2" cy="29.6" r="1.6" fill="#fff"/>
+  <path d="M53 5.5 C53.8 9.6 55.4 11.2 59.5 12 C55.4 12.8 53.8 14.4 53 18.5 C52.2 14.4 50.6 12.8 46.5 12 C50.6 11.2 52.2 9.6 53 5.5 Z" fill="var(--logo-accent, #ff5a00)"/>
+</svg></span></div>
+      <div class="app"><div class="row m"></div><div class="row s"></div><div class="row m"></div>
+        <span class="hint">Ask Argus</span><div class="bubble"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argus">
+  <path d="M5 33 C15 17 49 17 59 33 C49 49 15 49 5 33 Z" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="4.5" stroke-linejoin="round"/>
+  <circle cx="32" cy="33" r="10.5" fill="var(--logo-glow, #7c5cff)"/>
+  <circle cx="32" cy="33" r="4.2" fill="#09090b"/>
+  <circle cx="35.2" cy="29.6" r="1.6" fill="#fff"/>
+  <path d="M53 5.5 C53.8 9.6 55.4 11.2 59.5 12 C55.4 12.8 53.8 14.4 53 18.5 C52.2 14.4 50.6 12.8 46.5 12 C50.6 11.2 52.2 9.6 53 5.5 Z" fill="var(--logo-accent, #ff5a00)"/>
+</svg></div></div>
+    </div><div class="swatch dark">
+      <span class="swatch-label">dark</span>
+      <div class="hero"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argon">
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="var(--logo-ink, #09090b)"/>
+  <text x="11" y="17" font-family="DM Sans, Arial, sans-serif" font-size="9" font-weight="600" fill="var(--logo-on, #fff)" opacity=".7">18</text>
+  <g fill="none" stroke="var(--logo-on, #fff)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M13 48 L23.5 21 L34 48"/>
+    <path d="M17.5 39 H29.5"/>
+    <path d="M42 48 V31 M42 37 C42 32 45.5 29 51 29"/>
+  </g>
+  <circle cx="51" cy="13" r="3.2" fill="var(--logo-accent, #ff5a00)"/>
+</svg></div>
+      <div class="sizes"><div class="size"><svg width="64" height="64" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argon">
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="var(--logo-ink, #09090b)"/>
+  <text x="11" y="17" font-family="DM Sans, Arial, sans-serif" font-size="9" font-weight="600" fill="var(--logo-on, #fff)" opacity=".7">18</text>
+  <g fill="none" stroke="var(--logo-on, #fff)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M13 48 L23.5 21 L34 48"/>
+    <path d="M17.5 39 H29.5"/>
+    <path d="M42 48 V31 M42 37 C42 32 45.5 29 51 29"/>
+  </g>
+  <circle cx="51" cy="13" r="3.2" fill="var(--logo-accent, #ff5a00)"/>
+</svg><span>64 px</span></div><div class="size"><svg width="28" height="28" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argon">
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="var(--logo-ink, #09090b)"/>
+  <text x="11" y="17" font-family="DM Sans, Arial, sans-serif" font-size="9" font-weight="600" fill="var(--logo-on, #fff)" opacity=".7">18</text>
+  <g fill="none" stroke="var(--logo-on, #fff)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M13 48 L23.5 21 L34 48"/>
+    <path d="M17.5 39 H29.5"/>
+    <path d="M42 48 V31 M42 37 C42 32 45.5 29 51 29"/>
+  </g>
+  <circle cx="51" cy="13" r="3.2" fill="var(--logo-accent, #ff5a00)"/>
+</svg><span>28 px</span></div><div class="size"><svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argon">
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="var(--logo-ink, #09090b)"/>
+  <text x="11" y="17" font-family="DM Sans, Arial, sans-serif" font-size="9" font-weight="600" fill="var(--logo-on, #fff)" opacity=".7">18</text>
+  <g fill="none" stroke="var(--logo-on, #fff)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M13 48 L23.5 21 L34 48"/>
+    <path d="M17.5 39 H29.5"/>
+    <path d="M42 48 V31 M42 37 C42 32 45.5 29 51 29"/>
+  </g>
+  <circle cx="51" cy="13" r="3.2" fill="var(--logo-accent, #ff5a00)"/>
+</svg><span>16 px</span></div></div>
+      <div class="lockup"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argon">
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="var(--logo-ink, #09090b)"/>
+  <text x="11" y="17" font-family="DM Sans, Arial, sans-serif" font-size="9" font-weight="600" fill="var(--logo-on, #fff)" opacity=".7">18</text>
+  <g fill="none" stroke="var(--logo-on, #fff)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M13 48 L23.5 21 L34 48"/>
+    <path d="M17.5 39 H29.5"/>
+    <path d="M42 48 V31 M42 37 C42 32 45.5 29 51 29"/>
+  </g>
+  <circle cx="51" cy="13" r="3.2" fill="var(--logo-accent, #ff5a00)"/>
+</svg><b>Argon</b><span class="pair">with Argus <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argus">
+  <path d="M5 33 C15 17 49 17 59 33 C49 49 15 49 5 33 Z" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="4.5" stroke-linejoin="round"/>
+  <circle cx="32" cy="33" r="10.5" fill="var(--logo-glow, #7c5cff)"/>
+  <circle cx="32" cy="33" r="4.2" fill="#09090b"/>
+  <circle cx="35.2" cy="29.6" r="1.6" fill="#fff"/>
+  <path d="M53 5.5 C53.8 9.6 55.4 11.2 59.5 12 C55.4 12.8 53.8 14.4 53 18.5 C52.2 14.4 50.6 12.8 46.5 12 C50.6 11.2 52.2 9.6 53 5.5 Z" fill="var(--logo-accent, #ff5a00)"/>
+</svg></span></div>
+      <div class="app"><div class="row m"></div><div class="row s"></div><div class="row m"></div>
+        <span class="hint">Ask Argus</span><div class="bubble"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argus">
+  <path d="M5 33 C15 17 49 17 59 33 C49 49 15 49 5 33 Z" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="4.5" stroke-linejoin="round"/>
+  <circle cx="32" cy="33" r="10.5" fill="var(--logo-glow, #7c5cff)"/>
+  <circle cx="32" cy="33" r="4.2" fill="#09090b"/>
+  <circle cx="35.2" cy="29.6" r="1.6" fill="#fff"/>
+  <path d="M53 5.5 C53.8 9.6 55.4 11.2 59.5 12 C55.4 12.8 53.8 14.4 53 18.5 C52.2 14.4 50.6 12.8 46.5 12 C50.6 11.2 52.2 9.6 53 5.5 Z" fill="var(--logo-accent, #ff5a00)"/>
+</svg></div></div>
+    </div></div>
+  </section>
+  <section class="option">
+    <div class="head"><h2><span class="num">2</span>Full shell</h2><span class="tag">Argon</span><span class="tag">Most distinctive</span></div>
+    <p class="why">Eight electrons close argon's outer shell, which makes it inert: it never reacts on its own. That is the platform's rule, the AI never decides alone. The ember core is the PM's decision at the centre.</p>
+    <div class="grid"><div class="swatch light">
+      <span class="swatch-label">light</span>
+      <div class="hero"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argon">
+  <circle cx="32" cy="32" r="22" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="1.5" opacity=".25"/>
+  <g fill="var(--logo-ink, #09090b)">
+    <circle cx="32" cy="10" r="3.6"/><circle cx="47.56" cy="16.44" r="3.6"/>
+    <circle cx="54" cy="32" r="3.6"/><circle cx="47.56" cy="47.56" r="3.6"/>
+    <circle cx="32" cy="54" r="3.6"/><circle cx="16.44" cy="47.56" r="3.6"/>
+    <circle cx="10" cy="32" r="3.6"/><circle cx="16.44" cy="16.44" r="3.6"/>
+  </g>
+  <circle cx="32" cy="32" r="9" fill="var(--logo-accent, #ff5a00)"/>
+</svg></div>
+      <div class="sizes"><div class="size"><svg width="64" height="64" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argon">
+  <circle cx="32" cy="32" r="22" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="1.5" opacity=".25"/>
+  <g fill="var(--logo-ink, #09090b)">
+    <circle cx="32" cy="10" r="3.6"/><circle cx="47.56" cy="16.44" r="3.6"/>
+    <circle cx="54" cy="32" r="3.6"/><circle cx="47.56" cy="47.56" r="3.6"/>
+    <circle cx="32" cy="54" r="3.6"/><circle cx="16.44" cy="47.56" r="3.6"/>
+    <circle cx="10" cy="32" r="3.6"/><circle cx="16.44" cy="16.44" r="3.6"/>
+  </g>
+  <circle cx="32" cy="32" r="9" fill="var(--logo-accent, #ff5a00)"/>
+</svg><span>64 px</span></div><div class="size"><svg width="28" height="28" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argon">
+  <circle cx="32" cy="32" r="22" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="1.5" opacity=".25"/>
+  <g fill="var(--logo-ink, #09090b)">
+    <circle cx="32" cy="10" r="3.6"/><circle cx="47.56" cy="16.44" r="3.6"/>
+    <circle cx="54" cy="32" r="3.6"/><circle cx="47.56" cy="47.56" r="3.6"/>
+    <circle cx="32" cy="54" r="3.6"/><circle cx="16.44" cy="47.56" r="3.6"/>
+    <circle cx="10" cy="32" r="3.6"/><circle cx="16.44" cy="16.44" r="3.6"/>
+  </g>
+  <circle cx="32" cy="32" r="9" fill="var(--logo-accent, #ff5a00)"/>
+</svg><span>28 px</span></div><div class="size"><svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argon">
+  <circle cx="32" cy="32" r="22" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="1.5" opacity=".25"/>
+  <g fill="var(--logo-ink, #09090b)">
+    <circle cx="32" cy="10" r="3.6"/><circle cx="47.56" cy="16.44" r="3.6"/>
+    <circle cx="54" cy="32" r="3.6"/><circle cx="47.56" cy="47.56" r="3.6"/>
+    <circle cx="32" cy="54" r="3.6"/><circle cx="16.44" cy="47.56" r="3.6"/>
+    <circle cx="10" cy="32" r="3.6"/><circle cx="16.44" cy="16.44" r="3.6"/>
+  </g>
+  <circle cx="32" cy="32" r="9" fill="var(--logo-accent, #ff5a00)"/>
+</svg><span>16 px</span></div></div>
+      <div class="lockup"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argon">
+  <circle cx="32" cy="32" r="22" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="1.5" opacity=".25"/>
+  <g fill="var(--logo-ink, #09090b)">
+    <circle cx="32" cy="10" r="3.6"/><circle cx="47.56" cy="16.44" r="3.6"/>
+    <circle cx="54" cy="32" r="3.6"/><circle cx="47.56" cy="47.56" r="3.6"/>
+    <circle cx="32" cy="54" r="3.6"/><circle cx="16.44" cy="47.56" r="3.6"/>
+    <circle cx="10" cy="32" r="3.6"/><circle cx="16.44" cy="16.44" r="3.6"/>
+  </g>
+  <circle cx="32" cy="32" r="9" fill="var(--logo-accent, #ff5a00)"/>
+</svg><b>Argon</b><span class="pair">with Argus <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argus">
+  <path d="M5 33 C15 17 49 17 59 33 C49 49 15 49 5 33 Z" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="4.5" stroke-linejoin="round"/>
+  <circle cx="32" cy="33" r="10.5" fill="var(--logo-glow, #7c5cff)"/>
+  <circle cx="32" cy="33" r="4.2" fill="#09090b"/>
+  <circle cx="35.2" cy="29.6" r="1.6" fill="#fff"/>
+  <path d="M53 5.5 C53.8 9.6 55.4 11.2 59.5 12 C55.4 12.8 53.8 14.4 53 18.5 C52.2 14.4 50.6 12.8 46.5 12 C50.6 11.2 52.2 9.6 53 5.5 Z" fill="var(--logo-accent, #ff5a00)"/>
+</svg></span></div>
+      <div class="app"><div class="row m"></div><div class="row s"></div><div class="row m"></div>
+        <span class="hint">Ask Argus</span><div class="bubble"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argus">
+  <path d="M5 33 C15 17 49 17 59 33 C49 49 15 49 5 33 Z" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="4.5" stroke-linejoin="round"/>
+  <circle cx="32" cy="33" r="10.5" fill="var(--logo-glow, #7c5cff)"/>
+  <circle cx="32" cy="33" r="4.2" fill="#09090b"/>
+  <circle cx="35.2" cy="29.6" r="1.6" fill="#fff"/>
+  <path d="M53 5.5 C53.8 9.6 55.4 11.2 59.5 12 C55.4 12.8 53.8 14.4 53 18.5 C52.2 14.4 50.6 12.8 46.5 12 C50.6 11.2 52.2 9.6 53 5.5 Z" fill="var(--logo-accent, #ff5a00)"/>
+</svg></div></div>
+    </div><div class="swatch dark">
+      <span class="swatch-label">dark</span>
+      <div class="hero"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argon">
+  <circle cx="32" cy="32" r="22" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="1.5" opacity=".25"/>
+  <g fill="var(--logo-ink, #09090b)">
+    <circle cx="32" cy="10" r="3.6"/><circle cx="47.56" cy="16.44" r="3.6"/>
+    <circle cx="54" cy="32" r="3.6"/><circle cx="47.56" cy="47.56" r="3.6"/>
+    <circle cx="32" cy="54" r="3.6"/><circle cx="16.44" cy="47.56" r="3.6"/>
+    <circle cx="10" cy="32" r="3.6"/><circle cx="16.44" cy="16.44" r="3.6"/>
+  </g>
+  <circle cx="32" cy="32" r="9" fill="var(--logo-accent, #ff5a00)"/>
+</svg></div>
+      <div class="sizes"><div class="size"><svg width="64" height="64" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argon">
+  <circle cx="32" cy="32" r="22" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="1.5" opacity=".25"/>
+  <g fill="var(--logo-ink, #09090b)">
+    <circle cx="32" cy="10" r="3.6"/><circle cx="47.56" cy="16.44" r="3.6"/>
+    <circle cx="54" cy="32" r="3.6"/><circle cx="47.56" cy="47.56" r="3.6"/>
+    <circle cx="32" cy="54" r="3.6"/><circle cx="16.44" cy="47.56" r="3.6"/>
+    <circle cx="10" cy="32" r="3.6"/><circle cx="16.44" cy="16.44" r="3.6"/>
+  </g>
+  <circle cx="32" cy="32" r="9" fill="var(--logo-accent, #ff5a00)"/>
+</svg><span>64 px</span></div><div class="size"><svg width="28" height="28" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argon">
+  <circle cx="32" cy="32" r="22" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="1.5" opacity=".25"/>
+  <g fill="var(--logo-ink, #09090b)">
+    <circle cx="32" cy="10" r="3.6"/><circle cx="47.56" cy="16.44" r="3.6"/>
+    <circle cx="54" cy="32" r="3.6"/><circle cx="47.56" cy="47.56" r="3.6"/>
+    <circle cx="32" cy="54" r="3.6"/><circle cx="16.44" cy="47.56" r="3.6"/>
+    <circle cx="10" cy="32" r="3.6"/><circle cx="16.44" cy="16.44" r="3.6"/>
+  </g>
+  <circle cx="32" cy="32" r="9" fill="var(--logo-accent, #ff5a00)"/>
+</svg><span>28 px</span></div><div class="size"><svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argon">
+  <circle cx="32" cy="32" r="22" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="1.5" opacity=".25"/>
+  <g fill="var(--logo-ink, #09090b)">
+    <circle cx="32" cy="10" r="3.6"/><circle cx="47.56" cy="16.44" r="3.6"/>
+    <circle cx="54" cy="32" r="3.6"/><circle cx="47.56" cy="47.56" r="3.6"/>
+    <circle cx="32" cy="54" r="3.6"/><circle cx="16.44" cy="47.56" r="3.6"/>
+    <circle cx="10" cy="32" r="3.6"/><circle cx="16.44" cy="16.44" r="3.6"/>
+  </g>
+  <circle cx="32" cy="32" r="9" fill="var(--logo-accent, #ff5a00)"/>
+</svg><span>16 px</span></div></div>
+      <div class="lockup"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argon">
+  <circle cx="32" cy="32" r="22" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="1.5" opacity=".25"/>
+  <g fill="var(--logo-ink, #09090b)">
+    <circle cx="32" cy="10" r="3.6"/><circle cx="47.56" cy="16.44" r="3.6"/>
+    <circle cx="54" cy="32" r="3.6"/><circle cx="47.56" cy="47.56" r="3.6"/>
+    <circle cx="32" cy="54" r="3.6"/><circle cx="16.44" cy="47.56" r="3.6"/>
+    <circle cx="10" cy="32" r="3.6"/><circle cx="16.44" cy="16.44" r="3.6"/>
+  </g>
+  <circle cx="32" cy="32" r="9" fill="var(--logo-accent, #ff5a00)"/>
+</svg><b>Argon</b><span class="pair">with Argus <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argus">
+  <path d="M5 33 C15 17 49 17 59 33 C49 49 15 49 5 33 Z" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="4.5" stroke-linejoin="round"/>
+  <circle cx="32" cy="33" r="10.5" fill="var(--logo-glow, #7c5cff)"/>
+  <circle cx="32" cy="33" r="4.2" fill="#09090b"/>
+  <circle cx="35.2" cy="29.6" r="1.6" fill="#fff"/>
+  <path d="M53 5.5 C53.8 9.6 55.4 11.2 59.5 12 C55.4 12.8 53.8 14.4 53 18.5 C52.2 14.4 50.6 12.8 46.5 12 C50.6 11.2 52.2 9.6 53 5.5 Z" fill="var(--logo-accent, #ff5a00)"/>
+</svg></span></div>
+      <div class="app"><div class="row m"></div><div class="row s"></div><div class="row m"></div>
+        <span class="hint">Ask Argus</span><div class="bubble"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argus">
+  <path d="M5 33 C15 17 49 17 59 33 C49 49 15 49 5 33 Z" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="4.5" stroke-linejoin="round"/>
+  <circle cx="32" cy="33" r="10.5" fill="var(--logo-glow, #7c5cff)"/>
+  <circle cx="32" cy="33" r="4.2" fill="#09090b"/>
+  <circle cx="35.2" cy="29.6" r="1.6" fill="#fff"/>
+  <path d="M53 5.5 C53.8 9.6 55.4 11.2 59.5 12 C55.4 12.8 53.8 14.4 53 18.5 C52.2 14.4 50.6 12.8 46.5 12 C50.6 11.2 52.2 9.6 53 5.5 Z" fill="var(--logo-accent, #ff5a00)"/>
+</svg></div></div>
+    </div></div>
+  </section>
+  <section class="option">
+    <div class="head"><h2><span class="num">3</span>Argus eye</h2><span class="tag">Argus (the AI)</span><span class="tag">For the assistant</span></div>
+    <p class="why">Argus, the giant with a hundred eyes who watches everything. The violet iris is the colour argon glows when it is energised; the sparkle is the usual sign for AI, as Atlassian uses for Rovo.</p>
+    <div class="grid"><div class="swatch light">
+      <span class="swatch-label">light</span>
+      <div class="hero"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argus">
+  <path d="M5 33 C15 17 49 17 59 33 C49 49 15 49 5 33 Z" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="4.5" stroke-linejoin="round"/>
+  <circle cx="32" cy="33" r="10.5" fill="var(--logo-glow, #7c5cff)"/>
+  <circle cx="32" cy="33" r="4.2" fill="#09090b"/>
+  <circle cx="35.2" cy="29.6" r="1.6" fill="#fff"/>
+  <path d="M53 5.5 C53.8 9.6 55.4 11.2 59.5 12 C55.4 12.8 53.8 14.4 53 18.5 C52.2 14.4 50.6 12.8 46.5 12 C50.6 11.2 52.2 9.6 53 5.5 Z" fill="var(--logo-accent, #ff5a00)"/>
+</svg></div>
+      <div class="sizes"><div class="size"><svg width="64" height="64" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argus">
+  <path d="M5 33 C15 17 49 17 59 33 C49 49 15 49 5 33 Z" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="4.5" stroke-linejoin="round"/>
+  <circle cx="32" cy="33" r="10.5" fill="var(--logo-glow, #7c5cff)"/>
+  <circle cx="32" cy="33" r="4.2" fill="#09090b"/>
+  <circle cx="35.2" cy="29.6" r="1.6" fill="#fff"/>
+  <path d="M53 5.5 C53.8 9.6 55.4 11.2 59.5 12 C55.4 12.8 53.8 14.4 53 18.5 C52.2 14.4 50.6 12.8 46.5 12 C50.6 11.2 52.2 9.6 53 5.5 Z" fill="var(--logo-accent, #ff5a00)"/>
+</svg><span>64 px</span></div><div class="size"><svg width="28" height="28" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argus">
+  <path d="M5 33 C15 17 49 17 59 33 C49 49 15 49 5 33 Z" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="4.5" stroke-linejoin="round"/>
+  <circle cx="32" cy="33" r="10.5" fill="var(--logo-glow, #7c5cff)"/>
+  <circle cx="32" cy="33" r="4.2" fill="#09090b"/>
+  <circle cx="35.2" cy="29.6" r="1.6" fill="#fff"/>
+  <path d="M53 5.5 C53.8 9.6 55.4 11.2 59.5 12 C55.4 12.8 53.8 14.4 53 18.5 C52.2 14.4 50.6 12.8 46.5 12 C50.6 11.2 52.2 9.6 53 5.5 Z" fill="var(--logo-accent, #ff5a00)"/>
+</svg><span>28 px</span></div><div class="size"><svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argus">
+  <path d="M5 33 C15 17 49 17 59 33 C49 49 15 49 5 33 Z" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="4.5" stroke-linejoin="round"/>
+  <circle cx="32" cy="33" r="10.5" fill="var(--logo-glow, #7c5cff)"/>
+  <circle cx="32" cy="33" r="4.2" fill="#09090b"/>
+  <circle cx="35.2" cy="29.6" r="1.6" fill="#fff"/>
+  <path d="M53 5.5 C53.8 9.6 55.4 11.2 59.5 12 C55.4 12.8 53.8 14.4 53 18.5 C52.2 14.4 50.6 12.8 46.5 12 C50.6 11.2 52.2 9.6 53 5.5 Z" fill="var(--logo-accent, #ff5a00)"/>
+</svg><span>16 px</span></div></div>
+      <div class="lockup"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argus">
+  <path d="M5 33 C15 17 49 17 59 33 C49 49 15 49 5 33 Z" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="4.5" stroke-linejoin="round"/>
+  <circle cx="32" cy="33" r="10.5" fill="var(--logo-glow, #7c5cff)"/>
+  <circle cx="32" cy="33" r="4.2" fill="#09090b"/>
+  <circle cx="35.2" cy="29.6" r="1.6" fill="#fff"/>
+  <path d="M53 5.5 C53.8 9.6 55.4 11.2 59.5 12 C55.4 12.8 53.8 14.4 53 18.5 C52.2 14.4 50.6 12.8 46.5 12 C50.6 11.2 52.2 9.6 53 5.5 Z" fill="var(--logo-accent, #ff5a00)"/>
+</svg><b>Argus</b></div>
+      <div class="app"><div class="row m"></div><div class="row s"></div><div class="row m"></div>
+        <span class="hint">Ask Argus</span><div class="bubble"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argus">
+  <path d="M5 33 C15 17 49 17 59 33 C49 49 15 49 5 33 Z" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="4.5" stroke-linejoin="round"/>
+  <circle cx="32" cy="33" r="10.5" fill="var(--logo-glow, #7c5cff)"/>
+  <circle cx="32" cy="33" r="4.2" fill="#09090b"/>
+  <circle cx="35.2" cy="29.6" r="1.6" fill="#fff"/>
+  <path d="M53 5.5 C53.8 9.6 55.4 11.2 59.5 12 C55.4 12.8 53.8 14.4 53 18.5 C52.2 14.4 50.6 12.8 46.5 12 C50.6 11.2 52.2 9.6 53 5.5 Z" fill="var(--logo-accent, #ff5a00)"/>
+</svg></div></div>
+    </div><div class="swatch dark">
+      <span class="swatch-label">dark</span>
+      <div class="hero"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argus">
+  <path d="M5 33 C15 17 49 17 59 33 C49 49 15 49 5 33 Z" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="4.5" stroke-linejoin="round"/>
+  <circle cx="32" cy="33" r="10.5" fill="var(--logo-glow, #7c5cff)"/>
+  <circle cx="32" cy="33" r="4.2" fill="#09090b"/>
+  <circle cx="35.2" cy="29.6" r="1.6" fill="#fff"/>
+  <path d="M53 5.5 C53.8 9.6 55.4 11.2 59.5 12 C55.4 12.8 53.8 14.4 53 18.5 C52.2 14.4 50.6 12.8 46.5 12 C50.6 11.2 52.2 9.6 53 5.5 Z" fill="var(--logo-accent, #ff5a00)"/>
+</svg></div>
+      <div class="sizes"><div class="size"><svg width="64" height="64" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argus">
+  <path d="M5 33 C15 17 49 17 59 33 C49 49 15 49 5 33 Z" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="4.5" stroke-linejoin="round"/>
+  <circle cx="32" cy="33" r="10.5" fill="var(--logo-glow, #7c5cff)"/>
+  <circle cx="32" cy="33" r="4.2" fill="#09090b"/>
+  <circle cx="35.2" cy="29.6" r="1.6" fill="#fff"/>
+  <path d="M53 5.5 C53.8 9.6 55.4 11.2 59.5 12 C55.4 12.8 53.8 14.4 53 18.5 C52.2 14.4 50.6 12.8 46.5 12 C50.6 11.2 52.2 9.6 53 5.5 Z" fill="var(--logo-accent, #ff5a00)"/>
+</svg><span>64 px</span></div><div class="size"><svg width="28" height="28" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argus">
+  <path d="M5 33 C15 17 49 17 59 33 C49 49 15 49 5 33 Z" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="4.5" stroke-linejoin="round"/>
+  <circle cx="32" cy="33" r="10.5" fill="var(--logo-glow, #7c5cff)"/>
+  <circle cx="32" cy="33" r="4.2" fill="#09090b"/>
+  <circle cx="35.2" cy="29.6" r="1.6" fill="#fff"/>
+  <path d="M53 5.5 C53.8 9.6 55.4 11.2 59.5 12 C55.4 12.8 53.8 14.4 53 18.5 C52.2 14.4 50.6 12.8 46.5 12 C50.6 11.2 52.2 9.6 53 5.5 Z" fill="var(--logo-accent, #ff5a00)"/>
+</svg><span>28 px</span></div><div class="size"><svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argus">
+  <path d="M5 33 C15 17 49 17 59 33 C49 49 15 49 5 33 Z" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="4.5" stroke-linejoin="round"/>
+  <circle cx="32" cy="33" r="10.5" fill="var(--logo-glow, #7c5cff)"/>
+  <circle cx="32" cy="33" r="4.2" fill="#09090b"/>
+  <circle cx="35.2" cy="29.6" r="1.6" fill="#fff"/>
+  <path d="M53 5.5 C53.8 9.6 55.4 11.2 59.5 12 C55.4 12.8 53.8 14.4 53 18.5 C52.2 14.4 50.6 12.8 46.5 12 C50.6 11.2 52.2 9.6 53 5.5 Z" fill="var(--logo-accent, #ff5a00)"/>
+</svg><span>16 px</span></div></div>
+      <div class="lockup"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argus">
+  <path d="M5 33 C15 17 49 17 59 33 C49 49 15 49 5 33 Z" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="4.5" stroke-linejoin="round"/>
+  <circle cx="32" cy="33" r="10.5" fill="var(--logo-glow, #7c5cff)"/>
+  <circle cx="32" cy="33" r="4.2" fill="#09090b"/>
+  <circle cx="35.2" cy="29.6" r="1.6" fill="#fff"/>
+  <path d="M53 5.5 C53.8 9.6 55.4 11.2 59.5 12 C55.4 12.8 53.8 14.4 53 18.5 C52.2 14.4 50.6 12.8 46.5 12 C50.6 11.2 52.2 9.6 53 5.5 Z" fill="var(--logo-accent, #ff5a00)"/>
+</svg><b>Argus</b></div>
+      <div class="app"><div class="row m"></div><div class="row s"></div><div class="row m"></div>
+        <span class="hint">Ask Argus</span><div class="bubble"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Argus">
+  <path d="M5 33 C15 17 49 17 59 33 C49 49 15 49 5 33 Z" fill="none" stroke="var(--logo-ink, #09090b)" stroke-width="4.5" stroke-linejoin="round"/>
+  <circle cx="32" cy="33" r="10.5" fill="var(--logo-glow, #7c5cff)"/>
+  <circle cx="32" cy="33" r="4.2" fill="#09090b"/>
+  <circle cx="35.2" cy="29.6" r="1.6" fill="#fff"/>
+  <path d="M53 5.5 C53.8 9.6 55.4 11.2 59.5 12 C55.4 12.8 53.8 14.4 53 18.5 C52.2 14.4 50.6 12.8 46.5 12 C50.6 11.2 52.2 9.6 53 5.5 Z" fill="var(--logo-accent, #ff5a00)"/>
+</svg></div></div>
+    </div></div>
+  </section>
+
+  <section class="verdict">
+    <h2>My pick: 2 for Argon, 3 for Argus</h2>
+    <p><b>The full shell (2)</b> is the most distinctive and tells the pitch on its own: argon is inert because its outer shell is full, so it never reacts alone, just as the AI never decides alone. It stays readable down to 16 px. <b>The Argus eye (3)</b> then marks the AI: same weight, its own shape, and the violet iris is the colour argon glows when it is energised. That is the Rovo pattern: the assistant has its own mark, clearly related to the product's.</p>
+    <p><b>The element tile (1)</b> is the safest choice and closest to today's "Ar" square, but periodic-table tiles are common, so it is the least memorable.</p>
+    <p>SVG files: <code>docs/design/logos/</code>. Colours come from CSS variables (<code>--logo-ink</code>, <code>--logo-on</code>, <code>--logo-accent</code>, <code>--logo-glow</code>), so the same file works in light and dark mode. For a final version, turn the "18" in option 1 into outlines so it does not depend on the font.</p>
+  </section>
+</main>
+</body>
+</html>

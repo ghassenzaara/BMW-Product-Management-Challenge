@@ -18,6 +18,19 @@ def test_citation_check_removes_unknown_ids(conn):
     fake = "00000000-0000-0000-0000-000000000000"
     answer, cited = agent.check_citations(conn, f"Customers complain [signal:{fake}].", set())
     assert answer == agent.NO_EVIDENCE and cited == []
+    # An answer built on the stored case figures stays, marked as such; the invented citation still goes.
+    answer, cited = agent.check_citations(conn, f"USA has 12 customers [signal:{fake}].", set(), grounded=True)
+    assert answer.startswith("USA has 12 customers") and fake not in answer and cited == []
+    assert answer.endswith(agent.FROM_FIGURES)
+
+
+def test_argus_introduces_itself_without_search(world):
+    conn, case_id = _confirmed_vent(world)
+    msg = agent.ask(conn, "case", case_id, "Who are you?", actor="pm:anna")
+    assert msg["content"].startswith("I'm Argus") and msg["prompt_version"] == "argus_intro@v1"
+    assert msg["cited_signals"] == [] and msg["model"] is None
+    assert not agent.GREETING.match("Who are the customers complaining about the seats?")
+    assert "You are Argus" in agent.prompts.load("rag_agent").system
 
 
 def test_proposed_edit_needs_pm_accept(world):

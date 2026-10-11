@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "from": {
+      "type": "string",
+      "enum": [
+        "WLTP",
+        "CLTC",
+        "EPA",
+        "none"
+      ]
+    },
+    "to": {
+      "type": "string",
+      "enum": [
+        "WLTP",
+        "CLTC",
+        "EPA",
+        "none"
+      ]
+    },
+    "factor": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "range": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      ],
+      "items": false,
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "source": {
+      "type": "string"
+    },
+    "isAssumption": {
+      "type": "boolean"
+    },
+    "updatedAt": {
+      "type": "string"
+    },
+    "updatedBy": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "from",
+    "to",
+    "factor",
+    "range",
+    "source",
+    "isAssumption",
+    "updatedAt",
+    "updatedBy"
+  ],
+  "additionalProperties": false
+}

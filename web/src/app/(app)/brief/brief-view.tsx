@@ -56,7 +56,7 @@ export function BriefView() {
   const { shared, overlay, proposals } = bundle.data;
 
   if (user.role !== "vehicle_pm") return <ReadOnlyBriefs briefs={all.data} role={user.role} />;
-  if (!shared) return <PageHeader title="Series brief" description={`No shared brief exists for the ${seriesLabel[user.series[0]]} yet. Ask the lead PM to set it up.`} />;
+  if (!shared) return <PageHeader title="Product specs" description={`No shared product specs exist for the ${seriesLabel[user.series[0]]} yet. Ask the lead PM to set it up.`} />;
 
   const isOwner = shared.ownerId === user.id;
   const editable = isOwner ? shared : overlay;
@@ -65,11 +65,11 @@ export function BriefView() {
   return (
     <div>
       <PageHeader
-        title={onboarding ? `Welcome, ${user.name.split(" ")[0]}: your ${seriesLabel[shared.series]} brief` : `${seriesLabel[shared.series]} brief`}
+        title={onboarding ? `Welcome, ${user.name.split(" ")[0]}: your ${seriesLabel[shared.series]} product specs` : `${seriesLabel[shared.series]} product specs`}
         description={
           isOwner
-            ? "The shared brief for this car project. Every requirement drafted for the series inherits it; a change shows which requirements it affects before anything changes."
-            : `Shared brief by the lead PM, plus your ${regionLabel[user.region]} overlay: only what differs for your region, each with a reason. Differences show on both briefs and the head of product line decides them.`
+            ? "The shared product specs for this car project. Every requirement drafted for the series inherits them; a change shows which requirements it affects before anything changes."
+            : `Shared product specs by the lead PM, plus your ${regionLabel[user.region]} overlay: only what differs for your region, each with a reason. Differences show on both and the head of product line decides them.`
         }
         actions={
           onboarding ? (
@@ -83,14 +83,14 @@ export function BriefView() {
           )
         }
       />
-      <div className="mx-auto max-w-4xl space-y-5 px-6 py-5">
+      <div className="mx-auto max-w-4xl space-y-6 px-6 py-8">
         {!isOwner && !overlay && <CreateOverlay series={shared.series} region={user.region} shared={shared} />}
         {editable && (
           <>
             <StrategyDoc briefId={editable.id} userId={user.id} />
             {pending.length > 0 && (
-              <section className="space-y-2">
-                <h2 className="text-sm font-semibold">From your strategy doc: accept or reject each field ({pending.length})</h2>
+              <section className="space-y-3">
+                <h2 className="text-lg font-semibold">From your strategy doc: accept or reject each field ({pending.length})</h2>
                 {pending.map((p) => (
                   <ProposalCard key={p.id} p={p} />
                 ))}
@@ -105,23 +105,23 @@ export function BriefView() {
 }
 
 function CreateOverlay({ series, region, shared }: { series: SeriesBrief["series"]; region: string; shared: SeriesBrief }) {
-  const create = useApiMutation("createOverlay", { success: "Regional brief created: confirm what differs, or paste your strategy doc" });
+  const create = useApiMutation("createOverlay", { success: "Regional product specs created: confirm what differs, or paste your strategy doc" });
   const { name } = useUsers();
   return (
-    <div className="space-y-3 rounded-xl border bg-card p-5">
+    <div className="space-y-4 rounded-xl border bg-card p-5">
       <p className="text-sm">
         {name(shared.ownerId)} owns the shared {seriesLabel[series]} brief. You only add what is different for {region === "CN" ? "China" : region}; everything else is inherited.
       </p>
       <div className="grid gap-2 sm:grid-cols-2">
         {BriefFieldKeys.options.slice(0, 4).map((k) => (
-          <div key={k} className="rounded-lg bg-muted/40 px-3 py-2 text-xs">
+          <div key={k} className="rounded-lg border bg-recessed px-3 py-2.5 text-xs">
             <div className="text-muted-foreground">{briefFieldLabel[k]}</div>
             <div className="font-medium">{showBriefValue(k, shared.values[k])}</div>
           </div>
         ))}
       </div>
       <Button onClick={() => create.mutate({ body: { series } })} disabled={create.isPending}>
-        <Sparkles className="size-4" /> Create my regional brief
+        <Sparkles className="size-4" /> Create my regional product specs
       </Button>
     </div>
   );
@@ -139,9 +139,9 @@ function StrategyDoc({ briefId, userId }: { briefId: string; userId: string }) {
       </Button>
     );
   return (
-    <div className="space-y-2 rounded-xl border bg-card p-4">
-      <div className="flex items-center gap-2">
-        <h2 className="text-sm font-semibold">Paste your strategy doc</h2>
+    <div className="space-y-3 rounded-xl border bg-card p-5">
+      <div className="flex flex-wrap items-center gap-2">
+        <h2 className="text-lg font-semibold">Paste your strategy doc</h2>
         <span className="text-xs text-muted-foreground">The AI proposes values for the fields it finds; you accept or reject each.</span>
         {demo && (
           <Button size="xs" variant="ghost" className="ml-auto" onClick={() => setText(demo.text)}>
@@ -159,7 +159,7 @@ function StrategyDoc({ briefId, userId }: { briefId: string; userId: string }) {
             setText("");
           }}
         >
-          <Sparkles className="size-4" /> {extract.isPending ? "Reading…" : "Propose brief values"}
+          <Sparkles className="size-4" /> {extract.isPending ? "Reading…" : "Propose values"}
         </Button>
         <Button variant="ghost" onClick={() => setOpen(false)}>
           Cancel
@@ -179,7 +179,7 @@ function BriefEditor({ brief, shared, isOverlay }: { brief: SeriesBrief; shared:
   const [clear, setClear] = useState<Set<BriefFieldKey>>(new Set());
   const [impact, setImpact] = useState<BriefImpact[] | null>(null);
   const [result, setResult] = useState<BriefImpact[] | null>(null);
-  const save = useApiMutation("saveBrief", { success: (r) => (r.impact.length ? `Brief saved · ${r.impact.length} requirement${r.impact.length === 1 ? "" : "s"} affected` : "Brief saved") });
+  const save = useApiMutation("saveBrief", { success: (r) => (r.impact.length ? `Product specs saved · ${r.impact.length} requirement${r.impact.length === 1 ? "" : "s"} affected` : "Product specs saved") });
 
   const metaOf = (k: BriefFieldKey) => (isOverlay && brief.values[k] !== undefined ? brief.meta[k] : shared.meta[k]);
   const unconfirmed = BriefFieldKeys.options.filter((k) => (isOverlay ? brief.values[k] !== undefined && !brief.meta[k]?.confirmed : !shared.meta[k]?.confirmed));
@@ -213,10 +213,10 @@ function BriefEditor({ brief, shared, isOverlay }: { brief: SeriesBrief; shared:
         const fromOverlay = isOverlay && (brief.values[k] !== undefined || dirty.has(k)) && !clear.has(k);
         const conflict = isOverlay && fromOverlay && differs(k);
         return (
-          <section key={k} className={cn("rounded-xl border bg-card p-4", conflict && "border-fuchsia-300 dark:border-fuchsia-800")}>
+          <section key={k} className={cn("rounded-xl border bg-card p-5", conflict && "border-tone-fuchsia-dot/70")}>
             <div className="mb-2 flex flex-wrap items-center gap-2">
-              <span className="text-xs text-muted-foreground">{i + 1}.</span>
-              <h3 className="text-sm font-semibold">{briefFieldLabel[k]}</h3>
+              <span className="font-mono text-xs text-muted-foreground">{i + 1}.</span>
+              <h3 className="text-[15px] font-semibold">{briefFieldLabel[k]}</h3>
               <SourceBadge source={fromOverlay ? (meta?.source === "doc" ? "doc" : "regional") : meta?.source ?? "pm"} />
               {meta && !meta.confirmed && <Pill t="amber">confirm?</Pill>}
               {conflict && (
@@ -225,11 +225,11 @@ function BriefEditor({ brief, shared, isOverlay }: { brief: SeriesBrief; shared:
                 </Pill>
               )}
             </div>
-            <p className="mb-2 text-xs text-muted-foreground">{briefFieldQuestion[k]}</p>
+            <p className="mb-3 text-[13px] text-muted-foreground">{briefFieldQuestion[k]}</p>
             <FieldEditor field={k} value={values[k]} onChange={(v) => set(k, v as never)} />
             {isOverlay && conflict && (
               <div className="mt-2 space-y-1.5">
-                <p className="text-[11px] text-muted-foreground">Shared: {showBriefValue(k, shared.values[k])}</p>
+                <p className="text-xs text-muted-foreground">Shared: {showBriefValue(k, shared.values[k])}</p>
                 <div className="flex items-center gap-2">
                   <Input value={reasons[k] ?? meta?.reason ?? ""} onChange={(e) => setReasons({ ...reasons, [k]: e.target.value })} placeholder="Why is your region different?" aria-label={`Reason for ${briefFieldLabel[k]}`} />
                   <Button
@@ -252,8 +252,8 @@ function BriefEditor({ brief, shared, isOverlay }: { brief: SeriesBrief; shared:
         );
       })}
 
-      <div className="sticky bottom-0 flex flex-wrap items-center gap-3 border-t bg-background/95 py-3 backdrop-blur">
-        {missingReasons.length > 0 && <span className="text-xs text-amber-700 dark:text-amber-400">Say why {missingReasons.map((k) => briefFieldLabel[k].toLowerCase()).join(", ")} differs.</span>}
+      <div className="sticky bottom-0 flex flex-wrap items-center gap-3 border-t bg-background/95 py-4 backdrop-blur">
+        {missingReasons.length > 0 && <span className="text-xs font-medium text-tone-amber-fg">Say why {missingReasons.map((k) => briefFieldLabel[k].toLowerCase()).join(", ")} differs.</span>}
         <span className="flex-1" />
         {(dirty.size > 0 || clear.size > 0 || unconfirmed.length > 0) && (
           <Button
@@ -265,7 +265,7 @@ function BriefEditor({ brief, shared, isOverlay }: { brief: SeriesBrief; shared:
               else await submit();
             }}
           >
-            <CheckCircle2 className="size-4" /> {dirty.size || clear.size ? "Save brief" : `Confirm ${unconfirmed.length} answer${unconfirmed.length === 1 ? "" : "s"}`}
+            <CheckCircle2 className="size-4" /> {dirty.size || clear.size ? "Save product specs" : `Confirm ${unconfirmed.length} answer${unconfirmed.length === 1 ? "" : "s"}`}
           </Button>
         )}
       </div>
@@ -290,7 +290,7 @@ function BriefEditor({ brief, shared, isOverlay }: { brief: SeriesBrief; shared:
       <Dialog open={!!result?.length} onOpenChange={(o) => !o && setResult(null)}>
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle>Brief saved</DialogTitle>
+            <DialogTitle>Product specs saved</DialogTitle>
             <DialogDescription>Open a requirement to accept or reject its proposed version.</DialogDescription>
           </DialogHeader>
           <ImpactList items={result ?? []} />
@@ -304,13 +304,13 @@ function ImpactList({ items }: { items: BriefImpact[] }) {
   return (
     <ul className="space-y-2 text-sm">
       {items.map((i) => (
-        <li key={i.requirementId} className="rounded-lg border p-2">
-          <Link href={`/requirements/${i.requirementId}`} className="font-mono text-xs text-primary hover:underline" onClick={() => toast.dismiss()}>
+        <li key={i.requirementId} className="rounded-lg border px-3 py-2.5">
+          <Link href={`/requirements/${i.requirementId}`} className="font-mono text-xs font-medium text-foreground underline decoration-border-strong underline-offset-2 transition-colors duration-150 hover:decoration-foreground" onClick={() => toast.dismiss()}>
             {i.requirementId}
           </Link>{" "}
           <span className="font-medium">{i.title}</span>
           <p className="text-xs text-muted-foreground">{i.summary}</p>
-          <p className="text-[11px] text-muted-foreground">Uses: {i.fields.map((f) => briefFieldLabel[f].toLowerCase()).join(", ")}</p>
+          <p className="text-xs text-muted-foreground">Uses: {i.fields.map((f) => briefFieldLabel[f].toLowerCase()).join(", ")}</p>
         </li>
       ))}
     </ul>
@@ -329,7 +329,7 @@ function SourceBadge({ source }: { source: string }) {
   return <Pill t={t}>{text}</Pill>;
 }
 
-const toggleItem = "px-3 data-[state=on]:border-primary data-[state=on]:bg-primary/10 data-[state=on]:text-primary";
+const toggleItem = "px-3";
 
 function FieldEditor({ field, value, onChange }: { field: BriefFieldKey; value: BriefValues[BriefFieldKey]; onChange: (v: unknown) => void }) {
   switch (field) {
@@ -458,18 +458,18 @@ function ReadOnlyBriefs({ briefs, role }: { briefs: SeriesBrief[]; role: string 
   return (
     <div>
       <PageHeader
-        title="Series briefs"
+        title="Product specs"
         description={
           role === "head"
-            ? "Every car project's shared brief and the regional overlays. Differences between them are decided on your desk (Review)."
-            : "Briefs belong to vehicle PMs. When you draft on a case, the brief of the case's series is used."
+            ? "Every car project's shared product specs and the regional overlays. Differences between them are decided on your desk (Review)."
+            : "Product specs belong to vehicle PMs. When you draft on a case, the product specs of the case's series are used."
         }
       />
-      <div className="mx-auto max-w-4xl space-y-4 px-6 py-5">
+      <div className="mx-auto max-w-4xl space-y-4 px-6 py-8">
         {briefs.map((b) => (
-          <section key={b.id} className="rounded-xl border bg-card p-4">
-            <div className="mb-2 flex items-center gap-2">
-              <h3 className="text-sm font-semibold">
+          <section key={b.id} className="rounded-xl border bg-card p-5">
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              <h3 className="text-[15px] font-semibold">
                 {seriesLabel[b.series]} · {b.kind === "shared" ? "shared" : `${regionLabel[b.region]} overlay`}
               </h3>
               <span className="text-xs text-muted-foreground">

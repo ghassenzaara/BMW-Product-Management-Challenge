@@ -19,6 +19,8 @@ import {
   ChangeDepth,
   CheckKind,
   CheckSeverity,
+  ClassificationMethod,
+  Comparator,
   ContextLayer,
   CostSensitivity,
   CostSize,
@@ -27,13 +29,16 @@ import {
   EvidenceLevel,
   FactorKey,
   FeedbackResponse,
+  ImpactVerdict,
   InnovationHorizon,
   InsideKind,
   Market,
   MetricBasis,
+  MetricKey,
   NotificationKind,
   ObjectType,
   PlanAction,
+  PortfolioRow,
   Positioning,
   Powertrain,
   ProjectType,
@@ -46,6 +51,7 @@ import {
   Region,
   ReleaseTarget,
   RequirementStatus,
+  RippleDecisionKind,
   Role,
   Series,
   Severity,
@@ -54,6 +60,7 @@ import {
   SignalStatus,
   SourceType,
   TargetCustomer,
+  TargetCycle,
   Trust,
 } from "./enums";
 
@@ -171,9 +178,26 @@ export const Signal = z.object({
   metric: SignalMetric.optional(),
   caseId: Id.nullable(),
   status: SignalStatus,
+  /** How topic and aspect were assigned: BMW's VFC label (lookup) or a model with its prompt version. */
+  classification: z
+    .object({ method: ClassificationMethod, label: z.string().optional(), model: z.string().optional(), promptVersion: z.string().optional() })
+    .optional(),
   synthetic: z.boolean(),
 });
 export type Signal = z.infer<typeof Signal>;
+
+/** The stored raw record a signal was cut from. The quote must be found in `text`; `sha256` is over `text`. */
+export const SourceRecord = z.object({
+  ref: z.string(),
+  sourceName: z.string(),
+  url: z.string().optional(),
+  text: z.string(),
+  sha256: z.string(),
+  fetchedAt: IsoDate,
+  /** Web records in the demo are synthetic snapshots, not real fetched pages. */
+  synthetic: z.boolean(),
+});
+export type SourceRecord = z.infer<typeof SourceRecord>;
 
 export const SignalCluster = z.object({
   id: Id,
@@ -200,6 +224,10 @@ export const AgentRun = z.object({
   newSignals: z.number().int(),
   llmCostUsd: z.number(),
   note: z.string().optional(),
+  /** Steps of the run as shown on Refresh: fetch, classify, gate, match metrics, assess impact. */
+  steps: z.array(z.object({ name: z.string(), status: z.enum(["ok", "skipped", "failed"]), detail: z.string() })).optional(),
+  /** Set when a competitor fact in this run affected targets across the portfolio. */
+  rippleId: Id.nullable().optional(),
 });
 export type AgentRun = z.infer<typeof AgentRun>;
 
@@ -352,6 +380,8 @@ export const Case = z.object({
   highlights: z.array(z.string()),
   /** Main taxonomy topic of the case. */
   topicId: z.string().nullable(),
+  /** Aspect group of the case (fixed taxonomy): a case is one topic and one aspect. */
+  aspectGroup: AspectGroup.nullable().optional(),
   /** One stance per PM who worked the case (layer 2). */
   stances: z.array(CaseStance),
   series: Series,
@@ -459,6 +489,18 @@ export const Proposal = z.object({
 export type Proposal = z.infer<typeof Proposal>;
 
 // ---------- Requirements (the solution) ----------
+/** Machine-readable form of a target, so competitor facts can be compared with it. `target` stays the display text. */
+export const TargetSpec = z.object({
+  key: MetricKey,
+  comparator: Comparator,
+  value: z.number(),
+  unit: z.string(),
+  cycle: TargetCycle,
+  /** Market the value is stated for; "global" = all markets. */
+  market: z.enum(["global", "EU", "US", "CN", "RoW"]),
+});
+export type TargetSpec = z.infer<typeof TargetSpec>;
+
 export const Metric = z.object({
   id: Id,
   question: z.string(),
@@ -468,6 +510,7 @@ export const Metric = z.object({
   unit: z.string().optional(),
   basis: MetricBasis,
   benchmark: z.string().optional(),
+  targetSpec: TargetSpec.optional(),
 });
 export type Metric = z.infer<typeof Metric>;
 
@@ -537,6 +580,8 @@ export const Requirement = z.object({
   manualRank: z.number().int().nullable(),
   plannedFeatureId: Id.nullable(),
   sentBackReason: z.string().optional(),
+  /** The PM's edited argument sheet (markdown). Absent = generated from the requirement and its evidence. */
+  argumentMd: z.string().nullable().optional(),
   createdAt: IsoDate,
   updatedAt: IsoDate,
   synthetic: z.boolean(),
@@ -587,7 +632,7 @@ export const RequirementVersion = z.object({
   requirementId: Id,
   version: z.number().int(),
   snapshot: RequirementSnapshot,
-  cause: z.enum(["draft", "feedback", "brief_change", "edit"]),
+  cause: z.enum(["draft", "feedback", "brief_change", "edit", "ripple"]),
   feedbackId: Id.optional(),
   rationale: z.string(),
   createdAt: IsoDate,
@@ -727,8 +772,29 @@ export const Alert = z.object({
   status: AlertStatus,
   resolution: z.string().optional(),
   createdAt: IsoDate,
+  /** Set when the alert comes from a portfolio ripple. */
+  rippleId: Id.optional(),
+  itemVerdict: ImpactVerdict.optional(),
+  /** "Ours 700 km WLTP vs. theirs 800 km CLTC ≈ 680 km WLTP (factor 0.85, assumption)". */
+  comparison: z.object({ ours: z.string(), theirs: z.string(), normalized: z.string(), factor: z.number().nullable(), isAssumption: z.boolean() }).optional(),
 });
 export type Alert = z.infer<typeof Alert>;
+
+/** A case score as computed at the moment of a decision, under the profile active then. */
+export const ScoreSnapshot = z.object({
+  caseId: Id,
+  profileId: Id,
+  profileName: z.string(),
+  profileVersion: z.number().int(),
+  weights: Factors,
+  factors: Factors,
+  contributions: Factors,
+  score: z.number(),
+  rank: z.number().int(),
+  of: z.number().int(),
+  at: IsoDate,
+});
+export type ScoreSnapshot = z.infer<typeof ScoreSnapshot>;
 
 export const AuditEvent = z.object({
   seq: z.number().int(),
@@ -741,8 +807,111 @@ export const AuditEvent = z.object({
   before: z.unknown().optional(),
   after: z.unknown().optional(),
   rationale: z.string().optional(),
+  /** Written on case confirm, requirement sign-off and rank changes, so a replay shows the score of that day. */
+  scoreSnapshot: ScoreSnapshot.optional(),
 });
 export type AuditEvent = z.infer<typeof AuditEvent>;
+
+// ---------- Competitor ripple ----------
+/** Conversion between test cycles. No published factor exists, so every row says whether it is an assumption. */
+export const CycleConversion = z.object({
+  id: Id,
+  from: TargetCycle,
+  to: TargetCycle,
+  /** value_to = value_from × factor */
+  factor: z.number().positive(),
+  range: z.tuple([z.number().positive(), z.number().positive()]),
+  source: z.string(),
+  isAssumption: z.boolean(),
+  updatedAt: IsoDate,
+  updatedBy: z.string(),
+});
+export type CycleConversion = z.infer<typeof CycleConversion>;
+
+export const RippleFact = z.object({
+  signalId: Id,
+  competitor: z.string(),
+  key: MetricKey,
+  value: z.number(),
+  unit: z.string(),
+  cycle: TargetCycle,
+  market: Market,
+  trust: Trust,
+  sourceName: z.string(),
+  url: z.string().optional(),
+  summary: z.string(),
+});
+export type RippleFact = z.infer<typeof RippleFact>;
+
+export const RippleItem = z.object({
+  id: Id,
+  kind: z.enum(["requirement", "case"]),
+  objectId: Id,
+  title: z.string(),
+  caseId: Id,
+  row: PortfolioRow,
+  /** Baukasten: the other rows this item also counts for. */
+  alsoRows: z.array(PortfolioRow),
+  carArea: CarArea,
+  ownerId: Id,
+  coOwnerIds: z.array(Id),
+  /** Requirement status or case state at assessment time. */
+  status: z.string(),
+  /** Our target (requirements only). */
+  ours: z.object({ value: z.number(), unit: z.string(), cycle: TargetCycle, comparator: Comparator, market: z.string(), text: z.string() }).nullable(),
+  /** The competitor value converted into our cycle (null when not comparable). */
+  theirsNormalized: z.object({ value: z.number(), unit: z.string(), cycle: TargetCycle, low: z.number(), high: z.number() }).nullable(),
+  conversionId: Id.nullable(),
+  /** (ours − theirs) / theirs in %, signed so that positive = we are ahead. */
+  gapPct: z.number().nullable(),
+  verdict: ImpactVerdict,
+  reason: z.string(),
+  rankBefore: z.number().int().nullable(),
+  rankAfter: z.number().int().nullable(),
+  movedBecause: z.string().nullable(),
+  notified: z.array(z.object({ userId: Id, kind: z.enum(["alert", "fyi", "head"]) })),
+  muted: z.boolean(),
+  /** The owner's call: raise target (proposal), keep with reason, or reopen the case. */
+  decision: z
+    .object({ kind: RippleDecisionKind, by: Id, rationale: z.string(), at: IsoDate, proposalId: Id.nullable() })
+    .nullable(),
+  /** A regional PM's market-variant proposal; independent of the owner's call. */
+  variant: z.object({ by: Id, rationale: z.string(), at: IsoDate, proposalId: Id.nullable() }).nullable(),
+});
+export type RippleItem = z.infer<typeof RippleItem>;
+
+export const Ripple = z.object({
+  id: Id,
+  runId: Id,
+  fact: RippleFact,
+  /** active = alerts sent; watch = low-trust fact, listed only. */
+  status: z.enum(["active", "watch"]),
+  statusReason: z.string(),
+  conversionIds: z.array(Id),
+  tolerancePct: z.number(),
+  items: z.array(RippleItem),
+  createdAt: IsoDate,
+});
+export type Ripple = z.infer<typeof Ripple>;
+
+/** Repeat alerts for a kept target stay muted until the gap grows by more than the threshold. */
+export const RippleMute = z.object({
+  requirementId: Id,
+  key: MetricKey,
+  gapPctAtDecision: z.number(),
+  reason: z.string(),
+  by: Id,
+  at: IsoDate,
+});
+export type RippleMute = z.infer<typeof RippleMute>;
+
+export const MonitorSettings = z.object({
+  muteThresholdPct: z.number().min(0).max(50),
+  atParTolerancePct: z.number().min(0).max(20),
+  updatedAt: IsoDate,
+  updatedBy: z.string(),
+});
+export type MonitorSettings = z.infer<typeof MonitorSettings>;
 
 /** Everything the mock store holds. The seed fixture has exactly this shape. */
 export const Dataset = z.object({
@@ -770,6 +939,11 @@ export const Dataset = z.object({
   briefs: z.array(SeriesBrief),
   requirementVersions: z.array(RequirementVersion),
   feedback: z.array(FeedbackEntry),
+  sourceRecords: z.array(SourceRecord),
+  conversions: z.array(CycleConversion),
+  ripples: z.array(Ripple),
+  rippleMutes: z.array(RippleMute),
+  monitorSettings: MonitorSettings,
   audit: z.array(AuditEvent),
 });
 export type Dataset = z.infer<typeof Dataset>;

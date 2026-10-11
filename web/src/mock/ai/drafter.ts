@@ -2,6 +2,7 @@ import type {
   BrandProfile,
   Case,
   CaseStance,
+  CycleConversion,
   FeedbackEntry,
   Region,
   Requirement,
@@ -54,6 +55,8 @@ export interface DraftInput {
   plan: VehiclePlan | null;
   /** Live requirements of the same case (for variants and duplicates). */
   siblings: Requirement[];
+  /** Cycle conversion table (labelled assumptions), shared with the competitor ripple. */
+  conversions: CycleConversion[];
 }
 
 export type Draft = RequirementSnapshot;

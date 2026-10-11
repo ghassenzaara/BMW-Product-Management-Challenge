@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
+import { ArgonMark } from "@/components/brand/marks";
 import type { Role } from "@/contracts";
 import { useApi } from "@/lib/api/hooks";
 import { setUserId } from "@/lib/session";
@@ -36,29 +37,29 @@ export function LoginView() {
   };
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-muted/40 p-6">
-      <div className="w-full max-w-3xl space-y-6">
-        <div className="space-y-2 text-center">
-          <div className="mx-auto flex size-10 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">RS</div>
-          <h1 className="text-2xl font-semibold tracking-tight">Requirement Studio</h1>
-          <p className="mx-auto max-w-xl text-sm text-muted-foreground">
+    <div className="flex min-h-dvh items-center justify-center bg-background px-5 py-12 sm:p-10">
+      <div className="w-full max-w-4xl space-y-10">
+        <div className="space-y-5 text-center">
+          <ArgonMark className="mx-auto block size-12" />
+          <h1 className="text-[40px] leading-[1.12] font-semibold sm:text-heading-lg lg:text-display">Argon</h1>
+          <p className="mx-auto max-w-2xl text-base text-muted-foreground sm:text-body-lg">
             Derive, justify and prioritize customer requirements for the next vehicle generation. Signals become cases, cases become requirements, and every step stays traceable.
           </p>
-          <p className="text-xs text-muted-foreground">Demo login · pick a persona. People, web signals and decisions are synthetic; BMW feedback, study and sales rows are real.</p>
+          <p className="mx-auto max-w-2xl text-sm text-muted-foreground">Demo login · pick a persona. People, web signals and decisions are synthetic; BMW feedback, study and sales rows are real.</p>
         </div>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2">
           {main.map((u) => (
-            <button key={u.id} onClick={() => go(u.id)} className="group flex gap-3 rounded-xl border bg-card p-4 text-left shadow-xs transition hover:border-primary/60 hover:shadow-sm">
+            <button key={u.id} onClick={() => go(u.id)} className="group flex gap-3.5 rounded-xl border bg-card p-5 text-left outline-none transition-colors duration-150 hover:border-border-strong focus-visible:ring-3 focus-visible:ring-ring/40">
               <Avatar user={u} size="md" />
-              <span className="min-w-0 flex-1 space-y-1">
-                <span className="flex items-center gap-2">
-                  <span className="font-medium">{u.name}</span>
+              <span className="min-w-0 flex-1 space-y-1.5">
+                <span className="flex flex-wrap items-center gap-2">
+                  <span className="font-semibold">{u.name}</span>
                   <Pill t={u.role === "head" ? "emerald" : u.role === "attribute_pm" ? "violet" : "sky"}>{roleText[u.role].label}</Pill>
                 </span>
-                <span className="block text-xs text-muted-foreground">{u.title}</span>
-                <span className="block text-xs">{story[u.id]}</span>
+                <span className="block text-[13px] text-muted-foreground">{u.title}</span>
+                <span className="block text-sm leading-normal">{story[u.id]}</span>
               </span>
-              <ArrowRight className="mt-1 size-4 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary" />
+              <ArrowRight className="mt-1 size-4 shrink-0 text-muted-foreground transition duration-150 group-hover:translate-x-0.5 group-hover:text-foreground motion-reduce:transition-none" strokeWidth={1.75} />
             </button>
           ))}
         </div>
@@ -66,8 +67,8 @@ export function LoginView() {
           <div className="flex flex-wrap items-center justify-center gap-2 text-sm text-muted-foreground">
             Also:
             {others.map((u) => (
-              <button key={u.id} onClick={() => go(u.id)} className="flex items-center gap-1.5 rounded-full border bg-card px-2.5 py-1 hover:border-primary/60">
-                <Avatar user={u} size="xs" /> {u.name} <span className="text-xs">({u.title.split("·")[0].replace("Product Manager", "PM").trim()})</span>
+              <button key={u.id} onClick={() => go(u.id)} className="flex items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-foreground outline-none transition-colors duration-150 hover:border-border-strong focus-visible:ring-3 focus-visible:ring-ring/40">
+                <Avatar user={u} size="xs" /> {u.name} <span className="text-xs text-muted-foreground">({u.title.split("·")[0].replace("Product Manager", "PM").trim()})</span>
               </button>
             ))}
           </div>

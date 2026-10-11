@@ -8,6 +8,7 @@ import { fmtDate } from "@/lib/format";
 import { PageHeader, PageSkeleton, Section } from "@/components/common/page";
 import { Pill } from "@/components/common/badges";
 import { useUsers } from "@/components/common/people";
+import { RationaleDialog } from "@/components/common/rationale-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,26 +29,14 @@ export function SettingsView() {
   return (
     <div>
       <PageHeader title="Settings" />
-      <div className="grid gap-4 p-6 xl:grid-cols-2">
+      <div className="mx-auto grid max-w-[1280px] grid-cols-[minmax(0,1fr)] gap-6 p-6 xl:grid-cols-2 [&>*]:min-w-0">
         <Section title="Workspace">
-          <div className="space-y-4 text-sm">
+          <div className="space-y-6 text-sm">
             <div className="flex flex-wrap gap-2">
               <Pill t="blue">{seriesShort[ws.series]}</Pill>
               <Pill t="outline">{regionLabel[ws.region]}</Pill>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label>Project type</Label>
-                <Select value={ws.projectType} onValueChange={(v) => update.mutate({ body: { projectType: v as "lci" } })}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="new_gen">New generation (everything can change)</SelectItem>
-                    <SelectItem value="lci">Mid-life update (trim, parts, software only)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2 [&>*]:min-w-0">
               <div className="space-y-1.5">
                 <Label>Weight profile</Label>
                 <Select value={ws.weightProfileId} onValueChange={(v) => update.mutate({ body: { weightProfileId: v } })}>
@@ -66,7 +55,7 @@ export function SettingsView() {
                 </Select>
               </div>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               <Label>Source filter (applies to scores and counts)</Label>
               <label className="flex items-center gap-2">
                 <Switch checked={ws.sourceFilter.excludeSocial} onCheckedChange={(v) => update.mutate({ body: { sourceFilter: { ...ws.sourceFilter, excludeSocial: v } } })} /> Exclude social media and video comments
@@ -97,14 +86,14 @@ export function SettingsView() {
         <Section title="Weight profiles">
           <div className="space-y-3">
             {(profiles.data ?? []).map((p) => (
-              <div key={p.id} className="rounded-lg border p-3">
-                <div className="flex items-center gap-2 text-sm">
+              <div key={p.id} className="rounded-lg border bg-card p-4">
+                <div className="flex flex-wrap items-center gap-2 text-sm">
                   <span className="font-medium">{p.name}</span>
                   {p.isDefault ? <Pill t="emerald">default · head of product line</Pill> : <Pill>{name(p.ownerId ?? "")}</Pill>}
                   {p.id === ws.weightProfileId && <Pill t="blue">active</Pill>}
                 </div>
-                <p className="text-xs text-muted-foreground">{p.description}</p>
-                <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs sm:grid-cols-4">
+                <p className="mt-1 text-xs text-muted-foreground">{p.description}</p>
+                <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-xs lg:grid-cols-3 2xl:grid-cols-4">
                   {FactorKeys.options.map((f) => (
                     <span key={f} className="flex justify-between gap-2">
                       <span className="truncate text-muted-foreground">{factorLabel[f]}</span>
@@ -112,7 +101,7 @@ export function SettingsView() {
                     </span>
                   ))}
                 </div>
-                <p className="mt-1 text-[11px] text-muted-foreground">
+                <p className="mt-2 text-xs text-muted-foreground">
                   Cost factor on requirement rank: S ×{p.costMultiplier.S} · M ×{p.costMultiplier.M} · L ×{p.costMultiplier.L}
                 </p>
               </div>
@@ -121,10 +110,76 @@ export function SettingsView() {
           </div>
         </Section>
 
+        <Section title="Competitor monitor">
+          <MonitorEditor />
+        </Section>
+
         <Section title={`BMW brand profile · v${brand.data.version}`} className="xl:col-span-2">
           <BrandEditor profile={brand.data} canEdit={isHead} updatedBy={name(brand.data.updatedBy)} />
         </Section>
       </div>
+    </div>
+  );
+}
+
+/** Alarm-fatigue rules of the competitor ripple. Every change is logged with a reason. */
+function MonitorEditor() {
+  const settings = useApi("monitorSettings");
+  const conversions = useApi("conversions");
+  const { name } = useUsers();
+  const [draft, setDraft] = useState<{ mute: string; par: string } | null>(null);
+  const [saving, setSaving] = useState(false);
+  const save = useApiMutation("saveMonitorSettings", { success: "Monitor settings saved" });
+  // Where the competitor ripple is not stored (real backend today) the rules are shown, not edited.
+  const editable = useApi("me").data?.features.competitorRipple ?? false;
+  if (!settings.data) return null;
+  const s = settings.data;
+  const v = draft ?? { mute: String(s.muteThresholdPct), par: String(s.atParTolerancePct) };
+  const changed = Number(v.mute) !== s.muteThresholdPct || Number(v.par) !== s.atParTolerancePct;
+  return (
+    <div className="space-y-3 text-sm">
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <Label htmlFor="mute">Mute threshold (gap points)</Label>
+          <Input id="mute" type="number" min={0} max={50} step={0.5} value={v.mute} disabled={!editable} onChange={(e) => setDraft({ ...v, mute: e.target.value })} />
+          <p className="text-xs text-muted-foreground">After “Keep, with reason”, repeats stay quiet until the gap grows by more than this.</p>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="par">At-par tolerance (±%)</Label>
+          <Input id="par" type="number" min={0} max={20} step={0.5} value={v.par} disabled={!editable} onChange={(e) => setDraft({ ...v, par: e.target.value })} />
+          <p className="text-xs text-muted-foreground">Within this gap after conversion the verdict is “at par”.</p>
+        </div>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Low-trust facts (D, E) only go on the watch list. Last changed {fmtDate(s.updatedAt)} by {name(s.updatedBy)}.
+      </p>
+      <ul className="space-y-1 text-xs text-muted-foreground">
+        {(conversions.data ?? []).map((c) => (
+          <li key={c.id}>
+            {c.from}→{c.to}: factor <span className="font-mono text-foreground">{c.factor}</span> (range {c.range[0]}–{c.range[1]}){c.isAssumption && " · assumption"}
+          </li>
+        ))}
+      </ul>
+      {editable ? (
+        <Button size="sm" disabled={!changed} onClick={() => setSaving(true)}>
+          Save
+        </Button>
+      ) : (
+        <p className="text-xs text-muted-foreground">These are the defaults. The competitor ripple runs on the demo data only, so they cannot be changed here yet.</p>
+      )}
+      <RationaleDialog
+        open={saving}
+        onOpenChange={setSaving}
+        title="Change the monitor settings"
+        description={`Mute threshold ${s.muteThresholdPct} → ${v.mute}; at-par tolerance ${s.atParTolerancePct} → ${v.par}. Applies to the next agent run.`}
+        confirmLabel="Save"
+        pending={save.isPending}
+        onSubmit={async (rationale) => {
+          await save.mutateAsync({ body: { muteThresholdPct: Number(v.mute), atParTolerancePct: Number(v.par), rationale } });
+          setDraft(null);
+          setSaving(false);
+        }}
+      />
     </div>
   );
 }
@@ -200,8 +255,8 @@ function BrandEditor({ profile, canEdit, updatedBy }: { profile: BrandProfile; c
       </div>
     );
   return (
-    <div className="space-y-3 text-sm">
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+    <div className="space-y-4 text-sm">
+      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
         Updated {fmtDate(profile.updatedAt)} by {updatedBy}. Used by the AI for brand-fit proposals and visible in every case&apos;s context pack.
         <span className="flex-1" />
         {canEdit ? (
@@ -216,9 +271,9 @@ function BrandEditor({ profile, canEdit, updatedBy }: { profile: BrandProfile; c
       </div>
       <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
         {profile.pillars.map((p) => (
-          <div key={p.name} className="rounded-lg border p-3">
-            <div className="font-medium">{p.name}</div>
-            <div className="text-xs text-muted-foreground">{p.description}</div>
+          <div key={p.name} className="rounded-lg border bg-recessed p-4">
+            <div className="font-semibold">{p.name}</div>
+            <div className="mt-1 text-xs text-muted-foreground">{p.description}</div>
           </div>
         ))}
       </div>

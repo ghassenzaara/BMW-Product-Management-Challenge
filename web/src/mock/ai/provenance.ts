@@ -16,7 +16,7 @@ export function context(path: string, layer: ContextLayer, ref: string, label: s
 }
 
 export function fromBrief(path: string, field: BriefFieldKey, overlay = false, detail?: string): Provenance {
-  return context(path, "series_brief", `brief.${field}`, `${overlay ? "Your regional brief" : "Your brief"} · ${detail ?? briefFieldLabel[field].toLowerCase()}`);
+  return context(path, "series_brief", `brief.${field}`, `${overlay ? "Your regional product specs" : "Your product specs"} · ${detail ?? briefFieldLabel[field].toLowerCase()}`);
 }
 
 export function fromBrand(path: string, label: string): Provenance {
@@ -63,7 +63,7 @@ export function authoredProvenance(
   const tag = (path: string, t: AuthoredTag, what: string): Provenance => {
     if (t === "evidence") return evidence(path, topSignals, `Evidence · ${topSignals.length} customer records`);
     if (t === "assumption") return assumption(path, `Assumption · ${what}`);
-    if (t === "stance") return context(path, "case_stance", "stance.inside", "Your stance · inside knowledge");
+    if (t === "stance") return context(path, "case_stance", "stance.inside", "Your context · inside knowledge");
     if (t === "pm") return context(path, "requirement_shape", "pm.written", "Written by the PM");
     return fromBrief(path, t.slice(6) as BriefFieldKey);
   };

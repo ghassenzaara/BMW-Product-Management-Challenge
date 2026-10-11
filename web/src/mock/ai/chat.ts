@@ -249,7 +249,7 @@ export function scriptedReply(
 
 /** The shape questions as one chat message (the form in step 3 asks the same ones). */
 export function shapeQuestionsMessage(questions: ShapeQuestion[], signalCount: number): string {
-  if (!questions.length) return `Nothing to decide before drafting: your brief and stance answer it all. Press **Create requirements** in step 3 (${signalCount} signals as evidence).`;
+  if (!questions.length) return `Nothing to decide before drafting: your product specs and context answer it all. Press **Create requirements** in step 3 (${signalCount} signals as evidence).`;
   return [
     `Before I draft, ${questions.length === 1 ? "one question" : `${questions.length} questions`} only you can answer (default in brackets):`,
     "",
@@ -273,11 +273,11 @@ export function followUpQuestions(d: Dataset, c: Case, userId: string): string {
   } else if (resolved) {
     const silent = (["EU", "US", "CN", "RoW"] as const).filter((m) => resolved.values.marketWeights[m] >= 0.2 && !counts.get(m));
     if (silent.length)
-      qs.push(`Your brief weights **${silent.map((m) => `${marketLabel[m]} ${Math.round(resolved.values.marketWeights[m] * 100)}%`).join(", ")}**, but this case has no customer records from there. Do you expect the same problem, or should we collect local evidence first?`);
+      qs.push(`Your product specs weight **${silent.map((m) => `${marketLabel[m]} ${Math.round(resolved.values.marketWeights[m] * 100)}%`).join(", ")}**, but this case has no customer records from there. Do you expect the same problem, or should we collect local evidence first?`);
   }
   if (!stance?.ambition && c.figures.competitorOffer.length) qs.push(`Competitors: ${c.figures.competitorOffer[0]}. Should our target **fix, match or beat** that?`);
   if (!stance?.inside.length) qs.push("Is engineering or a supplier **already working on this**? Anything decided in the past I should know?");
-  if (!resolved) qs.push("Your series has **no brief yet**, so scope, release and ambition will be defaults. Want to set it up first (persona menu → My series brief)?");
-  const intro = stance ? "Thanks, your stance is in the case context. Two things the data and your brief can't tell me:" : "Two things the data can't tell me:";
+  if (!resolved) qs.push("Your series has **no product specs yet**, so scope, release and ambition will be defaults. Want to set it up first (persona menu → My product specs)?");
+  const intro = stance ? "Thanks, your context is saved on the case. Two things the data and your product specs can't tell me:" : "Two things the data can't tell me:";
   return [intro, "", ...qs.slice(0, 2).map((q, i) => `${i + 1}. ${q}`), "", "_Answer here and I will use it in the requirement draft._"].join("\n");
 }

@@ -9,7 +9,7 @@ import { useUsers } from "@/components/common/people";
 import { ProvenanceLegend } from "@/components/requirements/provenance";
 import { cn } from "@/lib/utils";
 
-const causeLabel: Record<RequirementVersion["cause"], string> = { draft: "First draft", feedback: "After feedback", brief_change: "Brief changed", edit: "Edited by the PM" };
+const causeLabel: Record<RequirementVersion["cause"], string> = { draft: "First draft", feedback: "After feedback", brief_change: "Product specs changed", edit: "Edited by the PM", ripple: "After a competitor fact" };
 
 /** Version history of one requirement: what changed, why, and the feedback that caused it. */
 export function VersionsPanel({ versions, feedback }: { versions: RequirementVersion[]; feedback: FeedbackEntry[] }) {
@@ -23,7 +23,7 @@ export function VersionsPanel({ versions, feedback }: { versions: RequirementVer
         const changes = prev ? summary(prev, v) : [];
         return (
           <div key={v.version} className="rounded-lg border bg-card text-sm">
-            <button type="button" className="flex w-full items-center gap-2 px-3 py-2 text-left" onClick={() => setOpen(open === v.version ? null : v.version)}>
+            <button type="button" className="flex w-full items-center gap-2 rounded-lg px-4 py-2.5 text-left transition-colors duration-150 hover:bg-muted/60" onClick={() => setOpen(open === v.version ? null : v.version)}>
               <Pill t={i === 0 ? "blue" : "slate"}>v{v.version}</Pill>
               <span className="font-medium">{causeLabel[v.cause]}</span>
               <span className="truncate text-muted-foreground">{changes.join(", ") || v.rationale}</span>
@@ -32,9 +32,9 @@ export function VersionsPanel({ versions, feedback }: { versions: RequirementVer
               </span>
             </button>
             {open === v.version && (
-              <div className="space-y-2 border-t px-3 py-2">
+              <div className="space-y-2.5 border-t px-4 py-3">
                 {fb && (
-                  <div className="rounded-md bg-muted/50 p-2 text-xs">
+                  <div className="rounded-lg border bg-recessed px-3 py-2.5 text-xs">
                     <b>{addresseeLabel[fb.from]}:</b> &ldquo;{fb.text}&rdquo;
                     <br />
                     <b>You {feedbackResponseLabel[fb.response].toLowerCase()}:</b> {fb.pmRationale}
@@ -45,7 +45,7 @@ export function VersionsPanel({ versions, feedback }: { versions: RequirementVer
                 {prev ? (
                   <p className="text-xs leading-relaxed">
                     {diffWords(prev.snapshot.description, v.snapshot.description).map((p, k) => (
-                      <span key={k} className={cn(p.added && "bg-emerald-100 dark:bg-emerald-900/40", p.removed && "bg-red-100 line-through dark:bg-red-900/40")}>
+                      <span key={k} className={cn(p.added && "bg-tone-emerald-bd text-tone-emerald-fg", p.removed && "bg-tone-red-bd text-tone-red-fg line-through")}>
                         {p.value}
                       </span>
                     ))}

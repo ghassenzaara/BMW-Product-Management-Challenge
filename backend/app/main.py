@@ -11,7 +11,7 @@ from app.api.routers import cases, collab, config, requirements, signals, worksp
 from app.config import get_settings
 
 app = FastAPI(
-    title="BMW Requirements Platform API",
+    title="Argon API",
     version="0.3.0",
     description="Backend for PMs: signals, cases, scores, requirements, RAG sidebar, audit trail. "
                 "Every write needs a user (Supabase Auth token, or X-User-Id in dev mode) and is audited.",

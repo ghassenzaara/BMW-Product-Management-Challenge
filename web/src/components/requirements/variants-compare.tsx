@@ -25,14 +25,14 @@ export function VariantsCompare({ r, others, onOpen, onCite }: { r: Requirement;
   ];
   return (
     <div className="rounded-lg border bg-card text-sm">
-      <div className="border-b px-3 py-2 text-xs font-semibold">Same case, two briefs: why the requirements differ</div>
+      <div className="border-b px-4 py-2.5 text-[13px] font-semibold">Same case, two sets of product specs: why the requirements differ</div>
       <table className="w-full text-xs">
         <thead className="text-left text-muted-foreground">
           <tr>
             <th className="px-3 py-1.5 font-normal" />
             {[a, b].map((x) => (
               <th key={x.id} className="px-3 py-1.5 font-normal">
-                <button type="button" onClick={() => onOpen(x.id)} className={cn("font-mono hover:underline", x.id === r.id ? "text-foreground" : "text-primary")}>
+                <button type="button" onClick={() => onOpen(x.id)} className={cn("font-mono text-foreground transition-colors duration-150", x.id === r.id ? "font-semibold hover:underline" : "underline decoration-border-strong underline-offset-2 hover:decoration-foreground")}>
                   {x.id}
                 </button>{" "}
                 · {name(x.ownerId)}
@@ -42,7 +42,7 @@ export function VariantsCompare({ r, others, onOpen, onCite }: { r: Requirement;
         </thead>
         <tbody>
           {rows.map(([label, va, vb, path]) => (
-            <tr key={label} className={cn("border-t align-top", va !== vb && "bg-violet-50/60 dark:bg-violet-950/30")}>
+            <tr key={label} className={cn("border-t align-top", va !== vb && "bg-tone-violet-bg")}>
               <td className="px-3 py-1.5 text-muted-foreground">{label}</td>
               <td className="px-3 py-1.5">
                 <div className="font-medium">{va}</div>

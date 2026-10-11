@@ -2,7 +2,7 @@
 
 Every row is written through the audited write path with actor ``seed:<step>``.
 The raw files are copied unchanged to raw storage (``provided/<file>``) so every
-``raw_ref`` resolves; the originals in All-context/ are never touched.
+``raw_ref`` resolves; the originals in docs/ are never touched.
 """
 
 from __future__ import annotations
