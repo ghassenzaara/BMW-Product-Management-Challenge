@@ -25,7 +25,7 @@ Three things borrowed from the market (see the competitor research):
 A **case** opens with a Sankey of its evidence (*sources → what they say → case*, where "what they say" is a taxonomy topic × type, e.g. *Public charging · hard to use*). Every node is clickable and shows its quotes. Then three steps: **① Evidence** (Sankey + three bullets, full analysis on demand) → **② Your stance** (brief values you inherit, overridable with a reason; your take on the evidence; what you know that the data can't show; how far to go. Argus, the AI assistant, answers with follow-up questions; open questions to engineering and finance) → **③ Requirements** (up to three shape questions with defaults, then the draft in a side panel). Settings, the audit trail and **My series brief** live in the persona menu.
 
 ### PM context layers (why a draft reads like the PM wrote it)
-The drafter combines five layers; [docs/05-solution/ux-and-collaboration.md](../docs/05-solution/ux-and-collaboration.md#5a-pm-context-layers-requirements-that-read-like-the-pm-wrote-them) has the design.
+The drafter combines five layers; [docs/06-solution-concept/ux-and-collaboration.md](../docs/06-solution-concept/ux-and-collaboration.md#5a-pm-context-layers-requirements-that-read-like-the-pm-wrote-them) has the design.
 
 | Layer | UI | Budget |
 |---|---|---|
@@ -80,7 +80,7 @@ Open http://localhost:3000 and pick a persona. The persona menu (top right) swit
 | Script | What it does |
 |---|---|
 | `npm run dev` / `build` / `start` | Next.js 16 app plus the mock backend at `/api` |
-| `npm run seed` | Rebuilds `src/mock/fixtures/seed.json` from the real CSVs in `docs/02-data/processed/` plus the authored content. Validated against the contract |
+| `npm run seed` | Rebuilds `src/mock/fixtures/seed.json` from the real CSVs in `docs/02-bmw-data/processed/` plus the authored content. Validated against the contract |
 | `npm run export-contract` | Writes `../contracts/openapi.yaml` and `../contracts/schemas/*.json` |
 | `npm run contract-test` | Calls every endpoint against a running backend (`API_BASE`, default `http://localhost:3000/api`) and validates each response. Also walks the demo storyline |
 | `npm run typecheck` / `lint` | Static checks |
@@ -121,7 +121,7 @@ web/scripts/               seed, contract export, contract test
 ## Synthetic data, honestly labelled
 
 - **Real** (no tag): 404 BMW verbatims selected by topic and text from `feedback_verbatims.csv` (e.g. `G60-1430`, `G60-0878`), study rows from `study_*_2025.csv`, and 2030 sales shares. Per-market counts are computed from them.
-- **Synthetic** (tagged): people, web signals and competitor facts (their URLs point to the source site, not a real post), chats, decisions, requirements and the audit history. The story follows `docs/02-data/insights.md`.
+- **Synthetic** (tagged): people, web signals and competitor facts (their URLs point to the source site, not a real post), chats, decisions, requirements and the audit history. The story follows `docs/02-bmw-data/insights.md`.
 - The case pages and the desk say so: there are no Chinese verbatims, and 5 and 7 Series feedback is 90 to 95% US.
 - **Assumptions in the ripple:** the CLTC↔WLTP (0.85, range 0.80–0.90) and EPA↔WLTP (1.12, range 1.08–1.18) factors are team rules of thumb, not published conversions. The 1 Series BEV requirement is itself an assumption (the F70 data is ICE only). G68 (5 Series China) is the China row of the 5 Series, not a separate series. Web source records are synthetic snapshots; their hashes prove they were not edited after capture, not that the page existed.
 

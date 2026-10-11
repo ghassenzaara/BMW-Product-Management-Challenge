@@ -1,6 +1,6 @@
 {
   "version": "2026-10-11.1",
-  "source": "BMW VFC level 2/3 labels from All-context/02-data-provided-by-pm/processed/feedback_rows.csv",
+  "source": "BMW VFC level 2/3 labels from docs/02-bmw-data/processed/feedback_rows.csv",
   "car_areas": [
     {
       "id": "exterior_design",

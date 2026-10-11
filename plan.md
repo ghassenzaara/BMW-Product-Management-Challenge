@@ -31,7 +31,7 @@ Every phase ends with a commit `Completed phase N: <title>` pushed to `main`, an
 
 
 ## Context
-The design phase is finished: concepts, pipeline and data model are agreed and live in `CLAUDE.md`, `architecture.mmd` and `data-model.mmd`. The repo holds no code yet. Claude implements the whole backend ("the brain"); the user supervises. A teammate builds the UI (Notion-like pages, boards). The web sources are specified in `All-context/05-web-sources/fetching-sources.md` (source registry with URL patterns, categories A to J, fetch order steps 1 to 13, competitor list, slugs per site, record format). No timeline: phases are ordered by dependency and each ends in a runnable, verifiable state.
+The design phase is finished: concepts, pipeline and data model are agreed and live in `CLAUDE.md`, `architecture.mmd` and `data-model.mmd`. The repo holds no code yet. Claude implements the whole backend ("the brain"); the user supervises. A teammate builds the UI (Notion-like pages, boards). The web sources are specified in `docs/05-web-sources/fetching-sources.md` (source registry with URL patterns, categories A to J, fetch order steps 1 to 13, competitor list, slugs per site, record format). No timeline: phases are ordered by dependency and each ends in a runnable, verifiable state.
 
 Decisions added in this round:
 - **Signal** = every piece of evidence (previously "finding"). **Case** = a problem, composed of a group of signals. **Requirement** = the answer to a confirmed case.
@@ -67,7 +67,7 @@ Changes agreed with the user in phase 0 against the first draft of this plan:
 - Test: update/delete on `audit_event` fails.
 
 ## Phase 2 — Seed
-- Pre-seeding: everything in `All-context/02-data-provided-by-pm/raw/` (3 feedback files, customer study, sales volumes, 3 option-list PDFs) is imported into the tables created in phase 1, read-only from `raw/`, each file also stored in the `raw-records` bucket.
+- Pre-seeding: everything in `docs/02-bmw-data/raw/` (3 feedback files, customer study, sales volumes, 3 option-list PDFs) is imported into the tables created in phase 1, read-only from `raw/`, each file also stored in the `raw-records` bucket.
 - **Registry seed** (parse `fetching-sources.md` once into YAML, reviewed, then load): `source_registry`, `competitor`, `site_slug`, `search_term`, vehicle generations / `on_sale_since`.
 - **Portfolio** → `vehicle`. **Sales** → `data_record` (identical RoW values flagged `suspect`).
 - **Fixed taxonomy** (`taxonomy/taxonomy.json`, not reviewed in the seed; only a human changes it in `taxonomy/`): 11 car areas → `car_area`, 11 aspect groups → `aspect_group`, 219 topics plus the fallback `other` → `feature` (one row per topic, `feature.topic_id`), BMW's VFC level-2 labels and aliases → `feature_mapping`.
@@ -75,7 +75,7 @@ Changes agreed with the user in phase 0 against the first draft of this plan:
 - **BMW feedback** → `source_record` per verbatim ID + one `signal` per topic row (kind/severity from Feedback Type, market via fetching-sources 7.4, `BEVE` → `BEV`, source C prefix stripped, `evidence_role = bmw_customer`). Topic and aspect group by lookup from the VFC level-2 and level-3 labels (`classified_by = bmw_label`); the car area is derived from the topic. Aspect group `price` is tagged out of scope.
 - Rows the labels cannot place are classified from the text by the LLM (`feedback_classify@v2`, closed lists): rows without a Feedback Type (kind/severity) and rows labelled `no_class_found` or general enquiry (topic and aspect group). Without a key they wait: no kind means quarantine, no topic means in no case.
 - **Option lists** (once, together with the user): pdfplumber word positions + LLM vision on hard pages + checks (cells = variants, prices, unique codes) → review CSV → `vehicle_feature`, linked to topics through the review CSV `option_features.csv`; tech data → `data_record`.
-- Checks: 2,128 / 4,000 / 4,000 verbatims; per-type counts match `02-data-provided-by-pm/README.md`; 11 car areas, 11 aspect groups, 219 topics + `other`; every stored car area is the car area of its topic; every row audited.
+- Checks: 2,128 / 4,000 / 4,000 verbatims; per-type counts match `02-bmw-data/README.md`; 11 car areas, 11 aspect groups, 219 topics + `other`; every stored car area is the car area of its topic; every row audited.
 
 ## Phase 3 — Signal contract and validation gate
 - Pydantic `Signal` (fixed core + `extra`, versioned; `signal@2`): agents send `topic_id` and `aspect_group`, never a car area.

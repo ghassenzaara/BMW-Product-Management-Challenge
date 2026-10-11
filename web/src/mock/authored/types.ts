@@ -20,7 +20,7 @@ import type {
  * the real processed CSVs and produces contract entities (src/contracts).
  */
 
-/** Selects real BMW verbatims from docs/02-data/processed/feedback_verbatims.csv. */
+/** Selects real BMW verbatims from docs/02-bmw-data/processed/feedback_verbatims.csv. */
 export interface VerbatimSelector {
   model: Series;
   /** Regex on the `topics` column (BMW VFC labels). */

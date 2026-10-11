@@ -25,11 +25,16 @@ export function ArgonMark({ className }: { className?: string }) {
 export function ArgusMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 64 64" aria-hidden className={cn("size-4 shrink-0", className)}>
-      <path d="M5 33C15 17 49 17 59 33C49 49 15 49 5 33Z" fill="none" stroke="currentColor" strokeWidth="4.5" strokeLinejoin="round" />
-      <circle cx="32" cy="33" r="10.5" fill="var(--brand-violet, #7c5cff)" />
-      <circle cx="32" cy="33" r="4.2" fill="#09090b" />
-      <circle cx="35.2" cy="29.6" r="1.6" fill="#fff" />
-      <path d="M53 5.5C53.8 9.6 55.4 11.2 59.5 12C55.4 12.8 53.8 14.4 53 18.5C52.2 14.4 50.6 12.8 46.5 12C50.6 11.2 52.2 9.6 53 5.5Z" fill={navy} />
+      {/* Eye white, then the outline: a soft fill so the eye reads as a shape on any surface. */}
+      <path d="M3 34C13 15 51 15 61 34C51 53 13 53 3 34Z" fill="currentColor" fillOpacity=".14" />
+      <path d="M3 34C13 15 51 15 61 34C51 53 13 53 3 34Z" fill="none" stroke="currentColor" strokeWidth="5" strokeLinejoin="round" />
+      {/* Iris with a darker rim, a large pupil and two highlights. */}
+      <circle cx="32" cy="34" r="13" fill="var(--brand-violet, #7c5cff)" />
+      <circle cx="32" cy="34" r="13" fill="none" stroke="#09090b" strokeOpacity=".35" strokeWidth="2" />
+      <circle cx="32" cy="34" r="5.6" fill="#09090b" />
+      <circle cx="36.4" cy="29.6" r="2.6" fill="#fff" />
+      <circle cx="27.8" cy="38.2" r="1.1" fill="#fff" fillOpacity=".8" />
+      <path d="M54 1C55 6.4 57.1 8.5 62.5 9.5C57.1 10.5 55 12.6 54 18C53 12.6 50.9 10.5 45.5 9.5C50.9 8.5 53 6.4 54 1Z" fill={navy} />
     </svg>
   );
 }

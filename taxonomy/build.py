@@ -23,7 +23,7 @@ from collections import defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-FEEDBACK = ROOT.parent / "All-context" / "02-data-provided-by-pm" / "processed" / "feedback_rows.csv"
+FEEDBACK = ROOT.parent / "docs" / "02-bmw-data" / "processed" / "feedback_rows.csv"
 VERSION = "2026-10-11.1"
 ASPECT_GROUPS = {
     "function": "Does the feature exist and do its job (incl. missing equipment).",
@@ -123,7 +123,7 @@ def main():
     out_topics.sort(key=lambda t: (t["car_area"], -t["n_verbatims"], t["label"].lower()))
     taxonomy = {
         "version": VERSION,
-        "source": "BMW VFC level 2/3 labels from All-context/02-data-provided-by-pm/processed/feedback_rows.csv",
+        "source": "BMW VFC level 2/3 labels from docs/02-bmw-data/processed/feedback_rows.csv",
         "car_areas": [{"id": a["car_area"], "label": a["label"], "description": a["description"]} for a in areas],
         "topics": out_topics,
         "fallback_topic": "other",

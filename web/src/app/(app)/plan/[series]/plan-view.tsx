@@ -22,6 +22,7 @@ import { useApi, useApiMutation } from "@/lib/api/hooks";
 import { downloadDeck } from "@/lib/deck";
 import { download } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { CarPreview } from "@/components/car/car-preview";
 import { PageHeader, PageSkeleton } from "@/components/common/page";
 import { Pill, ReqStatusDot, type Tone } from "@/components/common/badges";
 import { RationaleDialog } from "@/components/common/rationale-dialog";
@@ -125,6 +126,7 @@ export function PlanView() {
           ))}
         </div>
       </PageHeader>
+      <CarPreview series={series} reqs={shown} onOpenRequirement={setReqId} />
       <div className="space-y-4 p-6">
         {areas.map((area) => (
           <AreaBlock

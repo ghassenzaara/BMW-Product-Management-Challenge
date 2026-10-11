@@ -3,7 +3,7 @@
 **For:** Ghassen (backend + agents) · **From:** Amine · **Version:** `2026-10-11.1`
 
 ## Why
-Feedback from Thomas (BMW AI engineer) on 10.10.2026 ([meeting summary](../All-context/03-meetings-with-pm/2026-10-10_2308_thomas-demo-feedback_summary.md) §2):
+Feedback from Thomas (BMW AI engineer) on 10.10.2026 ([meeting summary](../docs/03-meetings/2026-10-10_2308_thomas-demo-feedback_summary.md) §2):
 
 - A free-running agent invents new categories that mean the same thing as existing ones, so we end up with "ten categories that mean the same but are written differently".
 - **Use a fixed list derived from BMW's VFC topics** in the customer-feedback CSV, and make the agents map every signal onto it. In his words it is "a classification, not a regression problem".
@@ -54,7 +54,7 @@ Special rows in `topics.csv` (`status` column):
 ```bash
 python taxonomy/build.py
 ```
-It needs only the Python standard library and reads `All-context/02-data-provided-by-pm/processed/feedback_rows.csv`.
+It needs only the Python standard library and reads `docs/02-bmw-data/processed/feedback_rows.csv`.
 
 ## Changes to `data-model.mmd`
 ```

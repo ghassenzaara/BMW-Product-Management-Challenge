@@ -3,7 +3,7 @@ import type { CaseSpec } from "./types";
 /**
  * Hand-written cases. Real evidence (verbatims, study rows) is selected by the
  * seed; web signals below are invented, flagged synthetic, and their URLs point
- * to the source site only. Story follows docs/02-data/insights.md.
+ * to the source site only. Story follows docs/02-bmw-data/insights.md.
  */
 
 function body(s: {

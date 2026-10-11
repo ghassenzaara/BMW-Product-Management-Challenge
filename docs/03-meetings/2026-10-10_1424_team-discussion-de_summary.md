@@ -50,7 +50,7 @@
 
 ## Transcription caveats
 
-- Many words had low confidence. The 40 least confident are listed in the transcript's "Uncertain spans" table, and most are filler words or fragments.
+- Many words had low confidence. Most low-confidence words were filler or fragments.
 - **"Lexus"** (the vehicle in the range example) is probably a misrecognition and is not relied on here.
 - **"B&B"** is read as BMW (brand). **"Reiskopf"** is read as a rice cooker. **"Ajax"** is probably a misheard competitor name and is omitted.
 - The transcript captured only one side of the conversation. The "Them" speaker (system audio) has no text.

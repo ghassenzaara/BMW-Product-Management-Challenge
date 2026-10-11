@@ -5,7 +5,7 @@ Every audit, fix and verification agent works from this brief. It is copied verb
 ## The goal
 The product must be **as easy to understand as Jira**: not the same features, the same level of "I get it at a glance". It should feel clean and calm, not overwhelming, while still giving enough context to be helpful. A product manager who has never seen it should know on each screen: **where am I, what needs my attention, what is the one next thing to do.**
 
-Background you can read (read-only): `web/README.md` (screens, personas, demo scripts), `docs/05-solution/ux-and-collaboration.md`, `docs/03-meetings/2026-10-10_2308_thomas-demo-feedback_summary.md` (BMW's feedback: "less is more", a PM must understand it "in one look").
+Background you can read (read-only): `web/README.md` (screens, personas, demo scripts), `docs/06-solution-concept/ux-and-collaboration.md`, `docs/03-meetings/2026-10-10_2308_thomas-demo-feedback_summary.md` (BMW's feedback: "less is more", a PM must understand it "in one look").
 
 ## THE BOUNDARY (read this twice)
 This pass changes **small details with a big UX impact**. It does **not** change the product.

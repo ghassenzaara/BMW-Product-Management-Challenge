@@ -249,7 +249,7 @@ export function ArgusBubble() {
           over && "scale-105",
         )}
       >
-        {open ? <ChevronDown className="size-5" /> : <ArgusMark className="size-5" />}
+        {open ? <ChevronDown className="size-5" /> : <ArgusMark className="size-7" />}
         {dragging && !open && <span className="text-sm font-medium">Drop to ask Argus</span>}
       </button>
     </>

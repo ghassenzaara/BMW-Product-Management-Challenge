@@ -3,7 +3,7 @@
  *
  *   npm run seed
  *
- * Reads the real processed BMW data (docs/02-data/processed/*.csv) and the
+ * Reads the real processed BMW data (docs/02-bmw-data/processed/*.csv) and the
  * hand-written content in src/mock/authored/, and writes
  * src/mock/fixtures/seed.json. Every record is validated against the Zod
  * contract; the script fails on any invalid record.
@@ -66,7 +66,7 @@ import { caseScore } from "../src/mock/scoring";
 import { caseShortTitles, requirementShortTitles, shortFromTitle } from "../src/mock/authored/short-names";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const dataDir = resolve(here, "../../docs/02-data/processed");
+const dataDir = resolve(here, "../../docs/02-bmw-data/processed");
 const outFile = resolve(here, "../src/mock/fixtures/seed.json");
 const taxonomyFile = resolve(here, "../../taxonomy/taxonomy.json");
 const taxonomyOut = resolve(here, "../src/mock/fixtures/taxonomy.json");

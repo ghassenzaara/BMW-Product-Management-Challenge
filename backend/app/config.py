@@ -7,8 +7,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 REPO_DIR = BACKEND_DIR.parent
-RAW_DATA_DIR = REPO_DIR / "All-context" / "02-data-provided-by-pm" / "raw"
-SOURCES_FILE = REPO_DIR / "All-context" / "05-web-sources" / "fetching-sources.md"
+RAW_DATA_DIR = REPO_DIR / "docs" / "02-bmw-data" / "raw"
+SOURCES_FILE = REPO_DIR / "docs" / "05-web-sources" / "fetching-sources.md"
 
 
 class Settings(BaseSettings):

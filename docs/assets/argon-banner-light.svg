@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 128" width="520" height="128" role="img" aria-label="Argon">
+  <g transform="translate(8 8) scale(1.75)">
+    <circle cx="32" cy="32" r="22" fill="none" stroke="#09090b" stroke-width="1.5" opacity=".25"/>
+    <g fill="#09090b">
+      <circle cx="32" cy="10" r="3.6"/><circle cx="47.56" cy="16.44" r="3.6"/>
+      <circle cx="54" cy="32" r="3.6"/><circle cx="47.56" cy="47.56" r="3.6"/>
+      <circle cx="32" cy="54" r="3.6"/><circle cx="16.44" cy="47.56" r="3.6"/>
+      <circle cx="10" cy="32" r="3.6"/><circle cx="16.44" cy="16.44" r="3.6"/>
+    </g>
+    <circle cx="32" cy="32" r="9" fill="#1e3a8a"/>
+  </g>
+  <text x="140" y="74" font-family="'DM Sans', 'Segoe UI', system-ui, -apple-system, Helvetica, Arial, sans-serif" font-size="58" font-weight="700" letter-spacing="-1.5" fill="#09090b">Argon</text>
+  <text x="142" y="104" font-family="'DM Sans', 'Segoe UI', system-ui, -apple-system, Helvetica, Arial, sans-serif" font-size="17" fill="#52525b">Evidence-backed requirements for the next BMW</text>
+</svg>

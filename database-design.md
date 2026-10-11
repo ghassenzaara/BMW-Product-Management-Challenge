@@ -10,7 +10,7 @@ Chain: **source record → signal → case (problem) → PM confirms per vehicle
 - Every table has `created_at timestamptz default now()`. Mutable tables also have `updated_at`.
 - Every write goes through the backend's single write path (`audit.py`), which writes the change and its `audit_event` in the same transaction.
 - **No hard deletes** of evidence, cases or requirements. A delete is a tombstone: content columns set to null, `deleted_at` set, row kept, audit event written.
-- Field names and values follow `All-context/05-web-sources/fetching-sources.md` section 7.
+- Field names and values follow `docs/05-web-sources/fetching-sources.md` section 7.
 - Vehicle, market, competitors, weights and thresholds are rows, never constants in code.
 
 ### Shared value sets (Postgres domains)

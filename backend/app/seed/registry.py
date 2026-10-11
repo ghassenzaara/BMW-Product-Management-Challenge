@@ -1,4 +1,4 @@
-"""Source registry seed from All-context/05-web-sources/fetching-sources.md.
+"""Source registry seed from docs/05-web-sources/fetching-sources.md.
 
 Two steps, so the parsed result can be reviewed before it is loaded:
 1. ``build()`` parses the markdown into ``backend/seed/registry.yaml``.
@@ -194,7 +194,7 @@ def parse_slugs(text: str) -> list[dict]:
 def build(sources_file: Path = SOURCES_FILE, out: Path = REGISTRY_YAML) -> dict:
     text = sources_file.read_text(encoding="utf-8")
     data = {
-        "parsed_from": "All-context/05-web-sources/fetching-sources.md",
+        "parsed_from": "docs/05-web-sources/fetching-sources.md",
         "vehicles": VEHICLES,
         "sources": INTERNAL_SOURCES + parse_sources(text),
         "competitors": parse_competitors(text),

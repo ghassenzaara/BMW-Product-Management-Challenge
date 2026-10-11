@@ -59,7 +59,7 @@
 
 ## Transcription caveats
 
-- The audio was noisy. 40 of the least confident words are listed in the transcript, mostly filler. Several passages in the 14:40–14:46 range are fragmentary.
-- Garbled and **left out**: a roll call of team names ("polyethylene, Pegasus, Baobite...") that is probably an unrelated announcement, and a "34%" figure about time spent with engineers that I couldn't verify.
+- The audio was noisy. Most low-confidence words were filler. Several passages in the 14:40–14:46 range are fragmentary.
+- Garbled and **left out**: a venue announcement (removed from the transcript) and a "34%" figure about time spent with engineers (the PM interview gives 30 to 40%).
 - Interpretations: "BNW" and "B&B" are read as BMW. "L&M" is read as LLM. "iEngine" is read as AI engineer.
 - Single-speaker labeling means attributions like "the BMW-side view" are inferred from context, not confirmed.

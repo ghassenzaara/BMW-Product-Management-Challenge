@@ -28,7 +28,7 @@ Cross-functional teams: program management, finance & cost control, quality, reg
 
 - **Phases 1 and 2 (bold)**, before gate G0/G1: market and customer research, then feature prioritization for the product plan. This is the "requirements for the successor" work.
 - **Phase 13 feeds back into phase 1.** Feedback on the current car (our provided verbatims and study) becomes input for the next generation. This is the loop the team discussions describe.
-- Everything from phase 3 onward (feasibility, engineering, homologation, production) is **out of scope** ([mission-and-deliverables.md](mission-and-deliverables.md)). Our output ends at the hand-off to engineering. Patrick named the hand-off tool: **Codebeamer**, with roughly the top 10 requirements ([PM interview](../03-meetings/2026-10-10_pm-interview-patrick_summary.md)).
+- Everything from phase 3 onward (feasibility, engineering, homologation, production) is **out of scope** ([mission-and-deliverables.md](mission-and-deliverables.md)). Our output ends at the hand-off to engineering. Patrick named the hand-off tool: **Codebeamer**, with roughly the top 10 requirements ([PM interview](../03-meetings/2026-10-10_pm-interview_summary.md)).
 - The "design freeze" mentioned in the team discussion corresponds to G3. Until then, requirements can still change, so the tool's monitoring loop is useful up to that point.
 
 BMW-specific timing from the PM interviews: model life is about 5 to 7 years, with a life-cycle input (LCI, small changes) around year 3. A new generation takes about 5 years to reach the road, and car clinics can start up to 10 years before SOP.

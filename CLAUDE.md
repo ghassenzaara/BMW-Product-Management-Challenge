@@ -34,12 +34,15 @@ BMW values: trustworthy sources, transparent reasoning, thoughtful prioritizatio
 - `HANDOFF.md`: state of the work, decisions of the last session, what is not verified, what to do next. Read after this file.
 - `INTEGRATION-GUIDE.md`: the gap analysis between UI and backend. Finished; kept as a record.
 - `layers.mmd`: BMW's process slide as a diagram, for reference only (not our architecture).
-- `All-context/README.md`: index of all material. Read first.
-- `All-context/01-challenge/`: briefing, mission sheet, BMW process slides (md transcriptions + original PDF/PNG).
-- `All-context/02-data-provided-by-pm/raw/`: provided data. Its `README.md` documents columns, counts and caveats.
-- `All-context/03-meetings-with-pm/`: meeting summaries and notes, transcripts in `raw/`. **The two PM interviews are the primary user research.**
-- `All-context/04-team-notes/`: early brainstorm (superseded by the architecture where they differ), original in `raw/`.
-- `All-context/05-web-sources/fetching-sources.md`: web sources, fetch order and record format for the fetch agents (owned by a teammate).
+- `docs/README.md`: index of all material. Read first.
+- `docs/01-challenge/`: briefing, mission sheet, BMW process slides (md transcriptions + original PDF/PNG).
+- `docs/02-bmw-data/raw/`: provided data. Its `README.md` documents columns, counts and caveats.
+- `docs/03-meetings/`: meeting summaries and notes, transcripts in `raw/`. **The two PM interviews are the primary user research.**
+- `docs/04-team-notes/`: early brainstorm (superseded by the architecture where they differ), original in `raw/`.
+- `docs/05-web-sources/fetching-sources.md`: web sources, fetch order and record format for the fetch agents (owned by a teammate).
+- `docs/06-solution-concept/`: solution concept from the UI side (scope, end-to-end flow, UX and collaboration, web loop).
+- `docs/design/`, `docs/ux-audit/`, `docs/assets/`: brand marks, restyle references, UX audit, README images. `docs/archive/`: superseded versions.
+- Until 2026-10-11 this material was split between `All-context/` and `docs/`; it is now one `docs/` folder. Older entries in `changes.md` and `INTEGRATION-GUIDE.md` still use the old paths.
 
 ## Provided data (short)
 | Dataset | Vehicles | Key facts |
@@ -142,7 +145,7 @@ End filters on the case and requirement boards: market, car area / category, sta
 - A separate confidence axis in the score (evidence level is display only).
 - A graph database.
 - A separate car-area classifier step (Jev); the car area is derived from the topic.
-- Loading the database from the processed CSVs (`docs/02-data/processed`); it is loaded from BMW's original files, which keep the sheet and row of every value.
+- Loading the database from the processed CSVs (`docs/02-bmw-data/processed`); it is loaded from BMW's original files, which keep the sheet and row of every value.
 - Deleting BMW feedback rows that are not relevant; they are kept out of cases, scores and the index instead.
 - Copying a case when it is handed to another PM.
 - Brand fit as a score factor (it is a multiplier) and dropping `reach` as a factor, although the UI's weight panel still shows it that way.
@@ -174,7 +177,7 @@ End filters on the case and requirement boards: market, car area / category, sta
 - Every change records actor (AI agent or human), timestamp and rationale.
 - Vehicle and market are configuration, never hardcoded.
 - AI proposes and flags; the PM decides.
-- Raw data in `All-context/02-data-provided-by-pm/raw/` is never modified; derived data goes elsewhere.
+- Raw data in `docs/02-bmw-data/raw/` is never modified; derived data goes elsewhere.
 
 ## Current phase
 Phases 0 to 10 of `plan.md` are implemented, and the schema, the agents and the API are fitted to the UI (`changes.md`, section "UI alignment", U.1 to U.24; migrations 0014 to 0016). The UI adapter serves the whole UI contract from the API. Supabase has all 16 migrations and the seed of BMW's data; the build with OpenAI (case pages, tags, scores, search index) was running when the last session ended. **Read `HANDOFF.md` next:** it says how to check that build, what is not verified and what to do next.
