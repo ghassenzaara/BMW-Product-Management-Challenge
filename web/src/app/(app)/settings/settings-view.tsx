@@ -38,18 +38,6 @@ export function SettingsView() {
             </div>
             <div className="grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2 [&>*]:min-w-0">
               <div className="space-y-1.5">
-                <Label>Project type</Label>
-                <Select value={ws.projectType} onValueChange={(v) => update.mutate({ body: { projectType: v as "lci" } })}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="new_gen">New generation (everything can change)</SelectItem>
-                    <SelectItem value="lci">Mid-life update (trim, parts, software only)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
                 <Label>Weight profile</Label>
                 <Select value={ws.weightProfileId} onValueChange={(v) => update.mutate({ body: { weightProfileId: v } })}>
                   <SelectTrigger className="w-full">
@@ -142,6 +130,8 @@ function MonitorEditor() {
   const [draft, setDraft] = useState<{ mute: string; par: string } | null>(null);
   const [saving, setSaving] = useState(false);
   const save = useApiMutation("saveMonitorSettings", { success: "Monitor settings saved" });
+  // Where the competitor ripple is not stored (real backend today) the rules are shown, not edited.
+  const editable = useApi("me").data?.features.competitorRipple ?? false;
   if (!settings.data) return null;
   const s = settings.data;
   const v = draft ?? { mute: String(s.muteThresholdPct), par: String(s.atParTolerancePct) };
@@ -151,12 +141,12 @@ function MonitorEditor() {
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label htmlFor="mute">Mute threshold (gap points)</Label>
-          <Input id="mute" type="number" min={0} max={50} step={0.5} value={v.mute} onChange={(e) => setDraft({ ...v, mute: e.target.value })} />
+          <Input id="mute" type="number" min={0} max={50} step={0.5} value={v.mute} disabled={!editable} onChange={(e) => setDraft({ ...v, mute: e.target.value })} />
           <p className="text-xs text-muted-foreground">After “Keep, with reason”, repeats stay quiet until the gap grows by more than this.</p>
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="par">At-par tolerance (±%)</Label>
-          <Input id="par" type="number" min={0} max={20} step={0.5} value={v.par} onChange={(e) => setDraft({ ...v, par: e.target.value })} />
+          <Input id="par" type="number" min={0} max={20} step={0.5} value={v.par} disabled={!editable} onChange={(e) => setDraft({ ...v, par: e.target.value })} />
           <p className="text-xs text-muted-foreground">Within this gap after conversion the verdict is “at par”.</p>
         </div>
       </div>
@@ -170,9 +160,13 @@ function MonitorEditor() {
           </li>
         ))}
       </ul>
-      <Button size="sm" disabled={!changed} onClick={() => setSaving(true)}>
-        Save
-      </Button>
+      {editable ? (
+        <Button size="sm" disabled={!changed} onClick={() => setSaving(true)}>
+          Save
+        </Button>
+      ) : (
+        <p className="text-xs text-muted-foreground">These are the defaults. The competitor ripple runs on the demo data only, so they cannot be changed here yet.</p>
+      )}
       <RationaleDialog
         open={saving}
         onOpenChange={setSaving}

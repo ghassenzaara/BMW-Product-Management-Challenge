@@ -125,6 +125,10 @@ const SOURCE_TYPE_BY_ID: Record<string, SourceType> = {
   carcomplaints: "review",
   "nhtsa-complaints": "review",
   "google-trends": "trend_report",
+  // Evidence a PM added by hand
+  pm_upload: "pm_upload",
+  pm_link: "pm_link",
+  pm_note: "pm_note",
 };
 
 export function sourceTypeFromBackend(sourceId: string | null | undefined, contentType: string | null | undefined): SourceType {
@@ -149,6 +153,7 @@ export function sourceTypeFromBackend(sourceId: string | null | undefined, conte
 
 export function agentFromBackend(evidenceRole: string | null | undefined, sourceId: string | null | undefined, kind: string): Agent {
   if (sourceId?.startsWith("bmw_") || sourceId === "option_list") return "bmw_data";
+  if (sourceId?.startsWith("pm_")) return "pm";
   if (evidenceRole === "competitor") return "competitor";
   if (kind === "trend") return "trends";
   if (kind === "innovation") return "innovation_scout";
@@ -158,6 +163,10 @@ export function agentFromBackend(evidenceRole: string | null | undefined, source
 /** Display-only source tier (never part of the score: CLAUDE.md rejects a confidence axis). */
 export function trustFromBackend(sourceId: string | null | undefined, contentType: string | null | undefined): Trust {
   if (sourceId?.startsWith("bmw_") || sourceId === "option_list") return "A";
+  // A PM's file is first-hand data (C), a link is unverified web (D), a note is an assumption (E).
+  if (sourceId === "pm_upload") return "C";
+  if (sourceId === "pm_link") return "D";
+  if (sourceId === "pm_note") return "E";
   if (contentType === "expert" || contentType === "reference") return "B";
   if (contentType === "owner" || contentType === "news") return "C";
   return "D";

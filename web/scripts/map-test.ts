@@ -5,6 +5,9 @@
 import assert from "node:assert/strict";
 import { Market, ReleaseTarget, RequirementStatus } from "../src/contracts";
 import {
+  agentFromBackend,
+  sourceTypeFromBackend,
+  trustFromBackend,
   brandFitFromBackend,
   brandFitToBackend,
   evidenceFromBackend,
@@ -73,6 +76,15 @@ t("brand fit tag round trip", () => {
 
 t("citations", () => {
   assert.equal(rewriteCitations("see [signal:0a1b2c3d-0000-4000-8000-000000000001]."), "see [0a1b2c3d-0000-4000-8000-000000000001].");
+});
+
+t("evidence a PM added by hand", () => {
+  for (const [source, type, trust] of [["pm_upload", "pm_upload", "C"], ["pm_link", "pm_link", "D"], ["pm_note", "pm_note", "E"]] as const) {
+    assert.equal(agentFromBackend("market", source, "complaint"), "pm");
+    assert.equal(sourceTypeFromBackend(source, null), type);
+    assert.equal(trustFromBackend(source, null), trust);
+  }
+  assert.equal(agentFromBackend("bmw_customer", "bmw_feedback", "complaint"), "bmw_data");
 });
 
 console.log(`${n} map tests passed`);

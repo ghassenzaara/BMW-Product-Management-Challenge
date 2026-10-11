@@ -1,4 +1,5 @@
 import type { AuditEvent, Dataset, IntegrityCheck, ReplayEvent, ReplayResponse, Requirement, Signal } from "@/contracts";
+import { auditAction } from "@/lib/audit";
 import { sha256 } from "./convert";
 import { computeScores } from "./scoring";
 import { now } from "./store";
@@ -37,7 +38,19 @@ const LABELS: Record<string, string> = {
 };
 
 /** Actions that change a status or a decision; each one must carry a rationale. */
-const NEEDS_RATIONALE = /status_changed|state_changed|\.decided$|version_created|signoff_reset|ripple\.kept|alert\.(dismissed|rework)|conversion\.updated/;
+/** Mock names (requirement.status_changed) and the backend's (requirement.state_change, requirement_version.create). */
+const NEEDS_RATIONALE = /status_changed|state_changed?$|\.decided$|version_created|requirement_version\.create|signoff_reset|ripple\.kept|alert\.(dismissed|rework)|conversion\.updated/;
+
+/** A link or a note a PM added is evidence, not a customer voice. */
+const isPmOpinion = (s: Signal) => s.sourceType === "pm_link" || s.sourceType === "pm_note";
+
+export interface ReplayOptions {
+  /**
+   * True when `d.audit` holds only this chain's events (real backend), not the whole log.
+   * Then a missing number between two events is another object's event, not a gap.
+   */
+  partialLog?: boolean;
+}
 
 const norm = (t: string) => t.replace(/\s+/g, " ").trim().toLowerCase();
 
@@ -69,7 +82,7 @@ function chainEvents(d: Dataset, r: Requirement, signalIds: Set<string>): AuditE
 /** Reads are logged too, but they are not steps in the life of the requirement. */
 const VIEWS = new Set(["requirement.replay_viewed", "requirement.dossier_exported"]);
 
-export function integrityChecks(d: Dataset, signals: Signal[], events: AuditEvent[]): IntegrityCheck[] {
+export function integrityChecks(d: Dataset, signals: Signal[], events: AuditEvent[], opts: ReplayOptions = {}): IntegrityCheck[] {
   const records = new Map(d.sourceRecords.map((x) => [x.ref, x]));
 
   const quoteFailures: string[] = [];
@@ -94,7 +107,7 @@ export function integrityChecks(d: Dataset, signals: Signal[], events: AuditEven
   for (let i = 1; i < events.length; i++) if (events[i].seq <= events[i - 1].seq) seqFailures.push(`seq ${events[i].seq} after ${events[i - 1].seq}`);
   const lo = events[0]?.seq ?? 0;
   const hi = events.at(-1)?.seq ?? 0;
-  const window = d.audit.filter((e) => e.seq >= lo && e.seq <= hi).map((e) => e.seq);
+  const window = opts.partialLog ? [] : d.audit.filter((e) => e.seq >= lo && e.seq <= hi).map((e) => e.seq);
   for (let i = 1; i < window.length; i++) if (window[i] !== window[i - 1] + 1) seqFailures.push(`gap between seq ${window[i - 1]} and ${window[i]}`);
 
   const rationaleFailures = events.filter((e) => NEEDS_RATIONALE.test(e.action) && !e.rationale?.trim()).map((e) => `seq ${e.seq} ${e.action} by ${e.actorId}: no rationale`);
@@ -117,9 +130,9 @@ export function integrityChecks(d: Dataset, signals: Signal[], events: AuditEven
     },
     {
       id: "audit_sequence",
-      label: "Audit log has no gaps for this chain",
+      label: opts.partialLog ? "Audit events of this chain are in order" : "Audit log has no gaps for this chain",
       ok: seqFailures.length === 0,
-      detail: events.length ? `${events.length} events, seq ${lo}–${hi}, append-only` : "No events",
+      detail: events.length ? `${events.length} events, seq ${lo}–${hi}, ${opts.partialLog ? "strictly ascending; the database refuses updates and deletes on the log" : "append-only"}` : "No events",
       failures: seqFailures,
     },
     {
@@ -132,7 +145,7 @@ export function integrityChecks(d: Dataset, signals: Signal[], events: AuditEven
   ];
 }
 
-export function buildReplay(d: Dataset, r: Requirement): ReplayResponse {
+export function buildReplay(d: Dataset, r: Requirement, opts: ReplayOptions = {}): ReplayResponse {
   const c = d.cases.find((x) => x.id === r.caseId)!;
   const signals = c.signalIds.map((id) => d.signals.find((s) => s.id === id)).filter((s): s is Signal => !!s);
   const ids = new Set(signals.map((s) => s.id));
@@ -141,9 +154,9 @@ export function buildReplay(d: Dataset, r: Requirement): ReplayResponse {
 
   let version: number | null = null;
   const replayEvents: ReplayEvent[] = events.map((e) => {
-    if (e.objectType === "requirement" && e.action === "requirement.drafted") version = 1;
+    if (e.objectType === "requirement" && (e.action === "requirement.drafted" || e.action === "requirement.create")) version = 1;
     const after = e.after as { version?: number } | undefined;
-    if (e.objectType === "requirement" && e.action === "requirement.version_created" && after?.version) version = after.version;
+    if (e.objectType === "requirement" && (e.action === "requirement.version_created" || e.action === "requirement_version.create") && after?.version) version = after.version;
     const agent = e.actorType === "ai" || e.actorId.startsWith("agent:");
     return {
       seq: e.seq,
@@ -152,7 +165,7 @@ export function buildReplay(d: Dataset, r: Requirement): ReplayResponse {
       actorType: agent ? "agent" : "human",
       actorName: agent ? agentName(e.actorId) : (users.get(e.actorId) ?? e.actorId),
       action: e.action,
-      label: LABELS[e.action] ?? e.action,
+      label: LABELS[e.action] ?? auditAction(e.action),
       objectType: e.objectType,
       objectId: e.objectId,
       rationale: e.rationale ?? null,
@@ -162,7 +175,7 @@ export function buildReplay(d: Dataset, r: Requirement): ReplayResponse {
   });
 
   const quoteIds = quoteSample(signals);
-  const customers = signals.filter((s) => s.sourceType !== "bmw_study" && s.kind !== "competitor_fact" && s.kind !== "trend");
+  const customers = signals.filter((s) => s.sourceType !== "bmw_study" && s.kind !== "competitor_fact" && s.kind !== "trend" && !isPmOpinion(s));
   const profile = d.weightProfiles.find((p) => p.id === "wp-balanced") ?? d.weightProfiles[0];
   const scores = computeScores(d, profile);
   const row = scores.cases.find((s) => s.caseId === c.id);
@@ -180,14 +193,14 @@ export function buildReplay(d: Dataset, r: Requirement): ReplayResponse {
       markets: [...new Set(customers.map((s) => s.market).filter((m) => m !== "unknown"))],
       sources: new Set(signals.map((s) => s.sourceName)).size,
       bmwRecords: signals.filter((s) => s.agent === "bmw_data").length,
-      webRecords: signals.filter((s) => s.agent !== "bmw_data").length,
+      webRecords: signals.filter((s) => s.agent !== "bmw_data" && s.agent !== "pm").length,
     },
     sourceRecords: quoteIds.map((id) => signals.find((s) => s.id === id)?.recordRef).flatMap((ref) => (ref && records.get(ref) ? [records.get(ref)!] : [])),
     events: replayEvents,
     scoreToday: { score: row?.score ?? 0, rank: row?.rank ?? 0, of: scores.cases.length, profileName: profile.name },
     plannedFeature: plan?.features.find((f) => f.id === r.plannedFeatureId) ?? null,
     alerts: d.alerts.filter((a) => a.requirementId === r.id),
-    integrity: integrityChecks(d, signals, events),
+    integrity: integrityChecks(d, signals, events, opts),
     generatedAt: now(),
   };
 }

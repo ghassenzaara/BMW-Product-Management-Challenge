@@ -35,12 +35,24 @@ paths:
                       - type: "null"
                   needsOnboarding:
                     type: boolean
+                  features:
+                    type: object
+                    properties:
+                      agentRefresh:
+                        type: boolean
+                      competitorRipple:
+                        type: boolean
+                    required:
+                      - agentRefresh
+                      - competitorRipple
+                    additionalProperties: false
                 required:
                   - user
                   - workspace
                   - weightProfile
                   - brief
                   - needsOnboarding
+                  - features
                 additionalProperties: false
         "400":
           description: Invalid request (Zod issues)
@@ -1172,20 +1184,6 @@ paths:
                     - global
                     - RoW
                     - CN
-                carArea:
-                  type: string
-                  enum:
-                    - exterior_design
-                    - interior_comfort
-                    - seats
-                    - climate
-                    - infotainment_hmi
-                    - connectivity_digital
-                    - driver_assistance
-                    - dynamics_powertrain
-                    - range_charging
-                    - practicality
-                    - quality_materials
                 type:
                   type: string
                   enum:
@@ -1209,6 +1207,22 @@ paths:
                   type: array
                   items:
                     type: string
+                topicId:
+                  type: string
+                aspectGroup:
+                  type: string
+                  enum:
+                    - function
+                    - usability
+                    - reliability
+                    - performance
+                    - efficiency_range
+                    - design
+                    - comfort
+                    - space
+                    - quality
+                    - sound
+                    - price
                 rationale:
                   type: string
                   minLength: 1
@@ -1216,7 +1230,6 @@ paths:
                 - title
                 - series
                 - scope
-                - carArea
                 - type
                 - changeDepth
                 - summary
@@ -1439,30 +1452,6 @@ paths:
                         - global
                         - RoW
                         - CN
-                    markets:
-                      type: array
-                      items:
-                        type: string
-                        enum:
-                          - EU
-                          - US
-                          - CN
-                          - RoW
-                          - unknown
-                    carArea:
-                      type: string
-                      enum:
-                        - exterior_design
-                        - interior_comfort
-                        - seats
-                        - climate
-                        - infotainment_hmi
-                        - connectivity_digital
-                        - driver_assistance
-                        - dynamics_powertrain
-                        - range_charging
-                        - practicality
-                        - quality_materials
                     type:
                       type: string
                       enum:
@@ -1480,8 +1469,6 @@ paths:
                         - part_module
                         - platform_powertrain
                         - software_ota
-                    featureName:
-                      type: string
                     coOwnerIds:
                       type: array
                       items:
@@ -3971,6 +3958,97 @@ paths:
           description: Not found
         "409":
           description: Invalid state transition
+  /argus/ask:
+    post:
+      operationId: argusAsk
+      summary: Ask Argus from anywhere, with dragged-in cases, requirements or signals as context; answers only, never edits
+      tags:
+        - conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  minLength: 1
+                attachments:
+                  maxItems: 5
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      kind:
+                        type: string
+                        enum:
+                          - case
+                          - requirement
+                          - signal
+                      id:
+                        type: string
+                    required:
+                      - kind
+                      - id
+                history:
+                  maxItems: 20
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      role:
+                        type: string
+                        enum:
+                          - user
+                          - assistant
+                      content:
+                        type: string
+                    required:
+                      - role
+                      - content
+              required:
+                - content
+                - attachments
+                - history
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: string
+                  citations:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        ref:
+                          type: string
+                        label:
+                          type: string
+                        href:
+                          type: string
+                      required:
+                        - ref
+                        - label
+                        - href
+                      additionalProperties: false
+                required:
+                  - content
+                  - citations
+                additionalProperties: false
+        "400":
+          description: Invalid request (Zod issues)
+        "403":
+          description: Not allowed for this user (e.g. not the owner)
+        "404":
+          description: Not found
+        "409":
+          description: Invalid state transition
   /proposals/{id}/decide:
     post:
       operationId: decideProposal
@@ -6035,6 +6113,22 @@ components:
           type:
             - string
             - "null"
+        aspectGroup:
+          anyOf:
+            - type: string
+              enum:
+                - function
+                - usability
+                - reliability
+                - performance
+                - efficiency_range
+                - design
+                - comfort
+                - space
+                - quality
+                - sound
+                - price
+            - type: "null"
         stances:
           type: array
           items:

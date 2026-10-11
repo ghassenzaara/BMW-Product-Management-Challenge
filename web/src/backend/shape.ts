@@ -123,6 +123,7 @@ export function signalFromBackend(s: Row, fallbackSeries: Series): Signal {
     metric,
     caseId: s.case_id ?? null,
     status: s.case_id ? "clustered" : "unclustered",
+    classification: s.classified_by ? { method: s.classified_by === "pm" ? ("manual" as const) : (s.classified_by as "bmw_label" | "llm"), label: s.classified_by === "pm" ? "Added by a PM" : undefined } : undefined,
     synthetic: false,
   };
 }
@@ -190,6 +191,7 @@ export function caseFromBackend(row: Row, ownerFallback: string, extra: Partial<
     summary: row.summary ?? "",
     highlights: row.highlights ?? [],
     topicId: row.topic_id ?? null,
+    aspectGroup: row.aspect_group ?? null,
     stances: [],
     series: row.vehicle,
     relatedSeries: (row.other_vehicles ?? []).filter(isSeries),
@@ -294,6 +296,7 @@ export function snapshotFromBackend(s: Row): RequirementSnapshot {
       unit: m.unit ?? undefined,
       basis: m.basis === "evidence" ? "evidence" : "assumption",
       benchmark: m.benchmark ?? undefined,
+      targetSpec: m.targetSpec ?? undefined,
     })),
     acceptanceCriteria: s.acceptance_criteria ?? [],
     assumptions: s.assumptions ?? [],
@@ -349,6 +352,7 @@ export function requirementFromBackend(r: Row, ownerFallback: string): Requireme
     // A planned requirement sits on the plan feature of its case's topic.
     plannedFeatureId: status === "planned" || status === "exported" ? topic : null,
     sentBackReason: r.sent_back_reason ?? undefined,
+    argumentMd: r.argument_md ?? null,
     createdAt: iso(r.created_at),
     updatedAt: iso(r.updated_at ?? r.created_at),
     synthetic: false,

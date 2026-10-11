@@ -382,3 +382,45 @@
 .bg-primary {
   --mark-navy: var(--brand-navy-inverse);
 }
+
+/* Headlight intro (components/brand/intro.tsx): a black stage over the app, on the first visit only. */
+.intro-stage {
+  display: none;
+}
+html[data-intro="play"] .intro-stage {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  overflow: hidden;
+  cursor: pointer;
+  background: #000;
+  transition: opacity 0.8s ease;
+}
+html[data-intro="play"] .intro-stage.done {
+  opacity: 0;
+  pointer-events: none;
+}
+html[data-intro="play"] body {
+  overflow: hidden;
+}
+.intro-eyes {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(900px, 72vw);
+  aspect-ratio: 1540 / 310;
+  transform: translate(-50%, -50%);
+}
+.intro-eyes canvas,
+.intro-eyes img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  user-select: none;
+}
+.intro-eyes img {
+  opacity: 0.001; /* invisible but already painted, so showing it later costs nothing */
+}

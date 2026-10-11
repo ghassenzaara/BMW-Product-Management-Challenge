@@ -54,6 +54,10 @@ const ACTIONS: Record<string, string> = {
   "innovation_item.create": "Added to the innovation pool",
   "innovation_item.update": "Innovation pool updated",
   "config.update": "Settings changed",
+  "case.export": "Case exported",
+  "vehicle_plan.export": "Requirements exported",
+  "requirement.view": "Trace replay opened",
+  "source_record.create": "Evidence stored",
   // mock (object.verb)
   "case.created": "Case created",
   "case.edited": "Case edited",
@@ -62,6 +66,7 @@ const ACTIONS: Record<string, string> = {
   "case.stance_saved": "Context saved",
   "case.watch_changed": "Watchers changed",
   "case.exported_md": "Case exported",
+  "case.evidence_added": "Evidence added by the PM",
   "requirement.drafted": "Requirement drafted",
   "requirement.edited": "Requirement edited",
   "requirement.status_changed": "Status changed",

@@ -182,6 +182,10 @@ async function saveProposals(user: User, drafts: ProposalDraft[], agent: string,
   return out;
 }
 
+/** Views and exports are part of the audit trail too (the files themselves are built here). */
+const logAccess = (user: User, action: "export" | "view", objectType: "case" | "requirement" | "vehicle_plan", objectId: string, detail: string) =>
+  backend(user.id, "POST", "/access-log", { body: { action, object_type: objectType, object_id: objectId, detail } });
+
 const signalLabel = (signals: Signal[]) => (id: string) => signals.find((s) => s.id === id)?.sourceName ?? "Signal";
 
 async function postAgentMessage(user: User, type: string, id: string, content: string, agent: string, cited: string[] = [], segment?: string) {
@@ -282,17 +286,21 @@ export const backendHandlers: Handlers = {
     const x = await ctx(user);
     const profiles = await profilesOf(user, x.ws.config_id);
     const profile = profiles.find((p) => p.id === x.profileId) ?? profiles[0];
-    return { user, workspace: workspaceOf(user, x), weightProfile: profileFromBackend(profile, x.ws.config.name), brief: x.ws.brief ?? null, needsOnboarding: !!x.ws.needs_onboarding };
+    return { user, workspace: workspaceOf(user, x), weightProfile: profileFromBackend(profile, x.ws.config.name), brief: x.ws.brief ?? null, needsOnboarding: !!x.ws.needs_onboarding, features: { agentRefresh: false, competitorRipple: false } };
   },
   users: ({ user }) => users(user),
   updateWorkspace: async ({ user, body }) => {
     const x = await ctx(user);
     const patch: Row = { source_filter: body.sourceFilter, watchlist: body.watchlist, weight_profile_id: body.weightProfileId };
     const wantMarket = body.region === "CN" ? "China" : undefined;
-    if ((body.series && body.series !== x.vehicle) || (wantMarket && wantMarket !== x.market)) {
+    const leaveChina = body.region !== undefined && body.region !== "CN" && x.market === "China";
+    if ((body.series && body.series !== x.vehicle) || (wantMarket && wantMarket !== x.market) || leaveChina) {
       const all = await cached("configs", 60_000, () => get<Row[]>(user, "/configs"));
       const series = body.series ?? x.vehicle;
-      const next = all.find((c) => c.vehicle === series && c.market === (wantMarket ?? x.market)) ?? all.find((c) => c.vehicle === series);
+      const pool = all.filter((c) => c.vehicle === series);
+      // Out of China: the line's largest other market (2030 volume).
+      const others = pool.filter((c) => c.market !== "China").sort((a, b) => Number(b.sales_2030 ?? 0) - Number(a.sales_2030 ?? 0));
+      const next = (leaveChina ? others[0] : pool.find((c) => c.market === (wantMarket ?? x.market))) ?? pool[0];
       if (!next) throw new ApiError(404, `No config for ${series}`);
       patch.config_id = next.id;
       if (!body.weightProfileId) patch.weight_profile_id = undefined;
@@ -337,16 +345,27 @@ export const backendHandlers: Handlers = {
   signals: async ({ user, query }) => {
     const x = await ctx(user);
     const series = (query.series ?? x.vehicle) as Series;
-    const res = await get<{ items: Row[] }>(user, "/signals", {
+    const filter = {
       vehicle: query.caseId ? undefined : series,
       case_id: query.caseId,
       market: query.market ? marketToBackend(query.market) : undefined,
       kind: query.kind,
       unassigned: query.status === "unclustered" || query.status === "new" ? true : undefined,
       q: query.q,
-      limit: Math.min(query.limit ?? 1000, 2000),
+    };
+    // Without a limit the caller wants the whole line (Signals page). The backend sorts by date and
+    // BMW's verbatims have none, so one page would drop them: read every page (2,000 each, 10 at most).
+    const rows = await cached(`signals:${JSON.stringify(filter)}:${query.limit ?? "all"}`, 30_000, async () => {
+      const page = Math.min(query.limit ?? 2000, 2000);
+      const out: Row[] = [];
+      for (let offset = 0; offset < 20_000; offset += page) {
+        const res = await get<{ total: number; items: Row[] }>(user, "/signals", { ...filter, limit: page, offset });
+        out.push(...res.items);
+        if (query.limit || out.length >= res.total || !res.items.length) break;
+      }
+      return out;
     });
-    let items = res.items.map((s) => signalFromBackend(s, series));
+    let items = rows.map((s) => signalFromBackend(s, series));
     if (query.agent) items = items.filter((s) => s.agent === query.agent);
     if (query.status === "clustered") items = items.filter((s) => s.caseId);
     return items;
@@ -398,11 +417,33 @@ export const backendHandlers: Handlers = {
       .filter((c) => (!query.series || c.series === query.series || c.relatedSeries.includes(query.series)) && (!query.ownerId || c.ownerId === query.ownerId || c.coOwnerIds.includes(query.ownerId)) && (!query.state || c.state === query.state) && (!query.scope || c.scope === query.scope));
   },
   createCase: async ({ user, body }) => {
-    const out = await send(user, "POST", "/cases", { vehicle: body.series, title: body.title, summary: body.summary, signal_ids: body.signalIds, scope: body.scope, rationale: body.rationale });
+    // From signals the topic and aspect come with them; by hand the PM picked both from the fixed taxonomy.
+    const out = await send(user, "POST", "/cases", {
+      vehicle: body.series,
+      title: body.title,
+      summary: body.summary,
+      signal_ids: body.signalIds,
+      scope: body.scope,
+      rationale: body.rationale,
+      topic_id: body.signalIds.length ? undefined : body.topicId,
+      aspect_group: body.signalIds.length ? undefined : body.aspectGroup,
+      case_type: body.type,
+      change_depth: body.changeDepth,
+    });
     return (await loadCase(user, out.id)).case;
   },
-  addCaseEvidence: async () => {
-    throw new ApiError(501, "Adding your own evidence works on the demo data only; the backend has no endpoint for it yet.");
+  addCaseEvidence: async ({ user, params, body }) => {
+    const { vehicle } = await loadCase(user, params.id);
+    // Every item is stored as a source record and passes the validation gate; only file rows count as customers.
+    const out = await send(user, "POST", `/cases/${encodeURIComponent(params.id)}/vehicles/${vehicle}/evidence`, {
+      items: body.items.map((it) => ({ type: it.type, text: it.text, title: it.title, url: it.url, source: it.source, kind: it.kind, market: marketToBackend(it.market) })),
+      rationale: body.rationale,
+    });
+    const ids = new Set<string>(out.added as string[]);
+    if (!ids.size) throw new ApiError(422, `Nothing was added: ${(out.quarantined as Row[])[0]?.reason ?? "the validation gate rejected it"}.`);
+    const fresh = await loadCase(user, params.id);
+    const signals = await caseSignals(user, params.id, fresh.vehicle);
+    return { case: { ...fresh.case, signalIds: signals.map((s) => s.id) }, added: signals.filter((s) => ids.has(s.id)) };
   },
   caseBundle: async ({ user, params }) => {
     const { page, case: c, vehicle, x } = await loadCase(user, params.id);
@@ -425,7 +466,10 @@ export const backendHandlers: Handlers = {
     const p = body.patch;
     const id = encodeURIComponent(params.id);
     const why = body.rationale || "Edited on the case page";
-    if (p.bodyMd !== undefined || p.title !== undefined) await send(user, "PUT", `/cases/${id}/page`, { body_md: p.bodyMd ?? c.bodyMd, title: p.title, expected_version: c.bodyVersion });
+    if (p.bodyMd !== undefined) await send(user, "PUT", `/cases/${id}/page`, { body_md: p.bodyMd, title: p.title, expected_version: c.bodyVersion });
+    // Names and classification; the topic (and so the car area) is fixed by the taxonomy.
+    const details = { title: p.bodyMd === undefined ? p.title : undefined, short_title: p.shortTitle, summary: p.summary, case_type: p.type, change_depth: p.changeDepth };
+    if (Object.values(details).some((v) => v !== undefined)) await send(user, "PATCH", `/cases/${id}/vehicles/${vehicle}/details`, { ...details, rationale: why });
     if (p.brandFit) await send(user, "POST", `/cases/${id}/tags`, { field: "brand_fit", value: brandFitToBackend(p.brandFit.value), rationale: p.brandFit.reason || why });
     if (p.manualRank !== undefined) await send(user, "POST", `/cases/${id}/vehicles/${vehicle}/rank`, { rank: p.manualRank, reason: p.manualRankReason ?? why });
     if (p.coOwnerIds || p.watcherIds || p.scope) await send(user, "PATCH", `/cases/${id}/vehicles/${vehicle}/work`, { co_owner_ids: p.coOwnerIds, watcher_ids: p.watcherIds, scope: p.scope, rationale: body.rationale });
@@ -525,6 +569,7 @@ export const backendHandlers: Handlers = {
       signals: signals.map((s) => ({ id: s.id, source: s.sourceName, market: s.market, ref: s.recordRef ?? s.url })),
       exported_at: new Date().toISOString(),
     };
+    await logAccess(user, "export", "case", c.id, "Case exported as markdown");
     return { filename: `${c.id}.md`, content: `---\n${toYaml(front)}---\n\n# ${c.title}\n\n${c.bodyMd}\n` };
   },
   caseSegments: async ({ user, params }) => {
@@ -566,28 +611,60 @@ export const backendHandlers: Handlers = {
     };
   },
   requirementReplay: async ({ user, params }) => {
-    // Rebuilt from what the backend serves (bundle, audit, profiles, plan). The backend keeps no
-    // source snapshots, so the chain check honestly reports them as missing.
+    // Rebuilt from what the backend stores: the bundle, the audit log of the requirement and its case,
+    // the board of the caller's weight profile, and the backend's own recheck of quotes and records.
     const b = await backendHandlers.requirementBundle({ user, params, query: {}, body: undefined } as Parameters<Handlers["requirementBundle"]>[0]);
     const x = await ctx(user);
-    const [reqEvents, caseEvents, all, profiles, plan] = await Promise.all([
-      get<Row[]>(user, "/audit", { object_id: params.id, limit: 500 }),
-      get<Row[]>(user, "/audit", { object_id: b.case.id, limit: 500 }),
+    const caseId = encodeURIComponent(b.case.id);
+    const [reqEvents, caseEvents, all, profiles, plan, rows, integrity] = await Promise.all([
+      get<Row[]>(user, "/audit", { object_id: params.id, limit: 1000 }),
+      get<Row[]>(user, "/audit", { object_id: b.case.id, limit: 1000 }),
       users(user),
       profilesOf(user, x.ws.config_id).then((ps) => ps.map((p) => profileFromBackend(p, x.ws.config.name))),
       get(user, `/plans/${b.requirement.series}`).then(planFromBackend).catch(() => null),
+      board(user, x.profileId),
+      get(user, `/cases/${caseId}/integrity`, { vehicle: b.requirement.series }),
     ]);
-    const d = mini({ requirements: [b.requirement], cases: [b.case], signals: b.signals, requirementVersions: b.versions, alerts: b.alerts, audit: [...reqEvents, ...caseEvents].map(auditFromBackend), users: all, weightProfiles: profiles, plans: plan ? [plan] : [] });
-    return buildReplay(d, b.requirement);
+    // One log, oldest first: the backend lists newest first, and an event can be in both lists.
+    const events = [...new Map([...reqEvents, ...caseEvents].map((e) => [Number(e.seq), e])).values()].sort((e1, e2) => Number(e1.seq) - Number(e2.seq)).map(auditFromBackend);
+    const d = mini({ requirements: [b.requirement], cases: [b.case], signals: b.signals, requirementVersions: b.versions, alerts: b.alerts, audit: events, users: all, weightProfiles: profiles, plans: plan ? [plan] : [] });
+    const out = buildReplay(d, b.requirement, { partialLog: true });
+    const refs = [...new Set(out.quoteIds.map((sid) => b.signals.find((sg) => sg.id === sid)?.recordRef).filter((r): r is string => !!r))];
+    const records = refs.length ? await backend<Row[]>(user.id, "POST", "/source-records/lookup", { body: { record_ids: refs } }) : [];
+    const row = rows.find((r) => r.id === b.case.id);
+    const profile = profiles.find((p) => p.id === x.profileId) ?? profiles[0];
+    await logAccess(user, "view", "requirement", params.id, "Trace replay opened");
+    return {
+      ...out,
+      sourceRecords: records.map((r) => ({ ref: r.record_id, sourceName: r.source_name, url: r.url && /^https?:/.test(r.url) ? r.url : undefined, text: r.text_original, sha256: r.content_hash, fetchedAt: String(r.fetched_at), synthetic: false })),
+      // The rank the PM sees on the board, under their own weight profile.
+      scoreToday: { score: Number(row?.score ?? 0), rank: row?.rank ?? 0, of: rows.length, profileName: profile?.name ?? "" },
+      integrity: [
+        {
+          id: "quotes_in_source" as const,
+          label: "Every quote is found in its source record",
+          ok: integrity.quote_failure_count === 0,
+          detail: `${integrity.quotes_found} of ${integrity.signals} quotes found word for word in ${integrity.records} stored records (rechecked now)`,
+          failures: integrity.quote_failures,
+        },
+        {
+          id: "record_hashes" as const,
+          label: "Every source record is stored with the hash taken at capture",
+          ok: integrity.record_failure_count === 0,
+          detail: `${integrity.records_intact} of ${integrity.signals} signals point to an intact record with its hash`,
+          failures: integrity.record_failures,
+        },
+        ...out.integrity.filter((c) => c.id !== "quotes_in_source" && c.id !== "record_hashes"),
+      ],
+    };
   },
   patchRequirement: async ({ user, params, body }) => {
     const { row, requirement, x } = await loadRequirement(user, params.id);
     const id = encodeURIComponent(params.id);
-    // The car area always follows the case's topic; change depth and the edited argument sheet have no backend field yet.
-    const { manualRank, carArea: _carArea, changeDepth: _changeDepth, argumentMd: _argumentMd, ...content } = body.patch;
+    // The car area always follows the case's topic. The argument sheet is the PM's presentation, not a version.
+    const { manualRank, carArea: _carArea, argumentMd, ...content } = body.patch;
     void _carArea;
-    void _changeDepth;
-    void _argumentMd;
+    if (argumentMd !== undefined) await send(user, "PATCH", `/requirements/${id}`, { argument_md: argumentMd ?? "", rationale: body.rationale });
     if (manualRank !== undefined) await send(user, "POST", `/requirements/${id}/rank`, { rank: manualRank, reason: body.rationale });
     if (Object.keys(content).length) {
       const prev = snapshotFromBackend(row);
@@ -723,6 +800,7 @@ export const backendHandlers: Handlers = {
     }
     // The hand-over moves every planned requirement to exported (each one audited by the backend).
     for (const r of list.filter((r) => r.status === "planned")) await send(user, "POST", `/requirements/${encodeURIComponent(r.id)}/transition`, { action: "export", rationale: `Exported to Codebeamer (${body.format})` });
+    await logAccess(user, "export", "vehicle_plan", body.series, `${out.length} requirements exported as ${body.format === "json" ? "JSON" : "Codebeamer CSV"}: ${out.map((r) => r.ID).join(", ") || "none"}`);
     const day = new Date().toISOString().slice(0, 10);
     return { filename: `requirements_${body.series}_${day}.${body.format === "json" ? "json" : "csv"}`, mime: body.format === "json" ? "application/json" : "text/csv", content, count: out.length };
   },
@@ -781,6 +859,7 @@ export const backendHandlers: Handlers = {
         ownerName: x.all.find((u) => u.id === r.ownerId)?.name ?? r.ownerId,
       });
     }
+    await logAccess(user, "export", "vehicle_plan", series, `Engineering deck with ${slides.length} requirements: ${slides.map((sl) => sl.requirementId).join(", ") || "none"}`);
     const now = new Date().toISOString();
     return { filename: `engineering-round_${series}_${now.slice(0, 10)}.pptx`, series, successorName: plan.successor_name, generatedAt: now, slides };
   },

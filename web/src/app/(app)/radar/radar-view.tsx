@@ -6,17 +6,14 @@ import { useRouter } from "next/navigation";
 import { Activity, CheckCircle2, Inbox, Loader2, Plus, RefreshCw, ShieldAlert, Waves, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import {
-  CarArea as CarAreas,
   CaseType as CaseTypes,
   ChangeDepth as ChangeDepths,
   Region as Regions,
   agentLabel,
-  carAreaLabel,
   caseTypeLabel,
   changeDepthLabel,
   regionLabel,
   seriesShort,
-  type CarArea,
   type CaseType,
   type ChangeDepth,
   type RefreshResponse,
@@ -94,9 +91,13 @@ export function RadarView() {
             </Select>
             <RunsPopover runs={runs} />
             <QuarantinePopover items={quarantine} />
-            <Button size="sm" onClick={onRefresh} disabled={refresh.isPending}>
-              {refresh.isPending ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />} Refresh
-            </Button>
+            {me.data?.features.agentRefresh ? (
+              <Button size="sm" onClick={onRefresh} disabled={refresh.isPending}>
+                {refresh.isPending ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />} Refresh
+              </Button>
+            ) : (
+              <span className="text-xs text-muted-foreground">Agents run daily on the server</span>
+            )}
           </>
         }
       >
@@ -244,7 +245,6 @@ function StartCaseDialog({ open, onOpenChange, signalIds, series, region, onCrea
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [scope, setScope] = useState<Region>(region);
-  const [area, setArea] = useState<CarArea>("infotainment_hmi");
   const [type, setType] = useState<CaseType>("fix_improve");
   const [depth, setDepth] = useState<ChangeDepth>("part_module");
   return (
@@ -252,12 +252,12 @@ function StartCaseDialog({ open, onOpenChange, signalIds, series, region, onCrea
       open={open}
       onOpenChange={onOpenChange}
       title={`Start a case from ${signalIds.length} signal${signalIds.length === 1 ? "" : "s"}`}
-      description="Name the customer problem, not the solution."
+      description="Name the customer problem, not the solution. Pick signals of one topic and one aspect: the case takes both, and its car area, from them."
       confirmLabel="Create case"
       pending={create.isPending}
       canSubmit={title.trim().length > 2}
       onSubmit={async (rationale) => {
-        const c = await create.mutateAsync({ body: { title, summary: summary || title, series, scope, carArea: area, type, changeDepth: depth, signalIds, rationale } });
+        const c = await create.mutateAsync({ body: { title, summary: summary || title, series, scope, type, changeDepth: depth, signalIds, rationale } });
         onOpenChange(false);
         onCreated(c.id);
       }}
@@ -272,7 +272,6 @@ function StartCaseDialog({ open, onOpenChange, signalIds, series, region, onCrea
       </div>
       <div className="grid grid-cols-2 gap-3">
         <Pick label="Scope" value={scope} onChange={(v) => setScope(v as Region)} options={Regions.options.map((o) => [o, regionLabel[o]])} />
-        <Pick label="Car area" value={area} onChange={(v) => setArea(v as CarArea)} options={CarAreas.options.map((o) => [o, carAreaLabel[o]])} />
         <Pick label="Type" value={type} onChange={(v) => setType(v as CaseType)} options={CaseTypes.options.map((o) => [o, caseTypeLabel[o]])} />
         <Pick label="Change depth" value={depth} onChange={(v) => setDepth(v as ChangeDepth)} options={ChangeDepths.options.map((o) => [o, changeDepthLabel[o]])} />
       </div>
