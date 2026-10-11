@@ -127,6 +127,9 @@ adapter("tmc", "genesis-owners", "lucid-owners")(_xenforo)
 
 
 def article_text(html: str) -> tuple[str | None, str]:
+    """Title and paragraphs of an article page. Sites that render the text in the browser
+    (TopGear: review sections only in ``__NEXT_DATA__``) fall back to the JSON-LD
+    ``articleBody`` and then to the prose strings of the page's Next.js data."""
     tree = _html(html)
     for bad in tree.css("script, style, nav, header, footer, aside, form, noscript"):
         bad.decompose()
@@ -134,7 +137,48 @@ def article_text(html: str) -> tuple[str | None, str]:
     root = tree.css_first("article") or tree.css_first("main") or tree.body
     paragraphs = [_WS.sub(" ", p.text()).strip() for p in (root.css("p") if root else [])]
     text = "\n\n".join(p for p in paragraphs if len(p) > 40)
+    if len(text) < 200:
+        text = _embedded_text(html) or text
     return (title.text(strip=True) if title else None), text
+
+
+def _prose(fragment: str) -> list[str]:
+    """Paragraphs of an HTML fragment (or plain text) longer than 40 characters."""
+    tree = _html(f"<body>{fragment}</body>")
+    parts = [_WS.sub(" ", p.text()).strip() for p in tree.css("p")] or [_WS.sub(" ", tree.body.text()).strip()]
+    return [p for p in parts if len(p) > 40]
+
+
+def _embedded_text(html: str) -> str:
+    for m in re.finditer(r'<script[^>]+application/ld\+json[^>]*>(.*?)</script>', html, re.S):
+        try:
+            data = json.loads(m.group(1))
+        except ValueError:
+            continue
+        for node in data if isinstance(data, list) else data.get("@graph", [data]) if isinstance(data, dict) else []:
+            if isinstance(node, dict) and isinstance(node.get("articleBody"), str) and len(node["articleBody"]) > 200:
+                return "\n\n".join(_prose(node["articleBody"]))
+    m = re.search(r'<script id="__NEXT_DATA__"[^>]*>(.*?)</script>', html, re.S)
+    if not m:
+        return ""
+    try:
+        props = json.loads(m.group(1)).get("props", {}).get("pageProps", {})
+    except ValueError:
+        return ""
+    found: list[str] = []
+
+    def walk(node) -> None:
+        if isinstance(node, dict):
+            for v in node.values():
+                walk(v)
+        elif isinstance(node, list):
+            for v in node:
+                walk(v)
+        elif isinstance(node, str) and len(node) > 200 and "<p" in node:
+            found.extend(_prose(node))
+
+    walk(props)
+    return "\n\n".join(dict.fromkeys(found))
 
 
 def _magazine(ctx: FetchContext, source: dict, subject: Subject, cursor: dict) -> FetchResult:

@@ -27,6 +27,12 @@ OUT_OF_SCOPE = re.compile(
     re.I,
 )
 
+# Not-null columns of `signal` with a database default (migration 0005).
+QUARANTINE_DEFAULTS = {
+    "market": "unknown", "market_basis": "unknown", "vehicle_role": "unknown", "powertrain": "unknown",
+    "car_area": list, "scope_tag": "in_scope", "extra": dict,
+}
+
 _QUOTES = {"‘": "'", "’": "'", "“": '"', "”": '"', "–": "-", "—": "-", " ": " "}
 
 
@@ -127,8 +133,11 @@ def find_quote(quote: str, text: str) -> str | None:
 def _quarantine(row: dict, reason: str) -> GateResult:
     row["validation"] = "quarantined"
     row["reject_reason"] = reason
-    # Stored in one batch with valid signals of the same record, which carry a scope tag.
-    row.setdefault("scope_tag", "in_scope")
+    # Stored in one batch with valid signals of the same record: the batch insert lists every
+    # column any row has, so a row that failed early must still fill the not-null columns.
+    for column, default in QUARANTINE_DEFAULTS.items():
+        if row.get(column) is None:
+            row[column] = default() if callable(default) else default
     return GateResult(row, False, reason)
 
 
@@ -146,8 +155,9 @@ def check(raw: dict, ctx: GateContext, *, run_id=None, prompt_version=None, mode
     except ValidationError as exc:
         if record is None:
             return GateResult(None, False, f"schema: {exc.errors()[0]['msg']} (no stored record)")
+        # No competitor role here: the row has no checked competitor_id (a table check needs one).
         row = {**base, "evidence_role": raw.get("evidence_role") if raw.get("evidence_role") in (
-            "bmw_customer", "competitor", "market") else "market", "extra": {"raw": _safe(raw)}}
+            "bmw_customer", "market") else "market", "extra": {"raw": _safe(raw)}}
         first = exc.errors()[0]
         return _quarantine(row, f"schema: {'.'.join(map(str, first['loc']))}: {first['msg']}")
 

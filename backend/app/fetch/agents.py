@@ -143,8 +143,15 @@ def llm_extract(record: dict) -> tuple[list[dict], str, str]:
         text=prompts.wrap_source(json.dumps({"title": record.get("title"), "text": (record["text_original"] or "")[:8000]},
                                             ensure_ascii=False)),
     )
+    return proposals_from(record, result.data.signals), result.model, result.prompt_version
+
+
+def proposals_from(record: dict, signals: list[_Signal]) -> list[dict]:
+    """Proposed signals for the gate from what a reader extracted (the OpenAI agent, or the
+    subagent files of ``app.fetch.local``): the record's own fields plus the extraction."""
+    agent = agent_for(record)
     out = []
-    for s in result.data.signals:
+    for s in signals:
         if agent != "agent:competitor" and s.kind == "competitor_fact" and evidence_role(record) != "competitor":
             continue
         extra_out = {"kind_source": "llm", "agent": agent}
@@ -155,7 +162,7 @@ def llm_extract(record: dict) -> tuple[list[dict], str, str]:
                     "aspect_group": s.aspect_group, "classification_confidence": s.confidence,
                     "classified_by": "llm", "market": s.market, "market_basis": s.market_basis,
                     "extra": extra_out})
-    return out, result.model, result.prompt_version
+    return out
 
 
 def extract(record: dict) -> tuple[list[dict], str | None, str]:
