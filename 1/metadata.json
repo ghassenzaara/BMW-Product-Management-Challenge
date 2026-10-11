@@ -1,0 +1,263 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4N6PWK9JKEDM9SFE2TB3A8T",
+  "session_id": "de9efac9-6a57-4a1a-a87e-80af01c3ce51",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-11T10:05:22.5161833Z",
+  "branch": "feature/web-import-signals",
+  "checkpoints_count": 21,
+  "save_step_count": 21,
+  "files_touched": [
+    "backend/.data/llm_cache/case_tags.jsonl",
+    "backend/.data/llm_cache/case_writer.jsonl",
+    "backend/app/cases/cluster.py",
+    "backend/app/cases/pipeline.py",
+    "backend/app/dev_local.py",
+    "backend/app/fetch/agents.py",
+    "backend/app/fetch/local.py",
+    "backend/app/rag/index.py",
+    "changes.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "ec9f9c6ea0f0",
+  "checkpoint_transcript_start": 797,
+  "transcript_lines_at_start": 797,
+  "compact_transcript_start": 169,
+  "token_usage": {
+    "input_tokens": 236,
+    "cache_creation_tokens": 134296,
+    "cache_read_tokens": 41406434,
+    "output_tokens": 74992,
+    "api_call_count": 114
+  },
+  "session_metrics": {
+    "turn_count": 42
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-10-11T10:05:22.2439209Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 568,
+    "human_modified": 10042,
+    "human_removed": 0,
+    "total_committed": 1233,
+    "total_lines_changed": 10610,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 305,
+      "user_lines_removed": 193,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "backend/app/fetch/agents.py": 194,
+        "backend/app/fetch/local.py": 111
+      },
+      "user_removed_per_file": {
+        "backend/app/fetch/agents.py": 188,
+        "backend/app/fetch/local.py": 5
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 1819,
+      "user_lines_removed": 1734,
+      "agent_lines_added": 305,
+      "agent_lines_removed": 193,
+      "user_added_per_file": {
+        "backend/.data/llm_cache/case_writer.jsonl": 1730,
+        "backend/app/cases/cluster.py": 67,
+        "backend/app/cases/pipeline.py": 5,
+        "backend/app/fetch/local.py": 13,
+        "changes.md": 4
+      },
+      "user_removed_per_file": {
+        "backend/.data/llm_cache/case_writer.jsonl": 1703,
+        "backend/app/cases/cluster.py": 25,
+        "backend/app/cases/pipeline.py": 1,
+        "backend/app/fetch/local.py": 5
+      }
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 2124,
+      "agent_lines_removed": 1927
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 2955,
+      "user_lines_removed": 2912,
+      "agent_lines_added": 2124,
+      "agent_lines_removed": 1927,
+      "user_added_per_file": {
+        "backend/.data/llm_cache/case_tags.jsonl": 2955
+      },
+      "user_removed_per_file": {
+        "backend/.data/llm_cache/case_tags.jsonl": 2912
+      }
+    },
+    {
+      "checkpoint_number": 5,
+      "user_lines_added": 10,
+      "user_lines_removed": 0,
+      "agent_lines_added": 5171,
+      "agent_lines_removed": 4839,
+      "user_added_per_file": {
+        "backend/.data/llm_cache/case_tags.jsonl": 10
+      }
+    },
+    {
+      "checkpoint_number": 6,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 5181,
+      "agent_lines_removed": 4839
+    },
+    {
+      "checkpoint_number": 7,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 5181,
+      "agent_lines_removed": 4839
+    },
+    {
+      "checkpoint_number": 8,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 5181,
+      "agent_lines_removed": 4839
+    },
+    {
+      "checkpoint_number": 9,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 5181,
+      "agent_lines_removed": 4839
+    },
+    {
+      "checkpoint_number": 10,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 5181,
+      "agent_lines_removed": 4839
+    },
+    {
+      "checkpoint_number": 11,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 5181,
+      "agent_lines_removed": 4839
+    },
+    {
+      "checkpoint_number": 12,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 5181,
+      "agent_lines_removed": 4839
+    },
+    {
+      "checkpoint_number": 13,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 5181,
+      "agent_lines_removed": 4839
+    },
+    {
+      "checkpoint_number": 14,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 5181,
+      "agent_lines_removed": 4839
+    },
+    {
+      "checkpoint_number": 15,
+      "user_lines_added": 84,
+      "user_lines_removed": 4,
+      "agent_lines_added": 5399,
+      "agent_lines_removed": 5052,
+      "user_added_per_file": {
+        "backend/app/dev_local.py": 10,
+        "backend/app/mirror.py": 74
+      },
+      "user_removed_per_file": {
+        "backend/app/dev_local.py": 4
+      }
+    },
+    {
+      "checkpoint_number": 16,
+      "user_lines_added": 74,
+      "user_lines_removed": 0,
+      "agent_lines_added": 5409,
+      "agent_lines_removed": 5056,
+      "user_added_per_file": {
+        "backend/app/mirror.py": 74
+      }
+    },
+    {
+      "checkpoint_number": 17,
+      "user_lines_added": 74,
+      "user_lines_removed": 0,
+      "agent_lines_added": 5409,
+      "agent_lines_removed": 5056,
+      "user_added_per_file": {
+        "backend/app/mirror.py": 74
+      }
+    },
+    {
+      "checkpoint_number": 18,
+      "user_lines_added": 79,
+      "user_lines_removed": 0,
+      "agent_lines_added": 5409,
+      "agent_lines_removed": 5056,
+      "user_added_per_file": {
+        "backend/app/mirror.py": 79
+      }
+    },
+    {
+      "checkpoint_number": 19,
+      "user_lines_added": 79,
+      "user_lines_removed": 0,
+      "agent_lines_added": 5409,
+      "agent_lines_removed": 5056,
+      "user_added_per_file": {
+        "backend/app/mirror.py": 79
+      }
+    },
+    {
+      "checkpoint_number": 20,
+      "user_lines_added": 79,
+      "user_lines_removed": 0,
+      "agent_lines_added": 5409,
+      "agent_lines_removed": 5056,
+      "user_added_per_file": {
+        "backend/app/mirror.py": 79
+      }
+    },
+    {
+      "checkpoint_number": 21,
+      "user_lines_added": 79,
+      "user_lines_removed": 0,
+      "agent_lines_added": 5409,
+      "agent_lines_removed": 5056,
+      "user_added_per_file": {
+        "backend/app/mirror.py": 79
+      }
+    },
+    {
+      "checkpoint_number": 22,
+      "user_lines_added": 79,
+      "user_lines_removed": 0,
+      "agent_lines_added": 5409,
+      "agent_lines_removed": 5056,
+      "user_added_per_file": {
+        "backend/app/mirror.py": 79
+      }
+    }
+  ]
+}
