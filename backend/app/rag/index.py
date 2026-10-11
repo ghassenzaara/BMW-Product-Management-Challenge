@@ -130,12 +130,17 @@ def _chunks(conn) -> list[dict]:
         out.append({"object_type": "signal", "object_id": str(s["id"]), "vehicle": s["vehicle"], "market": s["market"],
                     "case_id": s["case_id"],
                     "text": f"[{s['kind']}] {s['summary']}\nQuote: {s['quote']}\nSource: {s['source_id']}"})
+    # One chunk per record: a review page can hold signals of several cases and lines, and then
+    # belongs to none of them alone.
     for r in conn.execute(
-            "select distinct r.record_id, r.title, r.text_original, r.source_id, s.vehicle, s.case_id"
+            "select r.record_id, r.title, r.text_original, array_agg(distinct s.vehicle) as vehicles,"
+            " array_agg(distinct s.case_id) as cases"
             " from source_record r join signal s using (record_id)"
-            " where r.deleted_at is null and r.source_id <> 'bmw_feedback' and s.validation = 'valid'").fetchall():
-        out.append({"object_type": "source_record", "object_id": r["record_id"], "vehicle": r["vehicle"],
-                    "market": None, "case_id": r["case_id"],
+            " where r.deleted_at is null and r.source_id <> 'bmw_feedback' and s.validation = 'valid'"
+            " group by r.record_id, r.title, r.text_original").fetchall():
+        out.append({"object_type": "source_record", "object_id": r["record_id"],
+                    "vehicle": r["vehicles"][0] if len(r["vehicles"]) == 1 else None,
+                    "market": None, "case_id": r["cases"][0] if len(r["cases"]) == 1 else None,
                     "text": f"{r['title'] or r['record_id']}\n{(r['text_original'] or '')[:SOURCE_TEXT_LIMIT]}"})
     for d in conn.execute("select id, object_type, object_id, vehicle, actor, action, rationale from decision"
                           ).fetchall():

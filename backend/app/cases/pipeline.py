@@ -25,7 +25,7 @@ def thresholds_for(conn, vehicle: str | None = None) -> dict:
     merged: dict = {}
     for r in rows:
         for k, v in (r["thresholds"] or {}).items():
-            if k in ("open_min_customers", "open_min_defects"):
+            if k in ("open_min_customers", "open_min_defects", "open_min_web_signals"):
                 merged[k] = max(merged.get(k, 0), v)
             else:
                 merged.setdefault(k, v)
@@ -115,6 +115,10 @@ def _stages(initial: bool, run_id) -> dict:
     if initial:
         with db.transaction() as conn:
             planned = cluster.plan_initial(conn, sim, split_min=split_min, thresholds=th)
+        cluster.writer.prefetch(planned)
+    else:
+        with db.transaction() as conn:
+            planned = cluster.plan_incremental(conn, thresholds=th)
         cluster.writer.prefetch(planned)
     with db.transaction() as conn:
         if initial:

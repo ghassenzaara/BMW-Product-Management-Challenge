@@ -59,7 +59,10 @@ def viable(members: list[dict], thresholds: dict) -> bool:
     min_customers = int(thresholds.get("open_min_customers", OPEN_MIN_CUSTOMERS))
     min_defects = int(thresholds.get("open_min_defects", OPEN_MIN_DEFECTS))
     if any(m["evidence_role"] == "competitor" and m["kind"] in ("like", "competitor_fact") for m in members):
-        return True
+        # Competitor evidence alone opens a case only with enough web signals behind it
+        # (``open_min_web_signals``, a PM setting; 0 = one competitor signal is enough).
+        if sum(1 for m in members if m.get("web")) >= int(thresholds.get("open_min_web_signals", 0)):
+            return True
     for vehicle in {m["vehicle"] for m in members if m["vehicle"]}:
         own = [m for m in members if m["evidence_role"] == "bmw_customer" and m["vehicle"] in (vehicle, None)]
         negative = sum(1 for m in own if m["kind"] in ("complaint", "wish"))
@@ -83,7 +86,7 @@ def _label(feature: str, aspect_group: str | None) -> str:
     return f"{feature} ({aspect_group})" if aspect_group else feature
 
 
-def _signals_for(conn, feature_id=None, unassigned_only=True) -> list[dict]:
+def _signals_for(conn, feature_id=None, unassigned_only=True, with_embedding=True) -> list[dict]:
     # The fallback topic "other" waits in the taxonomy review queue and is never clustered.
     where = ["s.validation = 'valid'", "s.scope_tag = 'in_scope'", "s.feature_id is not null",
              "s.embedding is not null", "f.topic_id is distinct from 'other'"]
@@ -95,7 +98,9 @@ def _signals_for(conn, feature_id=None, unassigned_only=True) -> list[dict]:
         params.append(feature_id)
     return conn.execute(
         "select s.id, s.feature_id, s.kind, s.severity, s.market, s.vehicle, s.customer_ref, s.evidence_role,"
-        " s.quote, s.embedding, s.aspect_group, f.name as feature"
+        f" s.quote, {'s.embedding' if with_embedding else 'null as embedding'}, s.aspect_group, f.name as feature,"
+        " coalesce((select r.source_id <> 'bmw_feedback' from source_record r where r.record_id = s.record_id),"
+        " false) as web"
         " from signal s join feature f on f.id = s.feature_id"
         f" where {' and '.join(where)} order by s.feature_id, s.aspect_group, s.id",
         params,
@@ -209,46 +214,83 @@ def initial(conn, min_similarity: float, *, split_min: int = SPLIT_MIN, run_id=N
             "groups_below_the_bar": below, "signals_without_a_case": waiting}
 
 
+def _load_embeddings(conn, rows: list[dict], size: int = 500) -> None:
+    """Fill the embedding of these signals, a few hundred per query (thousands of vectors in one
+    answer are too much for a remote connection)."""
+    todo = [r for r in rows if r["embedding"] is None]
+    by_id = {r["id"]: r for r in todo}
+    for i in range(0, len(todo), size):
+        for e in conn.execute("select id, embedding from signal where id = any(%s)",
+                              ([r["id"] for r in todo[i:i + size]],)).fetchall():
+            by_id[e["id"]]["embedding"] = e["embedding"]
+
+
+def _live_cases(conn) -> dict:
+    """Centroids of the cases that still hold signals (a merged case holds none), per topic + aspect group."""
+    known: dict = defaultdict(list)
+    for c in conn.execute(
+            "select c.id, c.feature_id, c.aspect_group, c.embedding from case_item c where c.embedding is not null"
+            " and exists (select 1 from signal s where s.case_id = c.id) order by c.id").fetchall():
+        known[(c["feature_id"], c["aspect_group"])].append((c["id"], _unit(as_matrix([c["embedding"]])[0])))
+    return known
+
+
+def plan_incremental(conn, thresholds: dict | None = None) -> list[tuple[str, list[dict]]]:
+    """(label, signals) of the cases ``incremental`` will create for groups that have no case yet,
+    so their pages can be written before the write transaction opens."""
+    thresholds = _thresholds(conn, thresholds)
+    known = _live_cases(conn)
+    pools: dict = defaultdict(list)
+    for r in _signals_for(conn, with_embedding=False):
+        pools[(r["feature_id"], r["aspect_group"])].append(r)
+    return [(_label(pool[0]["feature"], key[1]), pool) for key, pool in pools.items()
+            if key not in known and viable(pool, thresholds)]
+
+
 def incremental(conn, min_similarity: float, *, run_id=None, thresholds: dict | None = None) -> dict:
     """Attach new signals to the case of their topic + aspect group. Signals whose
     group has no case yet wait; once the waiting signals of a group pass the bar
     (``viable``) they become a case together."""
     thresholds = _thresholds(conn, thresholds)
-    rows = _signals_for(conn)
-    attached = created = 0
+    rows = _signals_for(conn, with_embedding=False)
+    known = _live_cases(conn)  # compared in memory: one query per signal is too slow on a remote database
+    created = 0
     done: set = set()
+    joins: dict = defaultdict(list)  # (case id, rationale) -> signals
     pools: dict = defaultdict(list)
     for r in rows:
         pools[(r["feature_id"], r["aspect_group"])].append(r)
+    # A vector is only needed to choose between several cases, or to give a new case its centroid.
+    _load_embeddings(conn, [r for key, pool in pools.items() for r in pool
+                            if len(known.get(key, [])) > 1 or (key not in known and viable(pool, thresholds))])
     for r in rows:
         if r["id"] in done:
             continue
-        # Cases of the same topic + aspect group that still hold signals (a merged case holds none).
-        cases = conn.execute(
-            "select c.id, 1 - (c.embedding <=> %s) as sim from case_item c where c.feature_id = %s"
-            " and c.aspect_group is not distinct from %s and c.embedding is not null"
-            " and exists (select 1 from signal s where s.case_id = c.id)"
-            " order by c.embedding <=> %s limit 2",
-            (r["embedding"], r["feature_id"], r["aspect_group"], r["embedding"]),
-        ).fetchall()
+        key = (r["feature_id"], r["aspect_group"])
+        cases = [(1.0, known[key][0][0])] if len(known[key]) == 1 else sorted(
+            ((float(_unit(as_matrix([r["embedding"]])[0]) @ centroid), cid) for cid, centroid in known[key]),
+            reverse=True)[:2]
         if len(cases) == 1:
-            assign(conn, cases[0]["id"], [r], run_id=run_id, rationale="case of the same topic + aspect group")
-            attached += 1
-        elif cases and cases[0]["sim"] >= min_similarity:
-            assign(conn, cases[0]["id"], [r], run_id=run_id,
-                   rationale=f"nearest case of the topic + aspect group, cosine {cases[0]['sim']:.2f}")
-            attached += 1
+            joins[(cases[0][1], "case of the same topic + aspect group")].append(r)
+            done.add(r["id"])
+        elif cases and cases[0][0] >= min_similarity:
+            joins[(cases[0][1], "nearest case of the topic + aspect group")].append(r)
+            done.add(r["id"])
         else:
-            pool = [m for m in pools[(r["feature_id"], r["aspect_group"])] if m["id"] not in done]
+            pool = [m for m in pools[key] if m["id"] not in done]
             if not viable(pool, thresholds):
                 continue  # below the bar: the signals wait without a case
-            create_case(conn, r["feature_id"], r["feature"], pool, aspect_group=r["aspect_group"], run_id=run_id,
-                        rationale="waiting signals of this topic + aspect group passed the bar" if not cases
-                        else "no case above the similarity threshold; waiting signals passed the bar")
+            case = create_case(conn, r["feature_id"], r["feature"], pool, aspect_group=r["aspect_group"],
+                               run_id=run_id,
+                               rationale="waiting signals of this topic + aspect group passed the bar" if not cases
+                               else "no case above the similarity threshold; waiting signals passed the bar")
+            known[key].append((case["id"], _unit(np.mean(as_matrix([m["embedding"] for m in pool]), axis=0))))
             done.update(m["id"] for m in pool)
             created += 1
-    waiting = sum(1 for r in rows if r["id"] not in done) - attached
-    return {"attached": attached, "created": created, "signals_without_a_case": max(waiting, 0)}
+    for (case_id, why), members in joins.items():
+        assign(conn, case_id, members, run_id=run_id, rationale=why)
+    attached = sum(len(m) for m in joins.values())
+    return {"attached": attached, "created": created, "signals_without_a_case": len(rows) - len(done)}
 
 
 def refresh_centroid(conn, case_id: str, *, run_id=None) -> None:
