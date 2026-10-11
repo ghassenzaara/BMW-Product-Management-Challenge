@@ -1,0 +1,69 @@
+bro push the current changes to the branch it should be then i will merge a pull request tto main
+
+---
+
+okay normally evverything will be merged to one little conflict and its resolved it is hanging like always
+
+---
+
+merge it do it please
+
+---
+
+okay its been merged can you run everything to be  working end to end perfectly run the backend server run the ui and point to the local database and that way we can have live demo ready
+
+---
+
+bro show me the ui let me try it and see if the rag agent is  working give me the local host link
+
+---
+
+the styling bro its fucked can you check out if everything installed correctly
+
+---
+
+try now
+
+---
+
+are you running the backend
+
+---
+
+but the agent doesnt reply i think we remove the 8000 and only have one
+
+---
+
+bro there is no supabases and we need to point to the new local base that we downloaded from the supabase so it has all the summarizations normally
+
+---
+
+can you reapply the first animation whichs in landing folder
+
+---
+
+could you do it to make it per default without this intro thing  not just put in a variable in the url link i want it per default per tab refresh make it working
+
+---
+
+ccan you make it an open network host after this to make it accessible for the judges after presenting
+
+---
+
+why isnt it working on another pc
+
+---
+
+make the defaukt dark themed always
+
+---
+
+commit to a seperate branch push and then i will create pull request and merge to main
+
+---
+
+Commit the working tree changes with a sensible message.
+
+---
+
+give me the message and the commands to push it by myself
