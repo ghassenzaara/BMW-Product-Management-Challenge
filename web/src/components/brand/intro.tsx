@@ -3,17 +3,17 @@
 import { useEffect, useRef } from "react";
 
 /**
- * The headlight intro (landing/index.html), played once per browser on the first visit:
- * darkness, the light travels around the eyes, they stay lit, fade, and the app appears.
- * Click to skip. `?intro=1` plays it again; reduced-motion users never see it.
+ * The headlight intro (landing/index.html), played on every page load (opening the app or
+ * refreshing the tab): darkness, the light travels around the eyes, they stay lit, fade, and the
+ * app appears. Click to skip. Moving between pages inside the app does not replay it;
+ * reduced-motion users never see it.
  *
  * The script in the root layout decides before the first paint (`<html data-intro="play">`),
- * so a returning visitor never sees a black flash and a first-time visitor never sees the app first.
+ * so nobody sees the app flash before the intro.
  */
-export const INTRO_SEEN_KEY = "argon_intro_seen";
 
 /** Runs before hydration (root layout). */
-export const introBootScript = `try{var s=location.search.indexOf("intro=1")>=0;if(s||(!localStorage.getItem("${INTRO_SEEN_KEY}")&&!matchMedia("(prefers-reduced-motion: reduce)").matches))document.documentElement.setAttribute("data-intro","play")}catch(e){}`;
+export const introBootScript = `try{if(!matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.setAttribute("data-intro","play")}catch(e){}`;
 
 // Times in milliseconds (the values of landing/index.html).
 const DARK_PAUSE = 600; // black screen before the lights start
@@ -60,9 +60,6 @@ export function Intro() {
     const finish = () => {
       if (!alive) return;
       alive = false;
-      try {
-        localStorage.setItem(INTRO_SEEN_KEY, "1");
-      } catch {}
       stageEl.classList.add("done");
       timers.push(window.setTimeout(() => root.removeAttribute("data-intro"), 800));
     };

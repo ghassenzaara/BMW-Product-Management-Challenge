@@ -20,7 +20,9 @@ export function getQueryClient() {
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+    // Dark is the default for everyone, whatever the system setting. The new storage key drops
+    // a choice saved while light was the default; the toggle in the top bar still switches.
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} storageKey="argon-theme" disableTransitionOnChange>
       <QueryClientProvider client={getQueryClient()}>
         <TooltipProvider delayDuration={300}>
           {children}
