@@ -129,7 +129,8 @@ def heuristic_extract(record: dict, max_signals: int = 5) -> list[dict]:
     return out
 
 
-def llm_extract(record: dict) -> tuple[list[dict], str, str]:
+def llm_signals(record: dict) -> tuple[list[_Signal], str, str]:
+    """What the OpenAI agent extracts from one record, before it becomes proposals for the gate."""
     agent = agent_for(record)
     extra = record.get("extra") or {}
     subject = f"{record.get('brand') or ''} {record.get('model') or ''}".strip() or "brand level"
@@ -143,7 +144,12 @@ def llm_extract(record: dict) -> tuple[list[dict], str, str]:
         text=prompts.wrap_source(json.dumps({"title": record.get("title"), "text": (record["text_original"] or "")[:8000]},
                                             ensure_ascii=False)),
     )
-    return proposals_from(record, result.data.signals), result.model, result.prompt_version
+    return result.data.signals, result.model, result.prompt_version
+
+
+def llm_extract(record: dict) -> tuple[list[dict], str, str]:
+    signals, model, prompt_version = llm_signals(record)
+    return proposals_from(record, signals), model, prompt_version
 
 
 def proposals_from(record: dict, signals: list[_Signal]) -> list[dict]:

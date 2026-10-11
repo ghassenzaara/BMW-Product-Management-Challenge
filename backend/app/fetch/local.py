@@ -1,5 +1,6 @@
-"""Web records treated on this machine first, read by Claude subagents, then written to the database:
-python -m app.fetch.local {fetch,export,batches,status,import} ...
+"""Web records treated on this machine first, read by Claude subagents or the OpenAI agent, then
+written to the database:
+python -m app.fetch.local {fetch,export,batches,read,status,import} ...
 
 1. ``fetch --sources a,b``: runs the adapters of those sources with the polite client. Raw responses
    go to the local storage folder, records to ``.data/web_import/records/<source>.jsonl``. The database
@@ -10,6 +11,9 @@ python -m app.fetch.local {fetch,export,batches,status,import} ...
    (``batches/batch-NNN.jsonl``, text cut at 8,000 characters like the OpenAI agent). Each subagent
    writes ``signals/batch-NNN.json``: ``{"<record_id>": [signal, ...], ...}`` with the fields of the
    ``signal_extract`` output (an empty list = nothing relevant). See ``SUBAGENT_BRIEF.md`` there.
+   ``read [--batches a,b]``: the OpenAI agent (``signal_extract``, the model of the fetch loop) reads
+   the batches no subagent has answered and writes the same file; ``readers.json`` keeps which model
+   and prompt version read each batch, so every signal stores its real reader.
 4. ``import [--yes]``: for every record a subagent has read: new records (and their raw responses) are
    written to the database, then the signals go through the validation gate exactly like the fetch
    loop (``worker.ingest_extracted``: quote found in the stored text, closed taxonomy, duplicates,
@@ -31,6 +35,7 @@ from app.config import BACKEND_DIR
 ROOT = BACKEND_DIR / ".data" / "web_import"
 RECORDS, BATCHES, SIGNALS = ROOT / "records", ROOT / "batches", ROOT / "signals"
 CURSORS = ROOT / "cursors.json"
+READERS = ROOT / "readers.json"  # batch -> model and prompt version, for batches not read by a subagent
 MODEL = "claude-opus-5-5"  # the subagents' model, stored on every signal like an OpenAI model name
 PROMPT_VERSION = "signal_extract@v2+subagent"
 TEXT_LIMIT = 8000
@@ -182,6 +187,97 @@ def batches(size_chars: int, max_records: int) -> dict:
     return {"batches": [f"batch-{i:03d} ({k} records)" for i, k in made], "records": len(todo)}
 
 
+# ---- 3b. read with the OpenAI agent -----------------------------------------------
+
+def _readers() -> dict:
+    return json.loads(READERS.read_text(encoding="utf-8")) if READERS.exists() else {}
+
+
+def _tidy(signal: dict) -> dict:
+    """Kinds with one possible severity get it (a like is never a defect); a complaint stays as read."""
+    if signal["kind"] in ("like", "competitor_fact", "trend", "innovation"):
+        signal["severity"] = "none"
+    elif signal["kind"] == "wish":
+        signal["severity"] = "wish"
+    return signal
+
+
+def _broken(record: dict, signals: list[dict]) -> int:
+    """How many signals of one record the gate would quarantine for their form."""
+    from app.signals.gate import find_quote
+    from app.signals.schema import MAX_SUMMARY_WORDS, severity_fits_kind
+
+    text = record.get("text_original") or ""
+    return sum(1 for s in signals if len(s["summary"].split()) > MAX_SUMMARY_WORDS
+               or not severity_fits_kind(s["kind"], s["severity"]) or find_quote(s["quote"], text) is None)
+
+
+def read(only: list[str] | None, attempts: int = 3) -> dict:
+    """The OpenAI agent reads every batch without a signals file (or the ones named), in parallel
+    (``LLM_WORKERS``). A batch file is only written when every record of it was read."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    from app.fetch import agents
+    from app.llm import cache
+
+    full = local_records()
+    stems = sorted(p.stem for p in BATCHES.glob("batch-*.jsonl")
+                   if (p.stem in only if only else not (SIGNALS / f"{p.stem}.json").exists()))
+    out = {}
+    for stem in stems:
+        ids = [r["record_id"] for r in _read_jsonl(BATCHES / f"{stem}.jsonl")]
+        answers: dict[str, list] = {}
+        reader: dict = {}
+        failed: dict[str, str] = {}
+
+        def one(rid: str):
+            # A record whose signals break a gate rule is read again (twice at most); the reading
+            # with the fewest broken signals is kept, and the gate quarantines what is left.
+            try:
+                best = None
+                for _ in range(3):
+                    signals, model, prompt_version = agents.llm_signals(full[rid])
+                    dumped = [_tidy(s.model_dump()) for s in signals]
+                    broken = _broken(full[rid], dumped)
+                    if best is None or broken < best[0]:
+                        best = (broken, dumped, model, prompt_version)
+                    if not broken:
+                        break
+                return rid, best[1], best[2], best[3], None
+            except Exception as exc:  # noqa: BLE001 - one failed call must not lose the batch
+                return rid, None, None, None, repr(exc)[:200]
+
+        todo = ids
+        for _ in range(attempts):
+            if not todo:
+                break
+            with ThreadPoolExecutor(max_workers=cache.WORKERS) as pool:
+                results = list(pool.map(one, todo))
+            todo = []
+            for rid, signals, model, prompt_version, error in results:
+                if error:
+                    todo.append(rid)
+                    failed[rid] = error
+                else:
+                    answers[rid] = signals
+                    reader = {"model": model, "prompt_version": prompt_version}
+                    failed.pop(rid, None)
+        if failed:
+            out[stem] = {"records": len(ids), "not read": len(failed), "example": next(iter(failed.values()))}
+            continue
+        SIGNALS.mkdir(parents=True, exist_ok=True)
+        (SIGNALS / f"{stem}.json").write_text(
+            json.dumps({rid: answers[rid] for rid in ids}, ensure_ascii=False, indent=1), encoding="utf-8")
+        readers = _readers()
+        readers[stem] = reader
+        READERS.write_text(json.dumps(readers, indent=1), encoding="utf-8")
+        out[stem] = {"records": len(ids), "signals": sum(len(v) for v in answers.values()),
+                     "signals the gate will quarantine": sum(_broken(full[rid], answers[rid]) for rid in ids),
+                     **reader}
+        print(stem, out[stem], flush=True)
+    return out
+
+
 # ---- 4. import --------------------------------------------------------------------
 
 def _signals_for(record: dict, raw_signals: list, problems: list) -> list[dict]:
@@ -209,23 +305,36 @@ def _db_record(r: dict) -> dict:
     return row
 
 
-def import_(apply: bool) -> dict:
+def import_(apply: bool, skip: list[str] | None = None) -> dict:
+    """``skip``: sources left out of this import (their records stay local or unread). A record
+    the database already holds signals for, or has marked as not relevant, is never read in twice."""
     from app import audit, db, storage
     from app.config import get_settings
     from app.fetch.worker import INGEST_BATCH, ingest_extracted
 
-    records = local_records()
+    records = {rid: r for rid, r in local_records().items() if r["source_id"] not in (skip or [])}
+    with db.transaction() as conn:
+        done = {r["record_id"] for r in conn.execute(
+            "select r.record_id from source_record r where r.record_id = any(%s) and (r.text_original is null"
+            " or exists (select 1 from signal s where s.record_id = r.record_id))", (list(records),)).fetchall()}
+    records = {rid: r for rid, r in records.items() if rid not in done}
     read: dict[str, list] = {}
+    reader_of: dict[str, tuple[str, str]] = {}
+    readers = _readers()
     for path in sorted(SIGNALS.glob("batch-*.json")):
-        read.update(json.loads(path.read_text(encoding="utf-8")))
-    unknown = [rid for rid in read if rid not in records]
+        answers = json.loads(path.read_text(encoding="utf-8"))
+        read.update(answers)
+        who = readers.get(path.stem) or {}
+        for rid in answers:
+            reader_of[rid] = (who.get("model") or MODEL, who.get("prompt_version") or PROMPT_VERSION)
+    unknown = []
     problems: list[str] = []
     extracted = []
     for rid, sigs in read.items():
         if rid in records:
-            extracted.append((records[rid], _signals_for(records[rid], sigs, problems), MODEL, PROMPT_VERSION))
+            extracted.append((records[rid], _signals_for(records[rid], sigs, problems), *reader_of[rid]))
     new = [r for r, *_ in extracted if not r.get("_stored")]
-    result = {"records read by subagents": len(extracted), "new records to store": len(new),
+    result = {"records to import": len(extracted), "already imported": len(done), "new records to store": len(new),
               "proposed signals": sum(len(p) for _, p, *_ in extracted),
               "records with no signal (relevance filter)": sum(1 for _, p, *_ in extracted if not p),
               "signals not parsed": len(problems), "unknown record ids": len(unknown),
@@ -241,7 +350,7 @@ def import_(apply: bool) -> dict:
                 storage.put(raw_ref, path.read_bytes(), "text/html")
     with db.transaction() as conn:
         run_id = conn.execute("insert into agent_run (agent, mode, params) values ('fetch:local-import', 'manual', %s)"
-                              " returning id", (json.dumps({"model": MODEL, "prompt_version": PROMPT_VERSION}),)
+                              " returning id", (json.dumps({"readers": sorted({f"{m} ({v})" for m, v in reader_of.values()})}),)
                               ).fetchone()["id"]
         by_source: dict[str, list[dict]] = {}
         for r in new:
@@ -336,11 +445,14 @@ def main() -> None:
     b = sub.add_parser("batches")
     b.add_argument("--size", type=int, default=60000, help="text characters per batch")
     b.add_argument("--max-records", type=int, default=150)
+    rd = sub.add_parser("read")
+    rd.add_argument("--batches", default="", help="e.g. batch-018,batch-023; default: every unread batch")
     sub.add_parser("status")
     c = sub.add_parser("check")
     c.add_argument("batch", help="e.g. batch-007")
     i = sub.add_parser("import")
     i.add_argument("--yes", action="store_true")
+    i.add_argument("--skip-sources", default="", help="sources left out of this import")
     args = parser.parse_args()
     if args.cmd == "fetch":
         out = fetch([s for s in args.sources.split(",") if s], [v for v in args.vehicles.split(",") if v] or None,
@@ -349,10 +461,12 @@ def main() -> None:
         out = export([s for s in args.sources.split(",") if s] or None)
     elif args.cmd == "batches":
         out = batches(args.size, args.max_records)
+    elif args.cmd == "read":
+        out = read([b for b in args.batches.split(",") if b] or None)
     elif args.cmd == "check":
         out = check(args.batch)
     elif args.cmd == "import":
-        out = import_(args.yes)
+        out = import_(args.yes, [x for x in args.skip_sources.split(",") if x])
     else:
         out = status()
     print(json.dumps(out, indent=1, ensure_ascii=False, default=_json_default))
