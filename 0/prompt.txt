@@ -1,0 +1,5 @@
+i just merged all the UI stuff the new UI stuff make a deep review of the new code that have been merged to main and check for consistency and for correct wiring
+
+---
+
+Réessayer
